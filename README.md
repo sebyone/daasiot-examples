@@ -1,4 +1,4 @@
-![image](https://github.com/sebyone/daas-nodejs/assets/24574573/f6ae2e29-476a-4af5-8a98-9308eecfb945)# daas-nodejs
+# daas-nodejs
 
 
 ## Setup
