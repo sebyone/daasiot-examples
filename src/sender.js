@@ -1,4 +1,5 @@
-const { DaasIoT } = require("./libs/libdaas.node");
+const { DaasIoT } = require("daas-sdk");
+
 
 console.log("SENDER")
 
@@ -20,7 +21,6 @@ daasApi.onDinConnected((din) => { console.log("📌 DIN Accepted: " + din); });
 daasApi.onDDOReceived((din) => {
     console.log("🔔 DDO received from DIN: " + din);
     daasApi.locate(din);
-
     daasApi.pull(din, (origin, timestamp, typeset, data) => {
         console.log(`⬇⬇ Pulling data from DIN: ${origin} timestamp: ${timestamp} - typeset: ${typeset} - data: `);
         console.log(data);
@@ -45,7 +45,7 @@ setInterval(() => {
     const located = daasApi.locate(REMOTE_DIN);
     console.log(`🔍 Locate ${REMOTE_DIN}: ${located}`);
 
-    if (located) {
+    if (located || true) {
         const payload = {
             message: "Ciao Mondo!!!"
         }

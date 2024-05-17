@@ -2,7 +2,7 @@ const express = require('express');
 const http = require('http');
 var path = require('path');
 const { WebSocketServer } = require("ws");
-const { DaasIoT } = require("./libs/libdaas.node");
+const { DaasIoT } = require("daas-sdk");
 
 const port = 3000
 
@@ -76,6 +76,7 @@ daasApi.onDDOReceived((din) => {
     daasApi.pull(din, (origin, timestamp, typeset, data) => {
         let readableTimestamp = new Date(timestamp * 1000).toISOString()
         console.log(`⬇⬇ Pulling data from DIN: ${origin} - timestamp: ${readableTimestamp} - typeset: ${typeset}: ${data}`);
+        console.log(data);
         let decodedData = decode(data);
 
         wss.clients.forEach(client => {
