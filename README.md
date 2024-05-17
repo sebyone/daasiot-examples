@@ -32,32 +32,22 @@ Una volta terminata la operazione di build, si aprirà una nuova finesta di VS C
 
 Per ulteriori info consultare la [documentazione ufficiale](https://code.visualstudio.com/docs/devcontainers/containers).
 
-
-
+---
 
 ![sebyone-logo](https://sebyone.it/res/lg_daasiot-410-72dpi.png)
 # Welcome to the DaaS-IoT project
 
-This repository contains the source code for:
-### 👉 [daasiot-sdk-aps](https://daasiot.sebyone.it/?page_id=1604)
-more information about the Project is available on:
+more information about the Project are available on:
 
->* [www.daasiot.com](https://daasiot.sebyone.it) official project's site
->* [www.daasiot.net](https://daasiot.net) cloud _services_ for deploying IoT platforms (PaaS)
+* [www.daasiot.com](https://daasiot.sebyone.it) official project's site
+* [www.daasiot.net](https://daasiot.net) cloud _services_ for IoT platforms (PaaS)
 
----
+## Repositories 
 
-## Project's repositories on [sebyone.github.com](https://sebyone.github.com)
+* 👉 **daasiot-nodejs**   _nodejs sources and documentation_
+* **daasiot-examples**  [_solutions examples and documentation_](https://github.com/sebyone/daasiot-examples)
 
-			
-* **daasiot-admin** _sources administration consolle_
-* **daasiot-dna**   _sources perimeter agent node DNA_ 		
-* **daasiot-pn-web**    _sources to build customizable web-ui nodes_
-* **daasiot-sdk-pnx**   _resources usefull to develop new peripherial nodes_
-* **daasiot-sdk-aps**   _resources to develop iot-aware web-application_
-* **daasiot-sdk-examples**  _examples sources and documentation_
-
-**Note**: “daasiot-aps” is also avalable at [NPM Repo](https://www.npmjs.com/settings/sebyone_/packages)
+> **Note**: “daasiot-nodejs” is also avalable at [NPM Repo](https://www.npmjs.com/package/daas-sdk)
 
 
 ## Documentation
@@ -66,18 +56,10 @@ All project documentation is located at [daasiot.com](https://daasiot.com).
 
 File|Content
 ---|---
-daasiot-overview | [Tecnologia e prodotti] (https://github.com/sebyone/daasiot-admin)
-daasiot-setup | [Guida installazione] (https://github.com/sebyone/daasiot-admin)
-daasiot-protocols| Protocolli e servizi di rete
-daasiot-vms| Guida all’uso VMS
-daasiot-epweb | Guida all’uso EP-Web
-daasiot-netadmin | Guida all’uso NetAdmin
-daasiot-sdk-howto | Guida rapida per sviluppatori
-daasiot-sdk-eps | Guida sviluppo nodi EP
-daasiot-sdk-aps-nodejs | Guida sviluppo nodi AP (NodeJS)
-daasiot-sdk-examples | Esempi Applicazioni
-
-## Coding Guidance
+daasiot-overview | [Concepts and Technology Overview](https://daasiot.sebyone.it/?page_id=1604)
+daasiot-setup | [First use guide](https://daasiot.sebyone.it/?page_id=1604)
+daas-sdk-nodejs-xxx | [Developer Quick Start Guide (NodeJS)](https://drive.google.com/file/d/1V7UGeJkDImIEjFY3pIuC5otPOvUQuQWs/view?usp=drive_link)
+daas-sdk-esp-xxx | Developer Quick Start Guide (Esp32)
 
 ## Running & Debugging
 
