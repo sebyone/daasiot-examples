@@ -6,7 +6,7 @@
     "scripts": {
         "test": "echo \"Error: no test specified\" && exit 1",
         "start": "node server.js",
-        "start:server": "nodemon src/server.js",
+        "start:server": "nodemon --force-node-api-uncaught-exceptions-policy=true src/server.js",
         "start:client": "nodemon src/sender.js"
     },
     "keywords": [],
