@@ -4,7 +4,8 @@ var path = require('path');
 const { WebSocketServer } = require("ws");
 const { DaasIoT } = require("daas-sdk");
 
-const port = 3000
+const port = process.env.PORT || 3000;
+const host = process.env.HOST || 'localhost';
 
 function decode(data) {
     let utf8decoder = new TextDecoder();
@@ -20,7 +21,7 @@ app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, '/views'));
 
 app.get('/', (req, res) => {
-    res.render("pages/index")
+    res.render("pages/index", { host, port });
 })
 
 
@@ -28,7 +29,7 @@ app.get('/', (req, res) => {
 const server = http.createServer(app);
 
 server.listen(port, () => {
-    console.log(`Server listening on port ${port}`);
+    console.log(`Server listening on ${host}:${port}`);
 });
 
 
@@ -39,17 +40,16 @@ wss.on('connection', ws => {
     console.log('New client connected!');
     ws.send('Connection established');
 
-    ws.on('close', () => console.log('Client has disconnected!'))
+    ws.on('close', () => console.log('Client has disconnected!'));
 
     ws.on('message', data => {
         wss.clients.forEach(client => {
-            console.log(`distributing message: ${data}`)
-            client.send(`${data}`)
+            client.send(`${data}`);
         })
     })
 
     ws.onerror = function () {
-        console.log('websocket error')
+        console.log('websocket error');
     }
 })
 
@@ -80,7 +80,7 @@ daasApi.onDDOReceived((din) => {
         let decodedData = decode(data);
 
         wss.clients.forEach(client => {
-            console.log(`distributing message: ${data}`)
+            // console.log(`distributing message: ${data}`);
             client.send(JSON.stringify(decodedData));
         })
     });
