@@ -67,5 +67,5 @@ module.exports = {
     stop,
     getNode,
     restart,
-    send
+    send,
 }

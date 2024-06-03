@@ -12,7 +12,7 @@
     <textarea id="logs" rows="30" cols="100"></textarea>
 
     <script>
-        let socket = new WebSocket("ws://localhost:3000");
+        let socket = new WebSocket('ws://<%= host %>:<%= port %>');
 
         socket.onopen = function (e) {
             console.log("[ws][open] Connessione stabilita");

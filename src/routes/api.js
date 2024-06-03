@@ -1,5 +1,7 @@
 const express = require('express');
-const daasNode = require('../daas');
+// const daasNode = require('../daas');
+// const daasNodeSdk = require('../daas/daas');
+const daasNode = require('../daas/daas');
 
 const router = express.Router();
 
@@ -13,19 +15,20 @@ router.get('/', function (req, res) {
 
 router.post('/configure', function (req, res, next) {
     console.log("[API] /configure Node configure.");
-
     res.send({})
 })
 
 router.post('/start', function (req, res) {
     console.log("[API] /start Node started.");
-    daasNode.doPerform();
+    // daasNode.doPerform();
+    daasNode.start();
     res.send({})
 })
 
 router.post('/stop', function (req, res) {
     console.log("[API] /stop Node stopped.");
-    daasNode.doEnd();
+    // daasNode.doEnd();
+    daasNode.stop();
     res.send({})
 });
 
@@ -35,15 +38,17 @@ router.post('/send', function (req, res) {
     const din = req.body?.din;
     const payload = req.body?.payload ?? {};
 
-    const located = daasNode.locate(din);
-    console.log(`[API] /send 🔍 Locate ${din}: ${located}`);
+    daasNode.send(din, 10, JSON.stringify(payload));
 
-    if (located) {
-        let timestamp = new Date().getTime();
+    // const located = daasNode.locate(din);
+    // console.log(`[API] /send 🔍 Locate ${din}: ${located}`);
 
-        daasNode.push(din, 10, timestamp, JSON.stringify(payload));
-        console.log(`[API] /send ⬆⬆ Pushing data to ${din} done.`);
-    }
+    // if (located) {
+    //     let timestamp = new Date().getTime();
+
+    //     daasNode.push(din, 10, timestamp, JSON.stringify(payload));
+    //     console.log(`[API] /send ⬆⬆ Pushing data to ${din} done.`);
+    // }
 
     res.send({})
 });
