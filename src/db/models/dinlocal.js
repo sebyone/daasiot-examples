@@ -13,7 +13,6 @@ module.exports = (sequelize, DataTypes) => {
      * The `models/index` file will call this method automatically.
      */
     static associate(models) {
-      console.log("@@@@", models);
       this.belongsTo(models.Din, { foreignKey: 'din_id', as: 'din', tableName: 'din' });
     }
   }

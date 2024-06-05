@@ -13,8 +13,9 @@ const apiRouter = require('./routes/api');
 // Database
 const db = require("./db/models");
 const DinLocal = db.DinLocal;
+const DinLink = db.DinLink;
 
-
+const { where, Op } = require('sequelize');
 
 db.sequelize.sync({ force: true })
     .then(() => {
@@ -66,66 +67,73 @@ wss.on('connection', ws => {
 
 app.set("daasApi", daasApi);
 
-async function initAndStartDaasNode() {
+const localNode = daasApi.getNode();
+
+localNode.onDinConnected((din) => { console.log("📌 DIN Accepted: " + din); });
+localNode.onDDOReceived((din) => {
+    console.log("🔔 DDO received from DIN: " + din);
+    localNode.locate(din);
+
+    localNode.pull(din, (origin, timestamp, typeset, data) => {
+        let readableTimestamp = new Date(timestamp * 1000).toISOString()
+        console.log(`⬇⬇ Pulling data from DIN: ${origin} - timestamp: ${readableTimestamp} - typeset: ${typeset}: ${data}`);
+        console.log(data);
+        let decodedData = decode(data);
+
+        wss.clients.forEach(client => {
+            console.log(`distributing message: ${data}`)
+            client.send(JSON.stringify({ type: "ddo", data: { din, typeset, ddo: decodedData } }));
+        })
+    });
+});
+
+async function initAndStartDaasNode(node) {
     try {
-        const result = await DinLocal.findByPk(1, { raw: true, include: ['din'] });
-        console.log("configData", result);
+        const dinLocal = await DinLocal.findByPk(1, { raw: true, include: ['din'] });
+        const dinLocalLinks = await await DinLink.findAll({
+            where: {
+                din_id: {
+                    [Op.eq]: 1
+                }
+            },
+            raw: true
+        });
+
+        const sid = parseInt(dinLocal['din.sid']);
+        const din = parseInt(dinLocal['din.din']);
+
+        // Init nodo
+        node.doInit(sid, din);
+        console.log(`daas:doInit sid=${sid} din=${din}`);
+
+        // Enable node links
+        dinLocalLinks.forEach((llink) => {
+            let link = parseInt(llink.link);
+            let url = llink.url;
+
+            node.enableDriver(link, url);
+            console.log(`daas:enableDriver link=${link} din=${url}`);
+        });
+
+        const devices = [
+            [102, 2, "127.0.0.1:2102"]
+        ];
+
+        devices.forEach(([din, driver, url]) => {
+            node.map(din, driver, url);
+            console.log(`daas:map din=${din} link=${driver} url=${url}`);
+        });
+
     } catch (error) {
         console.error(error);
     }
-
-    return new Promise((resolve) => {
-        const INET4 = 2;
-        const SID = 100;
-        const DIN = 101;
-
-        const drivers = [
-            [INET4, "127.0.0.1:2101"]
-        ];
-
-        const devices = [
-            [102, INET4, "127.0.0.1:2102"]
-        ];
-
-        daasApi.getNode().doInit(SID, DIN);
-
-        drivers.forEach(([driver, url]) => {
-            console.log(`enableDriver: ${driver} ${url}`);
-            daasApi.getNode().enableDriver(driver, url);
-        });
-
-        devices.forEach(([din, driver, url]) => {
-            console.log(`map: ${driver} ${url}`);
-            daasApi.getNode().map(din, driver, url);
-        });
-
-        daasApi.getNode().onDinConnected((din) => { console.log("📌 DIN Accepted: " + din); });
-        daasApi.getNode().onDDOReceived((din) => {
-            console.log("🔔 DDO received from DIN: " + din);
-            daasApi.getNode().locate(din);
-
-            daasApi.getNode().pull(din, (origin, timestamp, typeset, data) => {
-                let readableTimestamp = new Date(timestamp * 1000).toISOString()
-                console.log(`⬇⬇ Pulling data from DIN: ${origin} - timestamp: ${readableTimestamp} - typeset: ${typeset}: ${data}`);
-                console.log(data);
-                let decodedData = decode(data);
-
-                wss.clients.forEach(client => {
-                    console.log(`distributing message: ${data}`)
-                    client.send(JSON.stringify({ type: "ddo", data: { din, typeset, ddo: decodedData } }));
-                })
-            });
-        });
-
-        daasApi.getNode().doPerform();
-
-        resolve();
-    });
 };
 
 
 async function startServer() {
-    await initAndStartDaasNode();
+    await initAndStartDaasNode(localNode);
+    await localNode.doPerform();
+    console.log(`daas:doPerform`);
 
     server.listen(PORT, () => {
         console.log(`Server listening on PORT ${PORT}`);
