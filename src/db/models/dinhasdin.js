@@ -2,6 +2,9 @@
 const {
   Model
 } = require('sequelize');
+
+const { Din } = require('./din');
+
 module.exports = (sequelize, DataTypes) => {
   class DinHasDin extends Model {
     /**
@@ -13,11 +16,12 @@ module.exports = (sequelize, DataTypes) => {
       // define association here
     }
   }
+
   DinHasDin.init({
     pdin_id: {
       type: DataTypes.INTEGER,
       references: {
-        model: Din,
+        model: 'din',
         key: 'id',
       },
       allowNull: false,
@@ -25,7 +29,7 @@ module.exports = (sequelize, DataTypes) => {
     cdin_id: {
       type: DataTypes.INTEGER,
       references: {
-        model: Din,
+        model: 'din',
         key: 'id',
       },
       allowNull: false,
@@ -37,5 +41,6 @@ module.exports = (sequelize, DataTypes) => {
     underscored: true,
     timestamps: false,
   });
+
   return DinHasDin;
 };

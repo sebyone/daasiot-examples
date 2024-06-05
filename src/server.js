@@ -8,6 +8,22 @@ const daasApi = require('./daas/daas');
 const viewRouter = require('./routes/views');
 const apiRouter = require('./routes/api');
 
+// const DinLocal = require('./db/models/dinlocal');
+
+// Database
+const db = require("./db/models");
+const DinLocal = db.DinLocal;
+
+
+
+db.sequelize.sync({ force: true })
+    .then(() => {
+        console.log("Synced db.");
+    })
+    .catch((err) => {
+        console.log("Failed to sync db: " + err.message);
+    });
+
 const PORT = 3000;
 
 // Node application
@@ -50,7 +66,14 @@ wss.on('connection', ws => {
 
 app.set("daasApi", daasApi);
 
-function initAndStartDaasNode() {
+async function initAndStartDaasNode() {
+    try {
+        const result = await DinLocal.findByPk(1, { raw: true, include: ['din'] });
+        console.log("configData", result);
+    } catch (error) {
+        console.error(error);
+    }
+
     return new Promise((resolve) => {
         const INET4 = 2;
         const SID = 100;

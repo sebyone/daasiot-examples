@@ -2,6 +2,9 @@
 const {
   Model
 } = require('sequelize');
+
+const { Din } = require('./din');
+
 module.exports = (sequelize, DataTypes) => {
   class DinLocal extends Model {
     /**
@@ -10,7 +13,8 @@ module.exports = (sequelize, DataTypes) => {
      * The `models/index` file will call this method automatically.
      */
     static associate(models) {
-      // define association here
+      console.log("@@@@", models);
+      this.belongsTo(models.Din, { foreignKey: 'din_id', as: 'din', tableName: 'din' });
     }
   }
   DinLocal.init({
@@ -36,5 +40,6 @@ module.exports = (sequelize, DataTypes) => {
     tableName: 'din_local',
     underscored: true,
   });
+
   return DinLocal;
 };

@@ -2,6 +2,9 @@
 const {
   Model
 } = require('sequelize');
+
+const { Din } = require('./din');
+
 module.exports = (sequelize, DataTypes) => {
   class DinLink extends Model {
     /**
