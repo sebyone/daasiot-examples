@@ -11,6 +11,8 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       this.hasMany(models.DinLocal, { foreignKey: 'din_id' });
+      this.belongsToMany(models.Din, { through: models.DinHasDin, as: 'parents', foreignKey: 'pdin_id' });
+      this.belongsToMany(models.Din, { through: models.DinHasDin, as: 'siblings', foreignKey: 'cdin_id' });
       // define association here
     }
   }

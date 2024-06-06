@@ -14,6 +14,8 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       // define association here
+      this.belongsTo(models.Din, { primaryKey: 'pdin_id', as: 'pdin', onDelete: 'CASCADE' });
+      this.belongsTo(models.Din, { primaryKey: 'cdin_id', as: 'cdin', onDelete: 'CASCADE' });
     }
   }
 
@@ -37,7 +39,7 @@ module.exports = (sequelize, DataTypes) => {
   }, {
     sequelize,
     modelName: 'DinHasDin',
-    tableName: 'din_local',
+    tableName: 'din_has_din',
     underscored: true,
     timestamps: false,
   });

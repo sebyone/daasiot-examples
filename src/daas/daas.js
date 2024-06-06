@@ -3,25 +3,8 @@ const hver = "nodeJS";
 
 let nodeInstance = new DaasIoT(hver);
 
-const _onDinConnected = ((din) => { console.log("📌 DIN Accepted: " + din); });
-const _onDDOReceived = ((din) => {
-    console.log("🔔 DDO received from DIN: " + din);
-    nodeInstance.locate(din);
-
-    nodeInstance.pull(din, (origin, timestamp, typeset, data) => {
-        let readableTimestamp = new Date(timestamp * 1000).toISOString()
-
-        console.log(`..⬇⬇ Pulling data from DIN: ${origin} - timestamp: ${readableTimestamp} - typeset: ${typeset}: ${data}`);
-        console.log(data);
-        let decodedData = decode(data);
-    });
-});
-
 function configure(sid, din, drivers = [], devices = []) {
     nodeInstance.doInit(sid, din);
-
-    // nodeInstance.onDinConnected(onDinConnected)
-    // nodeInstance.onDDOReceived(onDDOReceived)
 
     drivers.forEach(driver => {
         nodeInstance.enableDriver(driver.type, driver.url);

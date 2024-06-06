@@ -12,7 +12,9 @@ module.exports = {
       pdin_id: {
         type: Sequelize.INTEGER,
         references: {
-          model: Din,
+          model: {
+            tableName: 'din',
+          },
           key: 'id',
         },
         allowNull: false,
@@ -20,7 +22,9 @@ module.exports = {
       cdin_id: {
         type: Sequelize.INTEGER,
         references: {
-          model: Din,
+          model: {
+            tableName: 'din',
+          },
           key: 'id',
         },
         allowNull: false,

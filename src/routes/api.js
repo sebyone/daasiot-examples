@@ -8,6 +8,9 @@ const { where, Op } = require('sequelize');
 const DinLocal = db.DinLocal;
 const Din = db.Din;
 const DinLink = db.DinLink;
+const DinHasDin = db.DinHasDin;
+
+const DaasService = require('../services/daas.service');
 
 router.get('/', function (req, res) {
     res.send({
@@ -17,16 +20,17 @@ router.get('/', function (req, res) {
     })
 })
 
-router.post('/configure', function (req, res, next) {
-    console.log("[API] /configure Node configure.");
-    res.send({})
-})
-
-router.post('/start', function (req, res) {
+router.post('/start', async function (req, res) {
     console.log("[API] /start Node started.");
-    // daasNode.doPerform();
-    daasNode.start();
-    res.send({})
+    try {
+        // Esegue init nodo data
+        await DaasService.loadConfig(daasNode.getNode());
+        // daasNode.doPerform();
+        // daasNode.start();
+        res.send("Nodo locale avviato.")
+    } catch (error) {
+        res.status(500).send({ error })
+    }
 })
 
 router.post('/stop', function (req, res) {
@@ -39,32 +43,25 @@ router.post('/stop', function (req, res) {
 router.post('/send', function (req, res) {
     console.log("[API] /send", req.body);
 
-    const din = req.body?.din;
-    const payload = req.body?.payload ?? {};
+    try {
+        const din = req.body?.din;
+        const payload = req.body?.payload ?? {};
 
-    daasNode.send(din, 10, JSON.stringify(payload));
-
-    // const located = daasNode.locate(din);
-    // console.log(`[API] /send 🔍 Locate ${din}: ${located}`);
-
-    // if (located) {
-    //     let timestamp = new Date().getTime();
-
-    //     daasNode.push(din, 10, timestamp, JSON.stringify(payload));
-    //     console.log(`[API] /send ⬆⬆ Pushing data to ${din} done.`);
-    // }
-
-    res.send({})
+        daasNode.getNode().send(din, 10, JSON.stringify(payload));
+    } catch (error) {
+        res.status(500).send({ error })
+    }
 });
 
 router.get('/status', function (req, res) {
-    console.log("Node", daasNode.getStatus());
-    res.send(daasNode.getStatus())
+    // Ritorna lo status di tutti i nodi locali.
+    console.log("Node", daasNode.getNode().getStatus());
+    res.send(daasNode.getNode().getStatus())
 });
 
 router.get('/version', function (req, res) {
-    console.log("api:daas:stop", daasNode.getVersion(0, 0));
-    res.send({})
+    console.log("api:daas:stop", daasNode.getNode().getVersion(0, 0));
+    res.send(daasNode.getNode().getVersion(0, 0))
 });
 
 
@@ -94,7 +91,8 @@ router.post('/config', async function (req, res) {
         res.send(updatedData);
     } catch (err) {
         await t.rollback();
-        console.log(err)
+        console.error(err);
+
         res.status(500).send({
             message: err
         })
@@ -169,13 +167,125 @@ router.delete('/config/links/:id', async function (req, res) {
             res.send({ message: "Link eliminato." });
         } else {
             res.status(404).send({
-                message: `Non è stato possibile aggiornare il link con id=${id}. Forse il Link non esiste.`
+                message: `Non è stato possibile eliminare il link con id=${id}. Forse il Link non esiste.`
             });
         }
     } catch (err) {
         res.status(500).send(err)
     }
 });
+
+
+router.get('/config/dins/', async function (res, res) {
+    try {
+        data = await Din.findAll({ where: { id: { [Op.ne]: 1 } } });
+        res.send(data);
+    } catch (err) {
+        console.error(err);
+        res.status(500).send({
+            message: err
+        })
+    }
+});
+
+router.get('/config/dins/', async function (res, res) {
+    try {
+        data = await Din.findAll({ where: { id: { [Op.ne]: 1 } } });
+        res.send(data);
+    } catch (err) {
+        console.error(err);
+        res.status(500).send({
+            message: err
+        })
+    }
+});
+
+router.post('/config/dins/', async function (req, res) {
+    const t = await db.sequelize.transaction();
+    const dinLocalId = 1;
+
+    try {
+        const obj = await Din.create(req.body);
+        await DinHasDin.create({ pdin_id: dinLocalId, cdin_id: obj.id });
+
+        await t.commit();
+        res.send(obj);
+    } catch (err) {
+        await t.rollback();
+        console.log(err)
+        res.status(500).send({
+            message: err
+        })
+    }
+});
+
+router.post('/config/dins/', async function (req, res) {
+    const t = await db.sequelize.transaction();
+    const dinLocalId = 1;
+
+    try {
+        const obj = await Din.create(req.body);
+        await DinHasDin.create({ pdin_id: dinLocalId, cdin_id: obj.id });
+
+        await t.commit();
+        res.send(obj);
+    } catch (err) {
+        await t.rollback();
+        console.log(err)
+        res.status(500).send({
+            message: err
+        })
+    }
+});
+
+
+router.put('/config/dins/:id', async function (req, res) {
+    const dinId = req.params.id;
+    const { id, din_id, ...rest } = req.body;
+
+    try {
+        const updatedRows = await Din.update({ ...rest }, { where: { id: dinId } });
+
+        if (!!updatedRows) {
+            res.send({ message: "Din aggiornato con successo." });
+        } else {
+            res.send({
+                message: `Non è stato possibile aggiornare il din con id=${id}. Forse il Link non esiste oppure il body della richiesta è vuoto!`
+            });
+        }
+    } catch (err) {
+        res.status(500).send(err)
+    }
+});
+
+router.delete('/config/dins/:id', async function (req, res) {
+    const t = await db.sequelize.transaction();
+    const id = req.params.id;
+
+    try {
+        await DinHasDin.destroy({ where: { cdin_id: id } });
+        const deletedRows = await Din.destroy({ where: { id } });
+
+        if (!!deletedRows) {
+            res.send({ message: "Din eliminato." });
+        } else {
+            res.status(404).send({
+                message: `Non è stato possibile eliminare il din con id=${id}. Forse il Link non esiste.`
+            });
+        }
+
+        await t.commit();
+
+        res.send(obj);
+    } catch (err) {
+        await t.rollback();
+        console.log(err)
+        res.status(500).send({
+            message: err
+        })
+    }
+});
+
 
 
 
