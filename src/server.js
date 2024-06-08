@@ -1,6 +1,7 @@
 const express = require('express');
 const http = require('http');
-var path = require('path');
+let cors = require('cors');
+let path = require('path');
 const { WebSocketServer } = require("ws");
 const { decode } = require('./daas/utils');
 const daasApi = require('./daas/daas');
@@ -26,6 +27,7 @@ const PORT = 3000;
 // Node application
 const app = express();
 
+app.use(cors())
 // view engine setup
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, '/views'));
@@ -45,18 +47,15 @@ const wss = new WebSocketServer({ server });
 
 wss.on('connection', ws => {
     console.log('New client connected!');
-    ws.send('Connection established');
-
-    ws.on('close', () => console.log('Client has disconnected!'));
-
+    ws.send(JSON.stringify({ message: 'Connection established' }));
+    ws.on('close', () => console.log(JSON.stringify({ message: 'Client has disconnected!' })));
     ws.on('message', data => {
         wss.clients.forEach(client => {
             client.send(`${data}`);
         })
     })
-
     ws.onerror = function () {
-        console.log('websocket error');
+        console.log({ message: 'websocket error' });
     }
 })
 
@@ -77,11 +76,15 @@ localNode.onDDOReceived((din) => {
 
     localNode.pull(din, (origin, timestamp, typeset, data) => {
         let readableTimestamp = new Date(timestamp * 1000).toISOString()
-        let decodedData = decode(data);
-        console.log(`⬇⬇ Pulling data from DIN: ${origin} - timestamp: ${readableTimestamp} - typeset: ${typeset}: `);
-        console.log(`⬇⬇ Pulling data:`, decode(data));
 
-        wsSendBroadcast(wss.clients, { event: "ddo", data: { din, typeset, ddo: decodedData } });
+        try {
+            let decodedData = decode(data);
+            console.log(`⬇⬇ Pulling data from DIN: ${origin} - timestamp: ${readableTimestamp} - typeset: ${typeset}: `);
+            console.log(`⬇⬇ Pulling data:`, decode(data));
+            wsSendBroadcast(wss.clients, { event: "ddo", data: { din, typeset, ddo: decodedData } });
+        } catch (error) {
+            console.error(error);
+        }
     });
 });
 

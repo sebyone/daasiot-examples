@@ -44,10 +44,12 @@ router.post('/send', function (req, res) {
     console.log("[API] /send", req.body);
 
     try {
-        const din = req.body?.din;
-        const payload = req.body?.payload ?? {};
+        const din = req.body.din;
+        const typeset = parseInt(req.body.typeset);
+        const payload = req.body.payload || [];
 
-        daasNode.getNode().send(din, 10, JSON.stringify(payload));
+        daasNode.send(din, typeset, JSON.stringify(payload));
+        res.send({ message: "OK" });
     } catch (error) {
         res.status(500).send({ error })
     }
@@ -89,6 +91,27 @@ router.post('/config', async function (req, res) {
 
         updatedData = await DinLocal.findByPk(1, { include: ['din'] });
         res.send(updatedData);
+    } catch (err) {
+        await t.rollback();
+        console.error(err);
+
+        res.status(500).send({
+            message: err
+        })
+    }
+});
+
+router.put('/config', async function (req, res) {
+    const t = await db.sequelize.transaction();
+
+    try {
+        const { din, din_id, ...dinLocal } = req.body;
+        await DinLocal.update(dinLocal, { where: { id: 1 }, transaction: t });
+        await Din.update(din_id, { where: { id: din.id }, transaction: t });
+
+        await t.commit();
+
+        res.send({ message: "DinLocal aggiornato con successo." });
     } catch (err) {
         await t.rollback();
         console.error(err);
