@@ -131,3 +131,11 @@ dist
 
 # MacOS
 .DS_Store
+
+
+# SQLite
+*.sqlite
+
+
+# VSCode
+.vscode/sftp.json
