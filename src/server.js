@@ -1,7 +1,10 @@
 const express = require('express');
 const http = require('http');
-let cors = require('cors');
-let path = require('path');
+const cors = require('cors');
+const path = require('path');
+const logger = require('morgan');
+var debug = require('debug')('nodejs-express-generated:server');
+
 const { WebSocketServer } = require("ws");
 const { decode } = require('./daas/utils');
 const daasApi = require('./daas/daas');
@@ -22,16 +25,18 @@ db.sequelize.sync({ force: true })
         console.log("Failed to sync db: " + err.message);
     });
 
-const PORT = 3000;
-
 // Node application
 const app = express();
 
-app.use(cors())
+var port = normalizePort(process.env.PORT || '3000');
+app.set('port', port);
+
 // view engine setup
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, '/views'));
 
+app.use(cors());
+app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
@@ -89,13 +94,62 @@ localNode.onDDOReceived((din) => {
 });
 
 
-async function startServer() {
-    await DaasService.loadConfig(localNode);
-    await localNode.doPerform();
+server.listen(port);
+server.on('error', onError);
+server.on('listening', onListening);
 
-    server.listen(PORT, () => {
-        console.log(`Server listening on PORT ${PORT}`);
-    });
+DaasService.loadConfig(localNode);
+
+localNode.doPerform();
+
+
+
+function normalizePort(val) {
+    var port = parseInt(val, 10);
+
+    if (isNaN(port)) {
+        // named pipe
+        return val;
+    }
+
+    if (port >= 0) {
+        // port number
+        return port;
+    }
+
+    return false;
 }
 
-startServer();
+
+function onError(error) {
+    if (error.syscall !== 'listen') {
+        throw error;
+    }
+
+    var bind = typeof port === 'string'
+        ? 'Pipe ' + port
+        : 'Port ' + port;
+
+    // handle specific listen errors with friendly messages
+    switch (error.code) {
+        case 'EACCES':
+            console.error(bind + ' requires elevated privileges');
+            process.exit(1);
+            break;
+        case 'EADDRINUSE':
+            console.error(bind + ' is already in use');
+            process.exit(1);
+            break;
+        default:
+            throw error;
+    }
+}
+
+
+function onListening() {
+    var addr = server.address();
+    var bind = typeof addr === 'string'
+        ? 'pipe ' + addr
+        : 'port ' + addr.port;
+    debug('Listening on ' + bind);
+}
