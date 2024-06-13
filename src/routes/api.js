@@ -17,8 +17,32 @@ router.get('/', function (req, res) {
         name: "DaasIoT API",
         version: 0,
         status: "OK",
-    })
+    });
+});
+
+
+router.post('/configure', async function (req, res) {
+    console.log("[API] /start Node started.");
+    try {
+        await DaasService.loadConfig(daasNode.getNode());
+        res.send("Applicata configurazione.")
+    } catch (error) {
+        res.status(500).send({ error })
+    }
 })
+
+router.post('/stop', function (req, res) {
+    console.log("[API] /stop Node stopped.");
+    try {
+        const isStopped = daasNode.getNode().doPerform();
+
+        console.log("isStopped", isStopped);
+
+        res.send({ message: "Nodo stoppato." });
+    } catch (error) {
+        res.status(500).send({ error })
+    }
+});
 
 router.post('/start', async function (req, res) {
     console.log("[API] /start Node started.");
@@ -27,17 +51,10 @@ router.post('/start', async function (req, res) {
         await DaasService.loadConfig(daasNode.getNode());
         // daasNode.doPerform();
         // daasNode.start();
-        res.send("Nodo locale avviato.")
+        res.send("Nodo locale avviato.");
     } catch (error) {
-        res.status(500).send({ error })
+        res.status(500).send({ error });
     }
-})
-
-router.post('/stop', function (req, res) {
-    console.log("[API] /stop Node stopped.");
-    // daasNode.doEnd();
-    daasNode.stop();
-    res.send({})
 });
 
 router.post('/send', function (req, res) {
@@ -62,7 +79,6 @@ router.get('/status', function (req, res) {
 });
 
 router.get('/version', function (req, res) {
-    console.log("api:daas:stop", daasNode.getNode().getVersion(0, 0));
     res.send(daasNode.getNode().getVersion(0, 0))
 });
 
@@ -104,10 +120,11 @@ router.post('/config', async function (req, res) {
 router.put('/config', async function (req, res) {
     const t = await db.sequelize.transaction();
 
+    console.log(`PUT /config (req.body)`, req.body)
     try {
         const { din, din_id, ...dinLocal } = req.body;
         await DinLocal.update(dinLocal, { where: { id: 1 }, transaction: t });
-        await Din.update(din_id, { where: { id: din.id }, transaction: t });
+        await Din.update({ id: din_id, ...din }, { where: { id: din_id }, transaction: t });
 
         await t.commit();
 

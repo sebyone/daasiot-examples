@@ -1,3 +1,4 @@
+const e = require("express");
 const db = require("../db/models");
 const DinLocal = db.DinLocal;
 const DinLink = db.DinLink;
@@ -20,16 +21,27 @@ async function loadConfig(node) {
     const din = parseInt(dinLocal['din.din']);
 
     // Init nodo
-    node.doInit(sid, din);
-    console.log(`daas:doInit sid=${sid} din=${din}`);
+    const initDone = node.doInit(sid, din);
+
+    if (initDone) {
+        console.log(`[daas] doInit sid=${sid} din=${din} OK`);
+    } else {
+        console.error(`[daas] doInit sid=${sid} din=${din} ERROR`);
+    }
+
 
     // Enable node links
     dinLocalLinks.forEach((llink) => {
         let link = parseInt(llink.link);
         let url = llink.url;
 
-        node.enableDriver(link, url);
-        console.log(`daas:enableDriver link=${link} din=${url}`);
+        let isEnabled = node.enableDriver(link, url);
+        if (isEnabled) {
+            console.log(`[daas] enableDriver link=${link} din=${url} OK`);
+        } else {
+            console.log(`[daas] enableDriver link=${link} din=${url} ERROR`);
+        }
+
     });
 
     const dinsToMap = await DinHasDin.findAll({
@@ -44,11 +56,17 @@ async function loadConfig(node) {
         const url = '0.0.0.0';
         const din = parseInt(d['cdin.din']);
 
-        node.map(din, driver, url);
-        console.log(`daas:map din=${din} link=${driver} url=${url}`);
+        let isMapped = node.map(din, driver, url);
+
+        if (isMapped) {
+            console.log(`[daas] map din=${din} link=${driver} url=${url} OK`);
+        } else {
+            console.error(`[daas] map din=${din} link=${driver} url=${url} ERROR`);
+        }
     });
 };
 
 module.exports = {
-    loadConfig
+    loadConfig,
+    applyConfig: loadConfig
 }

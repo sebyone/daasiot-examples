@@ -18,7 +18,6 @@ module.exports = {
         references: {
           model: {
             tableName: 'din',
-            // schema: 'schema',
           },
           key: 'id',
         },

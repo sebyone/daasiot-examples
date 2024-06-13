@@ -3,7 +3,7 @@ const {
   Model
 } = require('sequelize');
 
-const { Din } = require('./din');
+// const { Din } = require('./din');
 
 module.exports = (sequelize, DataTypes) => {
   class DinLink extends Model {
@@ -24,7 +24,7 @@ module.exports = (sequelize, DataTypes) => {
     din_id: {
       type: DataTypes.INTEGER,
       references: {
-        model: Din,
+        model: 'din',
         key: 'id',
       },
       allowNull: false,

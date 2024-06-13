@@ -24,11 +24,11 @@ function getNode() {
 }
 
 function start() {
-    nodeInstance.doPerform();
+    return nodeInstance.doPerform();
 }
 
 function stop() {
-    nodeInstance.doEnd();
+    return nodeInstance.doEnd();
 }
 
 function restart() {

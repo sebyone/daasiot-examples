@@ -17,14 +17,6 @@ const db = require("./db/models");
 
 const DaasService = require('./services/daas.service');
 
-db.sequelize.sync({ force: true })
-    .then(() => {
-        console.log("Synced db.");
-    })
-    .catch((err) => {
-        console.log("Failed to sync db: " + err.message);
-    });
-
 // Node application
 const app = express();
 
@@ -94,15 +86,27 @@ localNode.onDDOReceived((din) => {
 });
 
 
-server.listen(port);
-server.on('error', onError);
-server.on('listening', onListening);
+db.sequelize.sync({ force: false })
+    .then(() => {
+        console.log("Synced db.");
 
-DaasService.loadConfig(localNode);
+        server.listen(port);
+        server.on('error', onError);
+        server.on('listening', onListening);
 
-localNode.doPerform();
+        console.log(`server listen on ${port} port`)
 
+        DaasService.loadConfig(localNode);
 
+        if (localNode.doPerform()) {
+            console.log(`[daas] doPerform OK`)
+        } else {
+            console.error(`[daas] doPerform ERROR`);
+        }
+    })
+    .catch((err) => {
+        console.log("Failed to sync db: " + err.message);
+    });
 
 function normalizePort(val) {
     var port = parseInt(val, 10);
