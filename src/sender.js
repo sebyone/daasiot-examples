@@ -46,11 +46,12 @@ setInterval(() => {
     console.log(`🔍 Locate ${REMOTE_DIN}: ${located}`);
 
     if (located || true) {
+        let timestamp = new Date().getTime();
+
         const payload = {
+            timestamp,
             message: "Ciao Mondo!!!"
         }
-
-        let timestamp = new Date().getTime();
 
         daasApi.push(REMOTE_DIN, 10, timestamp, JSON.stringify(payload));
         console.log(`⬆⬆ Pushing data to ${REMOTE_DIN} done.`);

@@ -1,118 +1,159 @@
 const express = require('express');
 const http = require('http');
-var path = require('path');
+const cors = require('cors');
+const path = require('path');
+const logger = require('morgan');
+var debug = require('debug')('nodejs-express-generated:server');
+
 const { WebSocketServer } = require("ws");
-const { DaasIoT } = require("daas-sdk");
+const { decode } = require('./daas/utils');
+const daasApi = require('./daas/daas');
 
-const port = process.env.PORT || 3000;
-const host = process.env.HOST || 'localhost';
+const viewRouter = require('./routes/views');
+const apiRouter = require('./routes/api');
 
-function decode(data) {
-    let utf8decoder = new TextDecoder();
-    let decodedData = utf8decoder.decode(data);
+// Database
+const db = require("./db/models");
 
-    return JSON.parse(decodedData);
-}
+const DaasService = require('./services/daas.service');
 
 // Node application
 const app = express();
 
+var port = normalizePort(process.env.PORT || '3000');
+app.set('port', port);
+
+// view engine setup
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, '/views'));
 
-app.get('/', (req, res) => {
-    res.render("pages/index", { host, port });
-})
+app.use(cors());
+app.use(logger('dev'));
+app.use(express.json());
+app.use(express.urlencoded({ extended: false }));
+
+app.use('/', viewRouter);
+app.use('/api', apiRouter);
 
 
 // Web Server
 const server = http.createServer(app);
-
-server.listen(port, () => {
-    console.log(`Server listening on ${host}:${port}`);
-});
-
 
 // Web Socket
 const wss = new WebSocketServer({ server });
 
 wss.on('connection', ws => {
     console.log('New client connected!');
-    ws.send('Connection established');
-
-    ws.on('close', () => console.log('Client has disconnected!'));
-
+    ws.send(JSON.stringify({ message: 'Connection established' }));
+    ws.on('close', () => console.log(JSON.stringify({ message: 'Client has disconnected!' })));
     ws.on('message', data => {
         wss.clients.forEach(client => {
             client.send(`${data}`);
         })
     })
-
     ws.onerror = function () {
-        console.log('websocket error');
+        console.log({ message: 'websocket error' });
     }
 })
 
+app.set("daasApi", daasApi);
 
-// Daas-IoT
-const INET4 = 2;
+const localNode = daasApi.getNode();
 
-const SID = 100;
-const DIN = 101;
-const URL = "127.0.0.1:2101"
+const wsSendBroadcast = (clients, payload) => {
+    clients.forEach(client => {
+        client.send(JSON.stringify(payload));
+    });
+}
 
-const REMOTE_DIN = 102;
-const REMOTE_URL = "127.0.0.1:2102";
-
-const hver = "nodeJS";
-
-const daasApi = new DaasIoT(hver);
-
-daasApi.onDinConnected((din) => { console.log("📌 DIN Accepted: " + din); });
-daasApi.onDDOReceived((din) => {
+localNode.onDinConnected((din) => { console.log("📌 DIN Accepted: " + din); });
+localNode.onDDOReceived((din) => {
     console.log("🔔 DDO received from DIN: " + din);
-    daasApi.locate(din);
+    localNode.locate(din);
 
-    daasApi.pull(din, (origin, timestamp, typeset, data) => {
+    localNode.pull(din, (origin, timestamp, typeset, data) => {
         let readableTimestamp = new Date(timestamp * 1000).toISOString()
-        console.log(`⬇⬇ Pulling data from DIN: ${origin} - timestamp: ${readableTimestamp} - typeset: ${typeset}: ${data}`);
-        console.log(data);
-        let decodedData = decode(data);
 
-        wss.clients.forEach(client => {
-            // console.log(`distributing message: ${data}`);
-            client.send(JSON.stringify(decodedData));
-        })
+        try {
+            let decodedData = decode(data);
+            console.log(`⬇⬇ Pulling data from DIN: ${origin} - timestamp: ${readableTimestamp} - typeset: ${typeset}: `);
+            console.log(`⬇⬇ Pulling data:`, decode(data));
+            wsSendBroadcast(wss.clients, { event: "ddo", data: { din, typeset, ddo: decodedData } });
+        } catch (error) {
+            console.error(error);
+        }
     });
 });
 
-daasApi.doInit(SID, DIN);
 
-if (daasApi.enableDriver(INET4, URL)) {
-    console.log("Driver enabled!");
-}
+db.sequelize.sync({ force: false })
+    .then(() => {
+        console.log("Synced db.");
 
-daasApi.map(REMOTE_DIN, INET4, REMOTE_URL);
+        server.listen(port);
+        server.on('error', onError);
+        server.on('listening', onListening);
 
-if (daasApi.doPerform()) {
-    console.log("Node performed!");
-}
+        console.log(`server listen on ${port} port`)
 
-setInterval(() => {
-    const located = daasApi.locate(REMOTE_DIN);
-    console.log(`🔍 Locate ${REMOTE_DIN}: ${located}`);
+        DaasService.loadConfig(localNode);
 
-    if (located) {
-        const payload = {
-            message: "Hello World!!!"
+        if (localNode.doPerform()) {
+            console.log(`[daas] doPerform OK`)
+        } else {
+            console.error(`[daas] doPerform ERROR`);
         }
+    })
+    .catch((err) => {
+        console.log("Failed to sync db: " + err.message);
+    });
 
-        let timestamp = new Date().getTime();
+function normalizePort(val) {
+    var port = parseInt(val, 10);
 
-        daasApi.push(REMOTE_DIN, 10, timestamp, JSON.stringify(payload));
-        console.log(`⬆⬆ Pushing data to ${REMOTE_DIN} done.`);
+    if (isNaN(port)) {
+        // named pipe
+        return val;
     }
-}, 5000)
 
-app.set("daasApi", daasApi);
-console.log(`🟢 DaasIoT Node enabled! (sid: ${SID} | din: ${DIN} | host: ${URL})`)
+    if (port >= 0) {
+        // port number
+        return port;
+    }
+
+    return false;
+}
+
+
+function onError(error) {
+    if (error.syscall !== 'listen') {
+        throw error;
+    }
+
+    var bind = typeof port === 'string'
+        ? 'Pipe ' + port
+        : 'Port ' + port;
+
+    // handle specific listen errors with friendly messages
+    switch (error.code) {
+        case 'EACCES':
+            console.error(bind + ' requires elevated privileges');
+            process.exit(1);
+            break;
+        case 'EADDRINUSE':
+            console.error(bind + ' is already in use');
+            process.exit(1);
+            break;
+        default:
+            throw error;
+    }
+}
+
+
+function onListening() {
+    var addr = server.address();
+    var bind = typeof addr === 'string'
+        ? 'pipe ' + addr
+        : 'port ' + addr.port;
+    debug('Listening on ' + bind);
+}
