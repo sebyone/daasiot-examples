@@ -9,6 +9,13 @@ Installare le dipendenze
 
 ```npm install```
 
+Applicare le migrazioni al database
+
+```
+npx sequelize-cli db:migrate
+npx sequelize-cli db:seed:all
+```
+
 
 Avviare il server:
 
@@ -17,13 +24,13 @@ Avviare il server:
 
 Avviare il nodo sender:
 
-```npm run start:server```
+```npm run start:sender```
 
 
 
 ### Sviluppo con VSCode e DevContainer
 
-Richiede l'estensione `Dev Containers` installata sul proprio VS Code.
+Richiede l'estensione [`Dev Containers`](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers) installata sul proprio VS Code.
 
 
 Digitare `Ctrl + Shift + P` e cercare e poi eseguire il comando `Dev Containers: Rebuild and Reopen in Container`.
