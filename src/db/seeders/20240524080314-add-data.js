@@ -8,14 +8,14 @@ module.exports = {
       await queryInterface.bulkInsert('din', [{
         id: 1,
         sid: '100',
-        din: '100',
+        din: '101',
         p_res: '000',
         skey: '3b92a1a3d85b8',
         created_at: '2024-05-24 08:35:57.050 +00:00'
       }, {
         id: 2,
         sid: '100',
-        din: '101',
+        din: '102',
         p_res: '000',
         skey: '9efafc3b2a94f',
         created_at: '2024-05-24 08:35:57.050 +00:00'
@@ -32,13 +32,13 @@ module.exports = {
       await queryInterface.bulkInsert('din_link', [{
         din_id: 1,
         link: 2,
-        url: '127.0.0.1:2100',
+        url: '127.0.0.1:2101',
         created_at: '2024-05-24 08:35:57.050 +00:00'
       },
       {
         din_id: 2,
         link: 2,
-        url: '127.0.0.1:2101',
+        url: '127.0.0.1:2102',
         created_at: '2024-05-24 08:35:57.050 +00:00'
       }
       ], { transaction });
