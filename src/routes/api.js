@@ -35,7 +35,7 @@ router.post('/stop', function (req, res) {
     console.log("[API] /stop Node stopped.");
     try {
         const isStopped = daasNode.getNode().doPerform();
-
+        
         console.log("isStopped", isStopped);
 
         res.send({ message: "Nodo stoppato." });
@@ -325,8 +325,6 @@ router.delete('/config/dins/:id', async function (req, res) {
         })
     }
 });
-
-
 
 
 module.exports = router;
