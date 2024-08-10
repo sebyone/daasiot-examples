@@ -4,9 +4,10 @@ const DinLocal = db.DinLocal;
 const DinLink = db.DinLink;
 const DinHasDin = db.DinHasDin;
 
-const { where, Op } = require('sequelize');
+const { Op } = require('sequelize');
 
 async function loadConfig(node) {
+    
     const dinLocal = await DinLocal.findByPk(1, { raw: true, include: ['din'] });
     const dinLocalLinks = await DinLink.findAll({
         where: {
@@ -19,16 +20,17 @@ async function loadConfig(node) {
 
     const sid = parseInt(dinLocal['din.sid']);
     const din = parseInt(dinLocal['din.din']);
-
+    
     // Init nodo
     const initDone = node.doInit(sid, din);
-
+    
     if (initDone) {
         console.log(`[daas] doInit sid=${sid} din=${din} OK`);
     } else {
         console.error(`[daas] doInit sid=${sid} din=${din} ERROR`);
     }
-
+    
+    
 
     // Enable node links
     dinLocalLinks.forEach((llink) => {

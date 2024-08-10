@@ -39,9 +39,9 @@ function send(din, typeset, data) {
     const located = nodeInstance.locate(din);
 
     if (!located) throw new Error(`Node ${din} is not located!`)
-
-    let timestamp = new Date().getTime();
-    nodeInstance.push(din, typeset, timestamp, data);
+        
+    const timestampSeconds = Math.floor(new Date().getTime() / 1000);
+    nodeInstance.push(din, typeset, timestampSeconds, data);
 }
 
 module.exports = {

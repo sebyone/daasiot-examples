@@ -6,7 +6,7 @@ const logger = require('morgan');
 var debug = require('debug')('nodejs-express-generated:server');
 
 const { WebSocketServer } = require("ws");
-const { decode } = require('./daas/utils');
+const { decode, getTime } = require('./daas/utils');
 const daasApi = require('./daas/daas');
 
 const viewRouter = require('./routes/views');
@@ -39,11 +39,19 @@ app.use('/api', apiRouter);
 // Web Server
 const server = http.createServer(app);
 
+// print all the api routes with their methods as curl commands to test
+// apiRouter.stack.forEach(r => {
+//     if (r.route && r.route.path) {
+//         console.log(`curl -X ${Object.keys(r.route.methods).join(', ').toUpperCase()}\t localhost:${port}/api${r.route.path}`);
+//     }
+// });
+
+
 // Web Socket
 const wss = new WebSocketServer({ server });
 
 wss.on('connection', ws => {
-    console.log('New client connected!');
+    console.log(getTime(), 'New client connected!');
     ws.send(JSON.stringify({ message: 'Connection established' }));
     ws.on('close', () => console.log(JSON.stringify({ message: 'Client has disconnected!' })));
     ws.on('message', data => {
@@ -66,21 +74,25 @@ const wsSendBroadcast = (clients, payload) => {
     });
 }
 
-localNode.onDinConnected((din) => { console.log("📌 DIN Accepted: " + din); });
+
 localNode.onDDOReceived((din) => {
-    console.log("🔔 DDO received from DIN: " + din);
+    console.log(getTime(), "🔔 DDO received from DIN:", din);
     localNode.locate(din);
 
     localNode.pull(din, (origin, timestamp, typeset, data) => {
-        let readableTimestamp = new Date(timestamp * 1000).toISOString()
+        // let readableTimestamp = new Date(timestamp * 1000).toISOString().replace(/T/, ' ').replace(/\..+/, '')
+
+        const currTimestamp = Math.floor(new Date().getTime() / 1000);
+        const secondsSinceMessageWasSent = currTimestamp - timestamp;
 
         try {
             let decodedData = decode(data);
-            console.log(`⬇⬇ Pulling data from DIN: ${origin} - timestamp: ${readableTimestamp} - typeset: ${typeset}: `);
-            console.log(`⬇⬇ Pulling data:`, decode(data));
+            console.log(getTime(), `⬇⬇ Pulling data from DIN:`, origin, `| typeset: ${typeset} | ${secondsSinceMessageWasSent}s ago`);
+            console.log(decodedData);
+
             wsSendBroadcast(wss.clients, { event: "ddo", data: { din, typeset, ddo: decodedData } });
         } catch (error) {
-            console.error(error);
+            console.error(getTime(), error);
         }
     });
 });
@@ -88,24 +100,26 @@ localNode.onDDOReceived((din) => {
 
 db.sequelize.sync({ force: false })
     .then(() => {
-        console.log("Synced db.");
+        console.log(getTime(), "Synced db.");
 
         server.listen(port);
         server.on('error', onError);
         server.on('listening', onListening);
 
-        console.log(`server listen on ${port} port`)
+        console.log(getTime(), `server listen on ${port} port`)
 
-        DaasService.loadConfig(localNode);
-
-        if (localNode.doPerform()) {
-            console.log(`[daas] doPerform OK`)
-        } else {
-            console.error(`[daas] doPerform ERROR`);
-        }
+        DaasService.loadConfig(localNode).then(() => {
+            if (localNode.doPerform()) {
+                console.log(getTime(), `[daas] doPerform OK`)
+            } else {
+                console.error(getTime(), `[daas] doPerform ERROR`);
+            }
+        }).catch((err) => {
+            console.error(getTime(), `[daas] loadConfig ERROR: ${err.message}`);
+        });
     })
     .catch((err) => {
-        console.log("Failed to sync db: " + err.message);
+        console.log(getTime(), "Failed to sync db: " + err.message);
     });
 
 function normalizePort(val) {
