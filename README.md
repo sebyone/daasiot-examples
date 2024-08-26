@@ -1,5 +1,6 @@
 # daas-nodejs
 
+[documentazione REST API](REST-API.md)
 
 ## Setup
 
@@ -30,7 +31,9 @@ Avviare il nodo sender:
 
 ### Sviluppo con VSCode e DevContainer
 
-Richiede l'estensione [`Dev Containers`](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers) installata sul proprio VS Code.
+Per sviluppare all'interno di un container, in modo da avere un ambiente di sviluppo isolato e riproducibile, è possibile utilizzare il DevContainer di VSCode.
+
+Richiede che l'estensione [`Dev Containers`](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers) sia installata sul proprio VS Code.
 
 
 Digitare `Ctrl + Shift + P` e cercare e poi eseguire il comando `Dev Containers: Rebuild and Reopen in Container`.
@@ -59,6 +62,8 @@ more information about the Project are available on:
 
 ## Documentation
 
+[REST API documentation](REST-API.md)
+
 All project documentation is located at [daasiot.com](https://daasiot.com). 
 
 File|Content
@@ -71,6 +76,7 @@ daas-sdk-esp-xxx | Developer Quick Start Guide (Esp32)
 ## Running & Debugging
 
 ## Communicating with the Team
+
 If you would like to ask a question please reach out to us via email: [developers@sebyone.it](developers@sebyone.it)
 
 
