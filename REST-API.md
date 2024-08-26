@@ -140,6 +140,7 @@ router.get('/version', function (req, res) {
     }
     ```
   </details>
+  </br>
 
 - `POST /api/configure` - Carica la configurazione del nodo.
   <details>
@@ -154,10 +155,11 @@ router.get('/version', function (req, res) {
     "Applicata configurazione."
     ```
   </details>
+  </br>
 
+> [!WARNING]
+> Al momento, fermando il nodo, il server va in crash.
 - `POST /api/stop` - Ferma il nodo.
-  > [!WARNING]
-  > Al momento, fermando il nodo, il server va in crash.
   <details>
     <summary>Esempio</summary>
     
@@ -172,10 +174,11 @@ router.get('/version', function (req, res) {
     }
     ```
   </details>
+  </br>
 
+> [!WARNING]
+> Al momento, il server avvia sempre il nodo con la configurazione nel db, chiamare avvia è uguale a chiamare `/api/configure`.
 - `POST /api/start` - Avvia il nodo.
-  > [!WARNING]
-  > Al momento, il server avvia sempre il nodo con la configurazione nel db, chiamare avvia è uguale a chiamare `/api/configure`.
   <details>
     <summary>Esempio</summary>
     
@@ -188,6 +191,7 @@ router.get('/version', function (req, res) {
     "Nodo locale avviato."
     ```
   </details>
+  </br>
 
 - `POST /api/send` - Invia un messaggio ad un altro nodo.
   <details>
@@ -229,10 +233,11 @@ router.get('/version', function (req, res) {
     }' localhost:3000/api/send
     ```
   </details>
+  </br>
 
+> [!WARNING]
+> Nella versione di DaasIoT attuale, viene restituito uno stato fittizio.
 - `GET /api/status` - Restituisce informazioni sullo stato del nodo.
-  > [!WARNING]
-  > Nella versione di DaasIoT attuale, viene restituito uno stato fittizio.
   <details>
     <summary>Esempio</summary>
     
@@ -255,10 +260,11 @@ router.get('/version', function (req, res) {
     }
     ```
   </details>
+  </br>
 
+> [!WARNING]
+> Nella versione di DaasIoT attuale, 
 - `GET /api/version` - Restituisce varie informazioni sullo stack delle tecnologie usate da DaasIoT.
-  > [!WARNING]
-  > Nella versione di DaasIoT attuale, 
   <details>
     <summary>Esempio</summary>
     
@@ -277,6 +283,7 @@ router.get('/version', function (req, res) {
     }
     ```
   </details>
+  </br>
 
 
 
@@ -314,6 +321,7 @@ in questo momento, si può gestire solo la configurazione del nodo daas di quest
     }
     ```
   </details>
+  </br>
 
 - `POST /api/config` - Aggiorna la configurazione, accetta un oggetto JSON come corpo della richiesta.
   <details>
@@ -353,6 +361,7 @@ in questo momento, si può gestire solo la configurazione del nodo daas di quest
     }
     ```
   </details>
+  </br>
 
 - `PUT /api/config` - Aggiorna la configurazione, accetta un oggetto JSON come corpo della richiesta.
   <details>
@@ -380,13 +389,14 @@ in questo momento, si può gestire solo la configurazione del nodo daas di quest
     }
     ```
   </details>
+  </br>
   
 
 ### /api/config/links
 
+> [!WARNING]
+> Al momento, restituisce solo un link, quello con id 1.
 - `GET /api/config/links` - Restituisce la lista dei link configurati.
-  > [!WARNING]\
-  > Al momento, restituisce solo un link, quello con id 1.
   <details>
     <summary>Esempio</summary>
     
@@ -408,6 +418,7 @@ in questo momento, si può gestire solo la configurazione del nodo daas di quest
     ]
     ```
   </details>
+  </br>
 - `GET /api/config/links/:id` - Restituisce il link con l'id specificato.
   <details>
     <summary>Esempio</summary>
@@ -429,6 +440,10 @@ in questo momento, si può gestire solo la configurazione del nodo daas di quest
     }
     ```
   </details>
+  </br>
+
+> [!WARNING]
+> Al momento, non crea un nuovo link, ma permette di aggiornare il link con id 1, il `din_id` rimane sempre 1.
 - `POST /api/config/links` - Aggiunge un nuovo link, accetta un oggetto JSON come corpo della richiesta.
 
   il parametro `link` rappresenta il canale di comunicazione
@@ -437,8 +452,6 @@ in questo momento, si può gestire solo la configurazione del nodo daas di quest
   - **3**: MQTT
   - **4**: Seriale
 
-  > [!WARNING]
-  > Al momento, non crea un nuovo link, ma permette di aggiornare il link con id 1, il `din_id` rimane sempre 1.
   <details>
     <summary>Esempio</summary>
     
@@ -457,9 +470,11 @@ in questo momento, si può gestire solo la configurazione del nodo daas di quest
     ]
     ```
   </details>
+  </br>
+
+> [!WARNING]
+> Al momento, quando si aggiorna il link, il `din_id` rimane sempre 1.
 - `PUT /api/config/links/:id` - Aggiorna il link con l'id specificato, accetta un oggetto JSON come corpo della richiesta.
-  > [!WARNING]
-  > Al momento, quando si aggiorna il link, il `din_id` rimane sempre 1.
 
   <details>
     <summary>Esempio</summary>
@@ -478,9 +493,11 @@ in questo momento, si può gestire solo la configurazione del nodo daas di quest
     }
     ```
   </details>
+  </br>
+
+> [!WARNING]
+> Al momento, non elimina il link, ma lo aggiorna con i valori di default.
 - `DELETE /api/config/links/:id` - Elimina il link con l'id specificato.
-  > [!WARNING]
-  > Al momento, non elimina il link, ma lo aggiorna con i valori di default.
 
   <details>
     <summary>Esempio</summary>
@@ -496,12 +513,13 @@ in questo momento, si può gestire solo la configurazione del nodo daas di quest
     }
     ```
   </details>
+  </br>
 
 ### /api/config/dins
 
+> [!WARNING]
+> Al momento, restituisce i DIN, con id diverso da 1.
 - `GET /api/config/dins` - Restituisce la lista dei DIN configurati.
-  > [!WARNING]
-  > Al momento, restituisce i DIN, con id diverso da 1.
   <details>
     <summary>Esempio</summary>
     
@@ -522,6 +540,8 @@ in questo momento, si può gestire solo la configurazione del nodo daas di quest
     ]
     ```
   </details>
+  </br>
+
 - `GET /api/config/dins/:id` - Restituisce il DIN con l'id specificato.
   <details>
     <summary>Esempio</summary>
@@ -541,6 +561,8 @@ in questo momento, si può gestire solo la configurazione del nodo daas di quest
     }
     ```
   </details>
+  </br>
+
 - `POST /api/config/dins` - Aggiunge un nuovo DIN, accetta un oggetto JSON come corpo della richiesta.
   <details>
     <summary>Esempio</summary>
@@ -565,6 +587,8 @@ in questo momento, si può gestire solo la configurazione del nodo daas di quest
     }
     ```
   </details>
+  </br>
+
 - `PUT /api/config/dins/:id` - Aggiorna il DIN con l'id specificato, accetta un oggetto JSON come corpo della richiesta.
   <details>
     <summary>Esempio</summary>
@@ -582,6 +606,8 @@ in questo momento, si può gestire solo la configurazione del nodo daas di quest
     }
     ```
   </details>
+  </br>
+
 - `DELETE /api/config/dins/:id` - Elimina il DIN con l'id specificato.
   <details>
     <summary>Esempio</summary>
@@ -597,6 +623,7 @@ in questo momento, si può gestire solo la configurazione del nodo daas di quest
     }
     ```
   </details>
+  </br>
 
 
 ## Trubleshooting
