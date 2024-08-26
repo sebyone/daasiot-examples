@@ -16,7 +16,7 @@ router.get('/', function (req, res) {
     res.send({
         name: "DaasIoT API",
         version: 0,
-        status: "OK",
+        message: "OK",
     });
 });
 
@@ -25,9 +25,9 @@ router.post('/configure', async function (req, res) {
     console.log("[API] /start Node started.");
     try {
         await DaasService.loadConfig(daasNode.getNode());
-        res.send("Applicata configurazione.")
+        res.send({ message: "Applicata configurazione." })
     } catch (error) {
-        res.status(500).send({ error })
+        sendError(res, err);
     }
 })
 
@@ -40,7 +40,7 @@ router.post('/stop', function (req, res) {
 
         res.send({ message: "Nodo stoppato." });
     } catch (error) {
-        res.status(500).send({ error })
+        sendError(res, err);
     }
 });
 
@@ -51,9 +51,9 @@ router.post('/start', async function (req, res) {
         await DaasService.loadConfig(daasNode.getNode());
         // daasNode.doPerform();
         // daasNode.start();
-        res.send("Nodo locale avviato.");
+        res.send({ message: "Nodo locale avviato."});
     } catch (error) {
-        res.status(500).send({ error });
+        sendError(res, err);
     }
 });
 
@@ -68,7 +68,7 @@ router.post('/send', function (req, res) {
         daasNode.send(din, typeset, JSON.stringify(payload));
         res.send({ message: "OK" });
     } catch (error) {
-        res.status(500).send({ error })
+        sendError(res, err);
     }
 });
 
@@ -79,7 +79,18 @@ router.get('/status', function (req, res) {
 });
 
 router.get('/version', function (req, res) {
-    res.send(daasNode.getNode().getVersion(0, 0))
+
+    // TODO: Cambiare con la versione aggiornata
+    // const version = daasNode.getNode().getVersion(0, 0)
+    
+    const version = {
+        "daasLibraryVersion": "0.7.0",
+        "nodeGypVersion": "^10.1.0",
+        "compilerVersion": "GCC 11.4.0",
+        "standardLibraryVersion": "GNU libstdc++ 20230528"
+    }
+    
+    res.send(version);
 });
 
 
@@ -89,9 +100,7 @@ router.get('/config', async function (req, res) {
         data = await DinLocal.findByPk(1, { include: ['din'] });
         res.send(data);
     } catch (err) {
-        res.status(500).send({
-            message: err
-        })
+        sendError(res, err);
     }
 });
 
@@ -100,7 +109,7 @@ router.post('/config', async function (req, res) {
 
     try {
         const { din, ...dinLocal } = req.body;
-        await DinLocal.update(dinLocal, { where: { id: 1 } });
+        await DinLocal.update(dinLocal, { where: { id: 1 }, transaction: t });
         await Din.update(din, { where: { id: din.id }, transaction: t });
 
         await t.commit();
@@ -109,20 +118,24 @@ router.post('/config', async function (req, res) {
         res.send(updatedData);
     } catch (err) {
         await t.rollback();
-        console.error(err);
-
-        res.status(500).send({
-            message: err
-        })
+        sendError(res, err);
     }
 });
 
 router.put('/config', async function (req, res) {
     const t = await db.sequelize.transaction();
 
-    console.log(`PUT /config (req.body)`, req.body)
+    console.log(`PUT /config (req.body)`, req.body);
     try {
         const { din, din_id, ...dinLocal } = req.body;
+
+        if (!din_id) {
+            throw new Error("Il campo din_id è obbligatorio.");
+        }
+        else if (!din) {
+            throw new Error("Il campo din è obbligatorio.");
+        }
+                
         await DinLocal.update(dinLocal, { where: { id: 1 }, transaction: t });
         await Din.update({ id: din_id, ...din }, { where: { id: din_id }, transaction: t });
 
@@ -131,11 +144,7 @@ router.put('/config', async function (req, res) {
         res.send({ message: "DinLocal aggiornato con successo." });
     } catch (err) {
         await t.rollback();
-        console.error(err);
-
-        res.status(500).send({
-            message: err
-        })
+        sendError(res, err);
     }
 });
 
@@ -150,10 +159,7 @@ router.get('/config/links', async function (req, res) {
         });
         res.send(data);
     } catch (err) {
-        console.error(err);
-        res.status(500).send({
-            message: err
-        })
+        sendError(res, err);
     }
 });
 
@@ -162,21 +168,36 @@ router.get('/config/links/:id', async function (req, res) {
 
     try {
         data = await DinLink.findByPk(linkId);
-        res.send(data);
+
+        if (!data) {
+            sendError(res, new Error(`Link con id=${linkId} non trovato.`), 404);
+        }
+        else {
+            res.send(data);
+        }
     } catch (err) {
-        res.status(500).send({
-            message: err
-        })
+        sendError(res, err);
     }
 });
 
 router.post('/config/links', async function (req, res) {
     try {
-        const dinLink = await DinLink.update({ din_id: 1, ...req.body }, { where: { id: id } });
+        if (!req.body.url) {
+            throw new Error("Il campo URL è obbligatorio.");
+        }
+        if (!req.body.link) {
+            throw new Error("Il campo Link è obbligatorio.");
+        }
+        // check that req.body.link is 1, 2, 3 or 4
+        if (![1, 2, 3, 4].includes(req.body.link)) {
+            throw new Error("Il campo Link deve essere 1, 2, 3 o 4.");
+        }
+
+        const dinLink = await DinLink.update({ din_id: 1, ...req.body }, { where: { id: 1 } });
 
         res.send(dinLink);
     } catch (err) {
-        res.status(500).send(err)
+        sendError(res, err);
     }
 });
 
@@ -189,12 +210,12 @@ router.put('/config/links/:id', async function (req, res) {
         if (!!updatedRows) {
             res.send({ message: "Link aggiornato con successo." });
         } else {
-            res.send({
+            res.status(400).send({
                 message: `Non è stato possibile aggiornare il link con id=${id}. Forse il Link non esiste oppure il body della richiesta è vuoto!`
             });
         }
     } catch (err) {
-        res.status(500).send(err)
+        sendError(res, err);
     }
 });
 
@@ -204,14 +225,14 @@ router.delete('/config/links/:id', async function (req, res) {
         const deletedRows = await DinLink.destroy({ where: { id } });
 
         if (!!deletedRows) {
-            res.send({ message: "Link eliminato." });
+            res.send({ message: "Link eliminato con successo." });
         } else {
             res.status(404).send({
                 message: `Non è stato possibile eliminare il link con id=${id}. Forse il Link non esiste.`
             });
         }
     } catch (err) {
-        res.status(500).send(err)
+        sendError(res, err);
     }
 });
 
@@ -221,22 +242,24 @@ router.get('/config/dins/', async function (res, res) {
         data = await Din.findAll({ where: { id: { [Op.ne]: 1 } } });
         res.send(data);
     } catch (err) {
-        console.error(err);
-        res.status(500).send({
-            message: err
-        })
+        sendError(res, err);
     }
 });
 
-router.get('/config/dins/', async function (res, res) {
+router.get('/config/dins/:id', async function (req, res) {
+    const dinId = req.params.id;
+
     try {
-        data = await Din.findAll({ where: { id: { [Op.ne]: 1 } } });
-        res.send(data);
+        data = await Din.findByPk(dinId);
+
+        if (!data) {
+            sendError(res, new Error(`Din con id=${dinId} non trovato.`), 404);
+        }
+        else {
+            res.send(data);
+        }
     } catch (err) {
-        console.error(err);
-        res.status(500).send({
-            message: err
-        })
+        sendError(res, err);
     }
 });
 
@@ -252,10 +275,7 @@ router.post('/config/dins/', async function (req, res) {
         res.send(obj);
     } catch (err) {
         await t.rollback();
-        console.log(err)
-        res.status(500).send({
-            message: err
-        })
+        sendError(res, err);
     }
 });
 
@@ -271,10 +291,7 @@ router.post('/config/dins/', async function (req, res) {
         res.send(obj);
     } catch (err) {
         await t.rollback();
-        console.log(err)
-        res.status(500).send({
-            message: err
-        })
+        sendError(res, err);
     }
 });
 
@@ -282,24 +299,34 @@ router.post('/config/dins/', async function (req, res) {
 router.put('/config/dins/:id', async function (req, res) {
     const dinId = req.params.id;
     const { id, din_id, ...rest } = req.body;
-
+    
     try {
-        const updatedRows = await Din.update({ ...rest }, { where: { id: dinId } });
+        if (!dinId) {
+            throw new Error("Il campo din_id è obbligatorio.");
+        }
+
+        // se il din non esiste, lancio un errore
+        const din = await Din.findByPk(dinId);
+        if (!din) {
+            throw new Error(`Din con id=${dinId} non trovato.`);
+        }
+
+        
+        const updatedRows = await Din.update({ ...rest }, { where: { id: dinId } })
 
         if (!!updatedRows) {
             res.send({ message: "Din aggiornato con successo." });
         } else {
-            res.send({
+            res.status(400).send({
                 message: `Non è stato possibile aggiornare il din con id=${id}. Forse il Link non esiste oppure il body della richiesta è vuoto!`
             });
         }
     } catch (err) {
-        res.status(500).send(err)
+        sendError(res, err);
     }
 });
 
 router.delete('/config/dins/:id', async function (req, res) {
-    const t = await db.sequelize.transaction();
     const id = req.params.id;
 
     try {
@@ -307,24 +334,25 @@ router.delete('/config/dins/:id', async function (req, res) {
         const deletedRows = await Din.destroy({ where: { id } });
 
         if (!!deletedRows) {
-            res.send({ message: "Din eliminato." });
+            res.send({ message: "Din eliminato con successo." });
         } else {
             res.status(404).send({
                 message: `Non è stato possibile eliminare il din con id=${id}. Forse il Link non esiste.`
             });
         }
-
-        await t.commit();
-
-        res.send(obj);
     } catch (err) {
-        await t.rollback();
-        console.log(err)
-        res.status(500).send({
-            message: err
-        })
+        sendError(res, err);
     }
 });
 
+
+function sendError(res, error, status = 500) {
+    console.error(error);
+
+    res.status(status).send({
+        error_type: error.name,
+        message: error.message,
+    })
+}
 
 module.exports = router;
