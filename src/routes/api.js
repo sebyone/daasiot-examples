@@ -27,20 +27,23 @@ router.post('/configure', async function (req, res) {
         await DaasService.loadConfig(daasNode.getNode());
         res.send({ message: "Applicata configurazione." })
     } catch (error) {
-        sendError(res, err);
+        sendError(res, error);
     }
 })
 
 router.post('/stop', function (req, res) {
     console.log("[API] /stop Node stopped.");
     try {
-        const isStopped = daasNode.getNode().doPerform();
+        const isStopped = daasNode.stop();
         
+        if (!isStopped) {
+            throw new Error("Impossibile fermare il nodo.");
+        }
         console.log("isStopped", isStopped);
 
         res.send({ message: "Nodo stoppato." });
     } catch (error) {
-        sendError(res, err);
+        sendError(res, error);
     }
 });
 
@@ -49,11 +52,21 @@ router.post('/start', async function (req, res) {
     try {
         // Esegue init nodo data
         await DaasService.loadConfig(daasNode.getNode());
-        // daasNode.doPerform();
-        // daasNode.start();
+
+        daasNode.start();
         res.send({ message: "Nodo locale avviato."});
     } catch (error) {
-        sendError(res, err);
+        sendError(res, error);
+    }
+});
+
+router.post('/restart', async function (req, res) {
+    console.log("[API] /restart Node restarted.");
+    try {
+        // TODO: IMPLEMENT
+        throw new Error("Not implemented yet.");
+    } catch (error) {
+        sendError(res, error);
     }
 });
 
@@ -66,9 +79,9 @@ router.post('/send', function (req, res) {
         const payload = req.body.payload || [];
 
         daasNode.send(din, typeset, JSON.stringify(payload));
-        res.send({ message: "OK" });
+        res.send({ message: "Messaggio inviato" });
     } catch (error) {
-        sendError(res, err);
+        sendError(res, error);
     }
 });
 
@@ -79,32 +92,44 @@ router.get('/status', function (req, res) {
 });
 
 router.get('/version', function (req, res) {
-
-    // TODO: Cambiare con la versione aggiornata
-    // const version = daasNode.getNode().getVersion(0, 0)
-    
-    const version = {
-        "daasLibraryVersion": "0.7.0",
-        "nodeGypVersion": "^10.1.0",
-        "compilerVersion": "GCC 11.4.0",
-        "standardLibraryVersion": "GNU libstdc++ 20230528"
-    }
-    
+    const version = daasNode.getNode().getVersion();
     res.send(version);
 });
 
 
-// Local node
-router.get('/config', async function (req, res) {
+//#region Receivers
+
+/**
+ * Ritorna una lista di tutti i receivers.
+ */
+router.get('/receivers', async function (req, res) {
     try {
-        data = await DinLocal.findByPk(1, { include: ['din'] });
+        data = await DinLocal.findAll({ include: ['din'] });
         res.send(data);
     } catch (err) {
         sendError(res, err);
     }
 });
 
-router.post('/config', async function (req, res) {
+router.get('/receivers/:receiverId', async function (req, res) {
+    try {
+        const receiverId = req.params.receiverId;
+        data = await DinLocal.findByPk(receiverId, { include: ['din'] });
+        if (!data) {
+            res.status(404);
+            throw new Error(`Receiver con id=${receiverId} non trovato.`);
+        }
+        
+        res.send(data);
+    } catch (err) {
+        sendError(res, err);
+    }
+});
+
+/**
+ * Agguinge un nuovo receiver
+ */
+router.post('/receivers', async function (req, res) {
     const t = await db.sequelize.transaction();
 
     try {
@@ -122,21 +147,35 @@ router.post('/config', async function (req, res) {
     }
 });
 
-router.put('/config', async function (req, res) {
+router.put('/receivers/:receiverId', async function (req, res) {
     const t = await db.sequelize.transaction();
-
+    
     console.log(`PUT /config (req.body)`, req.body);
     try {
-        const { din, din_id, ...dinLocal } = req.body;
+        const receiverId = parseInt(req.params.receiverId);
 
-        if (!din_id) {
-            throw new Error("Il campo din_id è obbligatorio.");
-        }
-        else if (!din) {
+        const { din, ...dinLocal } = req.body;
+
+        if (!din) {
+            res.status(400);
             throw new Error("Il campo din è obbligatorio.");
         }
-                
-        await DinLocal.update(dinLocal, { where: { id: 1 }, transaction: t });
+
+        const oldDinLocal = await DinLocal.findByPk(receiverId);
+        if (!oldDinLocal) {
+            res.status(404);
+            throw new Error(`Receiver con id=${receiverId} non trovato.`);
+        }
+
+        const oldDin = await Din.findByPk(oldDinLocal.din_id);
+        if (!oldDin) {
+            res.status(404);
+            throw new Error(`Din con id=${oldDinLocal.din_id} non trovato.`);
+        }
+
+
+
+        await DinLocal.update(dinLocal, { where: { id: receiverId }, transaction: t });
         await Din.update({ id: din_id, ...din }, { where: { id: din_id }, transaction: t });
 
         await t.commit();
@@ -148,52 +187,75 @@ router.put('/config', async function (req, res) {
     }
 });
 
-router.get('/config/links', async function (req, res) {
+
+//#region Receivers links
+
+
+router.get('/receivers/:receiverId/links', async function (req, res) {
     try {
-        data = await DinLink.findAll({
-            where: {
-                din_id: {
-                    [Op.eq]: 1
-                }
-            }
-        });
+        const receiverId = req.params.receiverId;
+        data = await DinLink.findAll({ where: { din_id: receiverId } });
         res.send(data);
     } catch (err) {
         sendError(res, err);
     }
 });
 
-router.get('/config/links/:id', async function (req, res) {
-    const linkId = req.params.id;
-
+router.get('/receivers/:receiverId/links/:id', async function (req, res) {
+    
     try {
-        data = await DinLink.findByPk(linkId);
+        const linkId = parseInt(req.params.id);
+        const receiverId = parseInt(req.params.receiverId);
 
-        if (!data) {
-            sendError(res, new Error(`Link con id=${linkId} non trovato.`), 404);
+        data = await DinLink.findByPk(linkId);
+        if (data === null) {
+            res.status(404);
+            throw new Error(`Link con id=${linkId} non trovato.`);
         }
-        else {
-            res.send(data);
+        
+        const dinLocal = await DinLocal.findByPk(data.din_id);
+        if (dinLocal === null) {
+            res.status(404);
+            throw new Error(`Receiver con id=${receiverId} non trovato.`);
         }
+
+        if (data.din_id !== dinLocal.din_id) {
+            res.status(403);
+            throw new Error(`Link con id=${linkId} non appartiene al receiver con id=${receiverId}.`);
+        }
+        
+        res.send(data);
     } catch (err) {
         sendError(res, err);
     }
 });
 
-router.post('/config/links', async function (req, res) {
+router.post('/receivers/:receiverId/links', async function (req, res) {
     try {
+        const receiverId = parseInt(req.params.receiverId);
+
         if (!req.body.url) {
+            res.status(400);
             throw new Error("Il campo URL è obbligatorio.");
         }
         if (!req.body.link) {
+            res.status(400);
             throw new Error("Il campo Link è obbligatorio.");
         }
         // check that req.body.link is 1, 2, 3 or 4
         if (![1, 2, 3, 4].includes(req.body.link)) {
+            res.status(400);
             throw new Error("Il campo Link deve essere 1, 2, 3 o 4.");
         }
+        
+        const dinLocal = await DinLocal.findByPk(receiverId);
 
-        const dinLink = await DinLink.update({ din_id: 1, ...req.body }, { where: { id: 1 } });
+        if (dinLocal === null) {
+            res.status(404);
+            throw new Error(`Receiver con id=${receiverId} non trovato.`);
+        }
+
+        const dinLink = await DinLink.create({ din_id: dinLocal.din_id, ...req.body });
 
         res.send(dinLink);
     } catch (err) {
@@ -201,11 +263,30 @@ router.post('/config/links', async function (req, res) {
     }
 });
 
-router.put('/config/links/:id', async function (req, res) {
-    const linkId = req.params.id;
+router.put('/receivers/:receiverId/links/:id', async function (req, res) {
+    const linkId = parseInt(req.params.id);
+    const receiverId = parseInt(req.params.receiverId);
     const { id, din_id, ...rest } = req.body;
     try {
-        const updatedRows = await DinLink.update({ ...rest, din_id: 1 }, { where: { id: linkId } });
+        const dinLocal = await DinLocal.findByPk(receiverId);
+        const oldLink = await DinLink.findByPk(linkId);
+
+        if (oldLink == null) {
+            res.status(404);
+            throw new Error(`Link con id=${linkId} non trovato.`);
+        }
+
+        if (dinLocal === null) {
+            res.status(404);
+            throw new Error(`Receiver con id=${receiverId} non trovato.`);
+        }
+
+        if (oldLink.din_id !== dinLocal.din_id) {
+            res.status(403);
+            throw new Error(`Link con id=${linkId} non appartiene al receiver con id=${receiverId}.`);
+        }
+
+        const updatedRows = await DinLink.update({ ...rest, din_id: dinLocal.din_id }, { where: { id: linkId } });
 
         if (!!updatedRows) {
             res.send({ message: "Link aggiornato con successo." });
@@ -219,22 +300,44 @@ router.put('/config/links/:id', async function (req, res) {
     }
 });
 
-router.delete('/config/links/:id', async function (req, res) {
-    const id = req.params.id;
+router.delete('/receivers/:receiverId/links/:id', async function (req, res) {
+    const id = parseInt(req.params.id);
+    const receiverId = parseInt(req.params.receiverId);
     try {
-        const deletedRows = await DinLink.destroy({ where: { id } });
-
-        if (!!deletedRows) {
-            res.send({ message: "Link eliminato con successo." });
-        } else {
-            res.status(404).send({
-                message: `Non è stato possibile eliminare il link con id=${id}. Forse il Link non esiste.`
-            });
+        const dinLocal = await DinLocal.findByPk(receiverId);
+        const link = await DinLink.findByPk(id);
+        
+        if (link === null) {
+            res.status(404);
+            throw new Error(`Link con id=${id} non trovato.`);
         }
+        if (dinLocal === null) {
+            res.status(404);
+            throw new Error(`Receiver con id=${receiverId} non trovato.`);
+        }
+        if (link.din_id !== dinLocal.din_id) {
+            res.status(403);
+            throw new Error(`Link con id=${id} non appartiene al receiver con id=${receiverId}.`);
+        }
+
+        const deletedRows = await DinLink.destroy({ where: { id: id } });
+
+        if (deletedRows == 0) {
+            res.status(404)
+            throw new Error(`Link con id=${id} non trovato.`);
+        }
+            
+        res.send({ message: "Link eliminato con successo." });
     } catch (err) {
         sendError(res, err);
     }
 });
+
+
+//#region Receivers links
+
+
+// TODO: DA IMPLEMENTARE TUTTI USANDO /receivers/:receiverId/dins/
 
 
 router.get('/config/dins/', async function (res, res) {
@@ -345,12 +448,19 @@ router.delete('/config/dins/:id', async function (req, res) {
     }
 });
 
+//#region Receivers Map
 
-function sendError(res, error, status = 500) {
+
+
+function sendError(res, error, status) {
     console.error(error);
 
-    res.status(status).send({
-        error_type: error.name,
+    // 200 è lo stato di default, se non è stato impostato uno stato custom usa quello passato alla funzione
+    if (res.statusCode === 200) {
+        res.status(status || 500 );
+    }
+    res.send({
+        error_name: error.name,
         message: error.message,
     })
 }
