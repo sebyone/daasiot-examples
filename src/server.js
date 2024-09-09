@@ -20,6 +20,10 @@ const DaasService = require('./services/daas.service');
 // Node application
 const app = express();
 
+const SegfaultHandler = require('segfault-handler');
+
+SegfaultHandler.registerHandler('crash.log');
+
 var port = normalizePort(process.env.PORT || '3000');
 app.set('port', port);
 
