@@ -38,8 +38,8 @@ function restart() {
 function send(din, typeset, data) {
     const located = nodeInstance.locate(din);
 
-    if (!located) throw new Error(`Node ${din} is not located!`)
-        
+    if (!located) throw new Error(`Node ${din} could not be located!`)
+
     const timestampSeconds = Math.floor(new Date().getTime() / 1000);
     nodeInstance.push(din, typeset, timestampSeconds, data);
 }
