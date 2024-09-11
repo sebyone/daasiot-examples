@@ -10,9 +10,10 @@ module.exports = (sequelize, DataTypes) => {
      * The `models/index` file will call this method automatically.
      */
     static associate(models) {
-      this.hasOne(models.DinLocal, { foreignKey: 'din_id' });
-      this.belongsToMany(models.Din, { through: models.DinHasDin, as: 'parents', foreignKey: 'pdin_id' });
-      this.belongsToMany(models.Din, { through: models.DinHasDin, as: 'siblings', foreignKey: 'cdin_id' });
+      this.hasOne(models.DinLocal, { foreignKey: 'din_id', onDelete: 'CASCADE' });
+      this.belongsToMany(models.Din, { through: models.DinHasDin, as: 'parents', foreignKey: 'pdin_id', onDelete: 'CASCADE'});
+      this.belongsToMany(models.Din, { through: models.DinHasDin, as: 'children', foreignKey: 'cdin_id', onDelete: 'CASCADE'});
+      this.hasMany(models.DinLink, { foreignKey: 'din_id', as: 'links', onDelete: 'CASCADE' });
       // define association here
     }
   }
@@ -27,9 +28,11 @@ module.exports = (sequelize, DataTypes) => {
     },
     p_res: {
       type: DataTypes.STRING.BINARY,
+      defaultValue: 0
     },
     skey: {
       type: DataTypes.STRING,
+      defaultValue: '',
     },
   }, {
     sequelize,

@@ -1,3 +1,17 @@
+/*
+ * DaaS-nodejs 2024 (@) Sebyone Srl
+ *
+ * File: daas.service.js
+ *
+ * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
+ * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
+ * This Source Code Form is "Incompatible With Secondary Licenses", as defined by the MPL v.2.0.
+ *
+ * Contributors:
+ * vincenzo.petrungaro@gmail.com - initial implementation
+ *
+ */
+
 const e = require("express");
 const db = require("../db/models");
 const DinLocal = db.DinLocal;
@@ -61,21 +75,21 @@ async function loadConfig(node) {
 
 
         // TODO: do this once, instead of for each din
-        const link = await DinLink.findOne({
-            where: {
-                din_id: dinId
-            },
-            raw: true
-        });
+        // const link = await DinLink.findOne({
+        //     where: {
+        //         din_id: dinId
+        //     },
+        //     raw: true
+        // });
 
         let isMapped = false;
         let driver = 2;
         let url = '0.0.0.0:0';
 
-        if (link !== null) {
-            driver = parseInt(link.link);
-            url = link.url;
-        }
+        // if (link !== null) {
+        //     driver = parseInt(link.link);
+        //     url = link.url;
+        // }
         
         isMapped = node.map(din, driver, url);
 

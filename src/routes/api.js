@@ -1,3 +1,18 @@
+/*
+ * DaaS-nodejs 2024 (@) Sebyone Srl
+ *
+ * File: api.js
+ *
+ * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
+ * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
+ * This Source Code Form is "Incompatible With Secondary Licenses", as defined by the MPL v.2.0.
+ *
+ * Contributors:
+ * vincenzo.petrungaro@gmail.com - initial implementation
+ * alessio.farfaglia@gmail.com - rewrite and documentation
+ *
+ */
+
 const express = require('express');
 const daasNode = require('../daas/daas');
 
@@ -20,7 +35,7 @@ router.get('/', function (req, res) {
     });
 });
 
-// 
+// carica la configurazione del nodo locale (per il din_local con id=1)
 router.post('/configure', async function (req, res) {
     console.log("[API] /start Node started.");
     try {
@@ -31,6 +46,8 @@ router.post('/configure', async function (req, res) {
     }
 })
 
+
+// Ferma il nodo
 router.post('/stop', function (req, res) {
     console.log("[API] /stop Node stopped.");
     try {
@@ -47,6 +64,7 @@ router.post('/stop', function (req, res) {
     }
 });
 
+// Avvia il nodo
 router.post('/start', async function (req, res) {
     console.log("[API] /start Node started.");
     try {
@@ -72,8 +90,6 @@ router.post('/restart', async function (req, res) {
 
 router.post('/send', async function (req, res) {
     console.log("[API] /send body:", req.body);
-    
-
     try {
         const din = parseInt(req.body.din);
         const typeset = parseInt(req.body.typeset);
@@ -105,7 +121,7 @@ router.get('/version', function (req, res) {
  */
 router.get('/receivers', async function (req, res) {
     try {
-        const data = await DinLocal.findAll({ include: ['din'] });
+        const data = await DinLocal.findAll({ include: ['din', 'links'] });
         res.send(data);
     } catch (err) {
         sendError(res, err);
@@ -115,7 +131,7 @@ router.get('/receivers', async function (req, res) {
 router.get('/receivers/:receiverId', async function (req, res) {
     try {
         const receiverId = parseInt(req.params.receiverId);
-        const data = await DinLocal.findByPk(receiverId, { include: ['din'] });
+        const data = await DinLocal.findByPk(receiverId, { include: ['din', 'links'] });
         if (!data) {
             res.status(404);
             throw new Error(`Receiver con id=${receiverId} non trovato.`);
@@ -135,7 +151,7 @@ router.post('/receivers', async function (req, res) {
     const t = await db.sequelize.transaction();
 
     try {
-        const { din, ...dinLocal } = req.body;
+        const { din, links, ...dinLocal } = req.body;
 
         if (!din) {
             res.status(400);
@@ -153,6 +169,12 @@ router.post('/receivers', async function (req, res) {
         if (!dinLocal.title) {
             res.status(400);
             throw new Error("Il campo title è obbligatorio.");
+        }
+
+
+        if (links) {
+            res.status(400);
+            throw new Error("Non è possibile aggiungere i link durante la creazione del receiver, usa l'endpoint /receivers/:receiverId/links");
         }
 
         const newDin = await Din.create(din, { transaction: t });
@@ -176,11 +198,16 @@ router.put('/receivers/:receiverId', async function (req, res) {
     try {
         const receiverId = parseInt(req.params.receiverId);
 
-        const { din, ...dinLocal } = req.body;
+        const { din, links, ...dinLocal } = req.body;
 
         if (!din) {
             res.status(400);
             throw new Error("Il campo din è obbligatorio.");
+        }
+
+        if (links) {
+            res.status(400);
+            throw new Error("Non è possibile aggiungere i link durante la creazione del receiver, usa l'endpoint /api/receivers/:receiverId/links");
         }
 
         const oldDinLocal = await DinLocal.findByPk(receiverId);
@@ -194,8 +221,6 @@ router.put('/receivers/:receiverId', async function (req, res) {
             res.status(404);
             throw new Error(`Din con id=${oldDinLocal.din_id} non trovato.`);
         }
-
-
 
         await DinLocal.update(dinLocal, { where: { id: receiverId }, transaction: t });
         await Din.update({ id: din_id, ...din }, { where: { id: din_id }, transaction: t });
@@ -212,16 +237,29 @@ router.put('/receivers/:receiverId', async function (req, res) {
 
 router.delete('/receivers/:receiverId', async function (req, res) {
     const receiverId = parseInt(req.params.receiverId);
-    try {
-        const deletedRows = await DinLocal.destroy({ where: { id: receiverId } });
+    const t = await db.sequelize.transaction();
 
-        if (deletedRows == 0) {
+    try {
+        const receiver = await DinLocal.findByPk(receiverId);
+
+        if (receiver === null) {
             res.status(404);
             throw new Error(`Receiver con id=${receiverId} non trovato.`);
         }
-        
+
+        const deletedDinLocalRows = await DinLocal.destroy({ where: { id: receiverId }, transaction: t });
+        const deletedDinRows = await Din.destroy({ where: { id: receiver.din_id }, transaction: t });
+
+        if (deletedDinLocalRows == 0 || deletedDinRows == 0) {
+            res.status(404);
+            throw new Error(`Receiver con id=${receiverId} non trovato.`);
+        }
+
+        await t.commit();
+
         res.send({ message: "Receiver eliminato con successo." });
     } catch (err) {
+        await t.rollback();
         sendError(res, err);
     }
 });
@@ -232,8 +270,8 @@ router.delete('/receivers/:receiverId', async function (req, res) {
 router.get('/receivers/:receiverId/links', async function (req, res) {
     try {
         const receiverId = parseInt(req.params.receiverId);
-        const data = await DinLink.findAll({ where: { din_id: receiverId } });
-        res.send(data);
+        const receiver = await DinLocal.findByPk(receiverId, { include: ['links'] });
+        res.send(receiver.links);
     } catch (err) {
         sendError(res, err);
     }
@@ -274,16 +312,17 @@ router.post('/receivers/:receiverId/links', async function (req, res) {
 
         if (!req.body.url) {
             res.status(400);
-            throw new Error("Il campo URL è obbligatorio.");
+            throw new Error("Il campo url è obbligatorio.");
         }
         if (!req.body.link) {
             res.status(400);
-            throw new Error("Il campo Link è obbligatorio.");
+            throw new Error("Il campo link è obbligatorio.");
         }
         // check that req.body.link is 1, 2, 3 or 4
-        if (![1, 2, 3, 4].includes(req.body.link)) {
+        const link = parseInt(req.body.link);
+        if (![1, 2, 3, 4].includes(link)) {
             res.status(400);
-            throw new Error("Il campo Link deve essere 1, 2, 3 o 4.");
+            throw new Error(`Il campo link deve essere 1, 2, 3 o 4, invece è ${req.body.link}.`);
         }
         
         const dinLocal = await DinLocal.findByPk(receiverId);
@@ -358,7 +397,7 @@ router.delete('/receivers/:receiverId/links/:id', async function (req, res) {
             throw new Error(`Link con id=${id} non appartiene al receiver con id=${receiverId}.`);
         }
 
-        const deletedRows = await DinLink.destroy({ where: { id: id } });
+        const deletedRows = await DinLink.destroy({ where: { id: id }, force: true });
 
         if (deletedRows == 0) {
             res.status(404)
@@ -372,16 +411,17 @@ router.delete('/receivers/:receiverId/links/:id', async function (req, res) {
 });
 
 
-//#region Receivers dins
+//#region DINs
 
 
-// TODO: DA IMPLEMENTARE TUTTI USANDO /receivers/:receiverId/dins/
-
-
-
-// restituisce tutti i dins
-router.get('/dins/', async function (res, res) {
+// restituisce tutti i dins e i link associat (se il parametro links è diverso da false)
+router.get('/dins/', async function (req, res) {
     try {
+        // includi i link associati al din se il parametro links è diverso da false (default è true)
+        let showLinks = true;
+        if (req.query.links && req.query.links.toLowerCase() === 'false')
+            showLinks = false;
+
         const data = await Din.findAll();
         res.send(data);
     } catch (err) {
@@ -389,27 +429,28 @@ router.get('/dins/', async function (res, res) {
     }
 });
 
-// restituisce tutti i dins associati ad un qualsiasi receiver
-router.get('/receivers/any/dins/', async function (res, res) {
+router.get('/remotes/', async function (req, res) {
     try {
         const allReceivers = await DinLocal.findAll();
         const allReceiversDinsIds = allReceivers.map(r => r.din_id);
 
-        const allReceiversDins = await Din.findAll({
+        const allRemotesDins = await Din.findAll({
             where: {
                 id: {
-                    [Op.in]: allReceiversDinsIds
+                    // NOT IN -> troviamo tutti i dins non hanno associato un receiver e quindi sono remote
+                    [Op.notIn]: allReceiversDinsIds
                 }
-            }
+            },
+            include: ['links']
         });
         
-        res.send(allReceiversDins);
+        res.send(allRemotesDins);
     } catch (err) {
         sendError(res, err);
     }
 });
 
-
+//#region Receivers remotes
 
 // Restituisce i nodi mappati sul receiver (id=receiverId)
 router.get('/receivers/:receiverId/remotes', async function (req, res) {
@@ -460,13 +501,15 @@ router.get('/receivers/:receiverId/remotes/:id', async function (req, res) {
  * Associa o crea (map) un nodo remoto al receiver (id=receiverId)
  * Se il node non esiste nella tabella Din, lo crea e poi lo associa.
  * 
- * @example curl -X POST -H "Content-Type: application/json" -d '{"din": {"sid": "100", "din": "87", "p_res": "000", "skey": "9efbaeb2a94f"}, "link": {"link": 2, "url": "127.0.0.1:3087"}}' http://localhost:3000/api/receivers/1/remotes/
+ * @example curl -X POST -H "Content-Type: application/json" -d '{"din": {"sid": "100", "din": "87", "p_res": "000", "skey": "9efbaeb2a94f"}}' http://localhost:3000/api/receivers/1/remotes/
+ * 
+ * @example curl -X POST -H "Content-Type: application/json" -d '{"din": {"id": "2"}}' http://localhost:3000/api/receivers/1/remotes/
  * 
  */
 router.post('/receivers/:receiverId/remotes/', async function (req, res) {
     const t = await db.sequelize.transaction();
     const receiverId = parseInt(req.params.receiverId);
-    
+    let remoteDin = null;
     try {
         const receiver = await DinLocal.findByPk(receiverId, { include: ['din'] });
         if (receiver === null) {
@@ -481,9 +524,7 @@ router.post('/receivers/:receiverId/remotes/', async function (req, res) {
             throw new Error("l'oggetto din è obbligatorio.");
         }
 
-        let remoteDin = null;
-
-        if (!din.id) {
+        if (!din.id) {            
             // se non è stato passato l'id del din, lo creo
             const requiredFields = ['sid', 'din', 'p_res', 'skey'];
             for (const field of requiredFields) {
@@ -492,7 +533,6 @@ router.post('/receivers/:receiverId/remotes/', async function (req, res) {
                     throw new Error(`Non è stato possibile creare un nodo remoto, il campo din.${field} è obbligatorio`);
                 }
             }
-
             remoteDin = await Din.create(din, { transaction: t });
         }
         else {
@@ -505,7 +545,6 @@ router.post('/receivers/:receiverId/remotes/', async function (req, res) {
             await Din.update(din, { where: { id: din.id }, transaction: t });
         }
 
-
         if(!remoteDin) {
             res.status(400);
             throw new Error("Non è stato possibile creare un nodo remoto.");
@@ -516,6 +555,7 @@ router.post('/receivers/:receiverId/remotes/', async function (req, res) {
             throw new Error("Non è possibile mappare un nodo remoto a se stesso.");
         }
 
+        /*
         // se è stato passato il link, lo aggiungo
         let linkId = null;
         if (link && link.link && link.url ) {
@@ -549,67 +589,33 @@ router.post('/receivers/:receiverId/remotes/', async function (req, res) {
                 await DinLink.create({ din_id: remoteDin.id, ...link }, { transaction: t });
             }
         }
+        */
 
-        const mappedDin = await DinHasDin.create({ pdin_id: receiverId, cdin_id: remoteDin.id }, {include: ['cdin'], transaction: t});
 
 
+        // does the receiver already have the remote din mapped?
+        let mappedDin = await DinHasDin.findOne({ where: { pdin_id: receiverId, cdin_id: remoteDin.id } });
+
+
+        if (mappedDin === null) {
+            mappedDin = await DinHasDin.create({ pdin_id: receiverId, cdin_id: remoteDin.id }, {include: ['cdin'], transaction: t});
+        }
+    
         await t.commit();
         
-        // daasNode.getNode().map(mappedDin['cdin.din']);
-
         res.send(mappedDin);
     } catch (err) {
-        sendError(res, err);
-        await t.rollback();
-    }
-});
-
-router.post('/config/dins/', async function (req, res) {
-    const t = await db.sequelize.transaction();
-    const dinLocalId = 1;
-
-    try {
-        const obj = await Din.create(req.body);
-        await DinHasDin.create({ pdin_id: dinLocalId, cdin_id: obj.id });
-
-        await t.commit();
-        res.send(obj);
-    } catch (err) {
         await t.rollback();
         sendError(res, err);
     }
-});
 
-
-router.put('/config/dins/:id', async function (req, res) {
-    const dinId = parseInt(req.params.id);
-    const { id, din_id, ...rest } = req.body;
-    
-    try {
-        if (!dinId) {
-            throw new Error("Il campo din_id è obbligatorio.");
-        }
-
-        // se il din non esiste, lancio un errore
-        const din = await Din.findByPk(dinId);
-        if (!din) {
-            throw new Error(`Din con id=${dinId} non trovato.`);
-        }
-
-        
-        const updatedRows = await Din.update({ ...rest }, { where: { id: dinId } })
-
-        if (!!updatedRows) {
-            res.send({ message: "Din aggiornato con successo." });
-        } else {
-            res.status(400).send({
-                message: `Non è stato possibile aggiornare il din con id=${id}. Forse il Link non esiste oppure il body della richiesta è vuoto!`
-            });
-        }
-    } catch (err) {
-        sendError(res, err);
+    if (remoteDin && parseInt(remoteDin.din)) {
+        daasNode.getNode().map(parseInt(remoteDin.din));
+        console.log(`[API] Mapped remote din ${remoteDin.din}`);
     }
+
 });
+
 
 
 /**
@@ -620,8 +626,6 @@ router.delete('/receivers/:receiverId/remotes/:id', async function (req, res) {
     const id = parseInt(req.params.id);
     const receiverId = parseInt(req.params.receiverId);
 
-    // TODO: controllare quando si elimina un din se ci sia un local_din associato
-
     try {
 
         const receiver = await DinLocal.findByPk(receiverId);
@@ -629,23 +633,34 @@ router.delete('/receivers/:receiverId/remotes/:id', async function (req, res) {
             res.status(404);
             throw new Error(`Receiver con id=${receiverId} non trovato.`);
         }
-
+        
         const dinToDelete = await DinHasDin.findOne({ where: { pdin_id: receiver.din_id, cdin_id: id } });
         if (dinToDelete === null) {
             res.status(404);
             throw new Error(`Non è stato trovato un nodo mappato con id=${id} dal receiver con id=${receiverId}.`);
         }
 
-        await DinHasDin.destroy({ where: { cdin_id: id } });
-        const deletedRows = await Din.destroy({ where: { id } });
-
-        if (!!deletedRows) {
-            res.send({ message: "Din eliminato con successo." });
-        } else {
-            res.status(404).send({
-                message: `Non è stato possibile eliminare il din con id=${id}. Forse il Link non esiste.`
-            });
+        const deletedMaps = await DinHasDin.destroy({ where: { cdin_id: id } });
+        
+        if (deletedMaps == 0) {
+            res.status(404)
+            throw new Error(`Non è stato trovato un nodo remoto con id=${id}.`);
         }
+
+        // get the number of receivers that have the remote din mapped
+        const receiversWithRemoteDinMapped = await DinHasDin.count({ where: { cdin_id: id } });
+
+        // if the remote din is not mapped to any receiver, delete it
+        if (receiversWithRemoteDinMapped === 0){
+            const deletedDins = await Din.destroy({ where: { id }, cascade: true });
+            
+            if (deletedDins === 0) {
+                res.status(404)
+                throw new Error(`Non è stato trovato un nodo remoto con id=${id}.`);
+            }
+        }
+
+        res.send({ message: "Din eliminato con successo." });
     } catch (err) {
         sendError(res, err);
     }
@@ -671,7 +686,7 @@ function sendError(res, error, status) {
         error_name: error.name,
         message: error.message,
     })
-    console.error(`[daas] ${error.name} code ${res.statusCode}: ${error.message}`);
+    console.error(`[daas] ${error.name} code ${res.statusCode}: ${error.message}\n${error.stack}`);
 }
 
 module.exports = router;
