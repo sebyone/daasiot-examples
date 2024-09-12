@@ -4,7 +4,7 @@
 module.exports = {
   up: (queryInterface, Sequelize) => queryInterface
     .addConstraint('din', {
-      type: 'UNIQUE',
+      type: 'unique',
       fields: ['sid', 'din'],
       name: 'unique_din_din_sid',
     }),

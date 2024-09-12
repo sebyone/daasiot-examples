@@ -146,6 +146,8 @@ router.get('/receivers/:receiverId', async function (req, res) {
 
 /**
  * Agguinge un nuovo receiver
+ * 
+ * @example curl -X POST -H "Content-Type: application/json" -d '{"din": {"sid": "100", "din": "87", "p_res": "000", "skey": "9efbaeb2a94f"}, "title": "Receiver 1"}' http://localhost:3000/api/receivers/
  */
 router.post('/receivers', async function (req, res) {
     const t = await db.sequelize.transaction();
@@ -158,9 +160,9 @@ router.post('/receivers', async function (req, res) {
             throw new Error("l'oggetto din è obbligatorio.");
         }
         
-        const requiredFields = ['sid', 'din', 'p_res', 'skey'];
+        const requiredFields = ['sid', 'din'];
         for (const field of requiredFields) {
-            if (!din[field]) {
+            if (din[field] == undefined) {
                 res.status(400);
                 throw new Error(`Il campo din.${field} è obbligatorio.`);
             }
@@ -245,6 +247,13 @@ router.delete('/receivers/:receiverId', async function (req, res) {
         if (receiver === null) {
             res.status(404);
             throw new Error(`Receiver con id=${receiverId} non trovato.`);
+        }
+
+        const mappedDins = await DinHasDin.findAll({ where: { pdin_id: receiver.din_id } });
+        if (mappedDins.length > 0) {
+            res.status(409);
+            const mappedDinsIds = mappedDins.map(m => m.cdin_id);
+            throw new Error(`Non è possibile eliminare il receiver con id=${receiverId} perché ha nodi remoti mappati: ${mappedDinsIds.join(', ')}.`);
         }
 
         const deletedDinLocalRows = await DinLocal.destroy({ where: { id: receiverId }, transaction: t });
@@ -462,7 +471,7 @@ router.get('/receivers/:receiverId/remotes', async function (req, res) {
             res.status(404);
             throw new Error(`Receiver con id=${receiverId} non trovato.`);
         }
-        const mappedDins = await DinHasDin.findAll({ where: { pdin_id: receiverId }, include: ['cdin'] });
+        const mappedDins = await DinHasDin.findAll({ where: { pdin_id: receiver.din_id }, include: ['cdin'] });
     
         res.send(mappedDins);
     } catch (err) {
@@ -483,7 +492,7 @@ router.get('/receivers/:receiverId/remotes/:id', async function (req, res) {
             throw new Error(`Receiver con id=${receiverId} non trovato.`);
         }
         
-        const mappedDin = await DinHasDin.findOne({ where: { pdin_id: receiverId, cdin_id: dinId }, include: ['cdin'] });
+        const mappedDin = await DinHasDin.findOne({ where: { pdin_id: receiver.din_id, cdin_id: dinId }, include: ['cdin'] });
         
         if (mappedDin === null) {
             res.status(404);
@@ -526,7 +535,7 @@ router.post('/receivers/:receiverId/remotes/', async function (req, res) {
 
         if (!din.id) {            
             // se non è stato passato l'id del din, lo creo
-            const requiredFields = ['sid', 'din', 'p_res', 'skey'];
+            const requiredFields = ['sid', 'din'];
             for (const field of requiredFields) {
                 if (!din[field]) {
                     res.status(400);
@@ -594,11 +603,23 @@ router.post('/receivers/:receiverId/remotes/', async function (req, res) {
 
 
         // does the receiver already have the remote din mapped?
-        let mappedDin = await DinHasDin.findOne({ where: { pdin_id: receiverId, cdin_id: remoteDin.id } });
+        let mappedDin = await DinHasDin.findOne({ 
+            where: { 
+                pdin_id: receiver.din_id, 
+                cdin_id: remoteDin.id 
+            }, 
+            transaction: t, 
+            include: ['cdin'] 
+        });
 
 
         if (mappedDin === null) {
-            mappedDin = await DinHasDin.create({ pdin_id: receiverId, cdin_id: remoteDin.id }, {include: ['cdin'], transaction: t});
+            console.log(`[API] receiver (id ${receiver.id}, din_id ${receiver.din_id}) ${receiver.din.din} Mapping remote din (id ${remoteDin.id}) ${remoteDin.din} to `);
+
+            mappedDin = await DinHasDin.create({ 
+                pdin_id: receiver.din_id, 
+                cdin_id: remoteDin.id
+            }, { transaction: t, include: ['cdin'] });
         }
     
         await t.commit();
@@ -640,8 +661,9 @@ router.delete('/receivers/:receiverId/remotes/:id', async function (req, res) {
             throw new Error(`Non è stato trovato un nodo mappato con id=${id} dal receiver con id=${receiverId}.`);
         }
 
-        const deletedMaps = await DinHasDin.destroy({ where: { cdin_id: id } });
-        
+        const deletedMaps = await DinHasDin.destroy({ where: { pdin_id: receiver.din_id, cdin_id: id }});
+        console.log(`[API] deletedMaps`, deletedMaps);
+
         if (deletedMaps == 0) {
             res.status(404)
             throw new Error(`Non è stato trovato un nodo remoto con id=${id}.`);
@@ -649,10 +671,12 @@ router.delete('/receivers/:receiverId/remotes/:id', async function (req, res) {
 
         // get the number of receivers that have the remote din mapped
         const receiversWithRemoteDinMapped = await DinHasDin.count({ where: { cdin_id: id } });
+        console.log(`[API] receiversWithRemoteDinMapped`, receiversWithRemoteDinMapped);
 
         // if the remote din is not mapped to any receiver, delete it
         if (receiversWithRemoteDinMapped === 0){
             const deletedDins = await Din.destroy({ where: { id }, cascade: true });
+            console.log(`[API] deletedDins`, deletedDins);
             
             if (deletedDins === 0) {
                 res.status(404)
