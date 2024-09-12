@@ -3,12 +3,6 @@
 module.exports = {
   async up(queryInterface, Sequelize) {
     await queryInterface.createTable('din_has_din', {
-      // id: {
-      //   allowNull: false,
-      //   autoIncrement: true,
-      //   primaryKey: true,
-      //   type: Sequelize.INTEGER
-      // },
       pdin_id: {
         type: Sequelize.INTEGER,
         references: {
@@ -29,6 +23,8 @@ module.exports = {
         },
         allowNull: false,
       },
+    }, {
+      primaryKey: ['pdin_id', 'cdin_id'],
     });
   },
   async down(queryInterface, Sequelize) {

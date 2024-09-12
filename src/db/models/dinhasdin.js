@@ -45,6 +45,12 @@ module.exports = (sequelize, DataTypes) => {
     tableName: 'din_has_din',
     underscored: true,
     timestamps: false,
+    indexes: [
+      {
+        unique: true,
+        fields: ['pdin_id', 'cdin_id']  // Composite primary key (no individual unique constraints)
+      }
+    ]
   });
 
   return DinHasDin;
