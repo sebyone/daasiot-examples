@@ -24,6 +24,8 @@ curl -Xs DELETE  localhost:3000/api/config/dins/:id
 
 # REST API
 
+**!!! LA DOCUMENTAZIONE È IN FASE DI SVILUPPO !!!**
+
 Il server include un web server RESTful API per la gestione delle configurazioni e di tante altre funzionalità.
 
 ## Sviluppo
