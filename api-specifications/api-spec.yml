@@ -1,0 +1,1009 @@
+openapi: '3.0.3'
+info:
+  title: DaaS-NodeJS
+  version: '1.0'
+
+  contact:
+    name: API Support
+    email: alessio.farfaglia@gmail.com
+  
+  license:
+    name: MPL-2.0
+    url: https://www.mozilla.org/en-US/MPL/2.0/
+
+servers:
+  - url: http://localhost:{port}/api
+    description: Development server
+    variables:
+      port:
+        default: '3000'
+        description: default port for the development server
+
+#region Components
+
+components:
+  schemas:
+    DinLocal:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: ID del receiver
+        title:
+          type: string
+          description: Nome del receiver
+        acpt_all:
+          type: boolean
+          description: Flag per accettare messaggi da nodi non mappati
+          default: false
+        enable:
+          type: boolean
+          default: false
+        din_id:
+          type: integer
+          description: ID del DIN associato al receiver
+        din:
+          $ref: '#/components/schemas/Din'
+        links:
+          type: array
+          items:
+            $ref: '#/components/schemas/DinLink'
+
+
+    DinLink:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: ID del link
+        url:
+          type: string
+          description: dati del link, es. IP in caso di link di tipo 2
+          example: "127.0.0.1:2001"
+        link:
+          type: integer
+          description: tipo di link
+          enum: [1, 2, 3, 4]
+          example: 2
+        din_id:
+          type: integer
+          description: ID del DIN al quale è associato il link
+    Din:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: ID del DIN
+        sid:
+          type: string
+          description: identificatore della rete daas (SID)
+        din:
+          type: string
+          description: identificatore univoco del nodo daas all'interno della rete
+        p_res:
+          type: string
+          description: preferenze di rete dell'utente, (riservatezza, 
+          example: "000"
+        skey:
+          type: string
+          description: SKEY del DIN
+          example: "9efbaeb2a94f"
+
+    Din_with_links:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: ID del DIN
+        sid:
+          type: string
+          description: identificatore della rete daas (SID)
+        din:
+          type: string
+          description: identificatore univoco del nodo daas all'interno della rete
+        p_res:
+          type: string
+          description: preferenze di rete dell'utente, (riservatezza, 
+          example: "000"
+        skey:
+          type: string
+          description: SKEY del DIN
+          example: "9efbaeb2a94f"
+        links:
+          type: array
+          items:
+            $ref: '#/components/schemas/DinLink'
+      
+    DinHasDin:
+      type: object
+      properties:
+        pdin_id:
+          type: integer
+          description: ID del DIN del nodo padre, in quale mappa il DIN con id 'cdin_id'
+        cdin_id:
+          type: integer
+          description: ID del DIN del nodo figlio, mappato dal nodo padre con id 'pdin_id'
+      required:
+        - pdin_id
+        - cdin_id
+
+    DinHasDin_with_CDin:
+      type: object
+      properties:
+        pdin_id:
+          type: integer
+          description: ID del DIN del nodo padre, in quale mappa il DIN con id 'cdin_id'
+        cdin_id:
+          type: integer
+          description: ID del DIN del nodo figlio, mappato dal nodo padre con id 'pdin_id'
+        cdin:
+          $ref: '#/components/schemas/Din'
+
+    
+    Error:
+      type: object
+      properties:
+        error_name:
+          type: string
+          description: Nome dell'errore
+          example: "TypeError"
+        message:
+          type: string
+          description: Messaggio di errore
+
+#region Paths
+
+paths:
+  /:
+    get:
+      responses:
+        '200':
+          description: OK
+
+  /configure:
+    post:
+      description: Carica la configurazione del nodo locale (per il din_local con id=1)
+      responses:
+        '200':
+          description: configurazione applicata.
+        default:
+          description: Errore interno del server.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  
+  /stop:
+    post:
+      description: Ferma il nodo daas locale
+      responses:
+        '200':
+          description: Nodo fermato.
+        default:
+          description: Impossibile fermare il nodo locale.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /start:
+    post:
+      description: Avvia il nodo daas locale
+      responses:
+        '200':
+          description: Nodo locale avviato.
+        default:
+          description: Impossibile avviare il nodo locale.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /restart:
+    post:
+      description: Riavvia il nodo daas locale
+      responses:
+        default:
+          description: Non ancora implementato.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /send:
+    post:
+      description: Invia un messaggio tramite il nodo daas locale al DIN specificato
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                din:
+                  type: integer
+                  description: Il DIN a cui inviare il messaggio
+                typeset:
+                  type: integer
+                  description: Il typeset del messaggio
+                payload:
+                  type: object
+                  description: Il payload del messaggio
+                  nullable: true
+              required:
+                - din
+                - typeset
+              example:
+                din: 105
+                typeset: 701
+                payload: { "temperature": 25.5, "humidity": 50 }
+      responses:
+        '200':
+          description: Messaggio inviato.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Messaggio inviato.
+        default:
+          description: Errore interno del server.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /status: 
+    get:
+      description: Ritorna lo status del nodo locale.
+      responses:
+        '200':
+          description: Infomazioni sullo stato del nodo.s
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  lasttime:
+                    type: number
+                    description: time reference
+                  hwver:
+                    type: number
+                    description: platform (hard-coded) when the node was contructed
+                  linked:
+                    type: number
+                    description: channels counter (0=not linked)
+                  sync:
+                    type: number
+                    description: synchronization status (0=not in sync)
+                  lock:
+                    type: number
+                    description: required security policy
+                  sklen:
+                    type: number
+                    description: security phrase length
+                  skey:
+                    type: string
+                    description: security phrase (UTF-8)
+                  form:
+                    type: number
+                    description: data formatting model
+                  codec:
+                    type: number
+                    description: data encryption level
+        default:
+          description: Errore interno del server.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /version:
+    get:
+      description: Restituisce le versioni di librerie e software utilizzate dal nodo.
+      responses:
+        '200':
+          description: Versioni delle librerie e del software utilizzate dal nodo.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  daasLibrary:
+                    type: string
+                    description: versione della libreria interna Daas
+                  nodeGyp:
+                    type: string
+                    description: versione di node-gyp utilizzata per costruire il binario (daas-sdk)
+                  compiler:
+                    type: string
+                    description: nome del compilatore c++ utilizzato e la sua versione (GCC, Clang/LLVM, MSVC)
+                  cppStandardLibrary:
+                    type: string
+                    description: versione della libreria standard c++ utilizzata (GNU libstdc++, LLVM libc++, MSVC STL)
+                  node:
+                    type: string
+                    description: versione di Node.js
+                  nodeAddonApi:
+                    type: string
+                    description: versione dell'addon API di Node.js
+
+#region Receivers
+
+  /receivers:
+    get:
+      description: Ritorna una lista di tutti i receivers.
+      responses:
+        '200':
+          description: Lista di tutti i receivers.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/DinLocal'
+
+        default:
+          description: Errore interno del server.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    
+    post:
+      description: Crea un nuovo receiver
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                din:
+                  $ref: '#/components/schemas/Din'
+                title:
+                  type: string
+                  description: Nome del receiver
+              required:
+                - din
+                - title
+              example:
+                din: { "sid": "100", "din": "87" }
+                title: "Receiver 1"
+      responses:
+        '200':
+          description: Receiver aggiunto con successo.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DinLocal'
+        '400':
+          description: Errore nei parametri della richiesta.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        default:
+          description: Errore interno del server.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      
+  /receivers/{receiverId}:
+    get:
+      description: Ritorna un receiver specifico.
+      parameters:
+        - name: receiverId
+          in: path
+          description: ID del receiver
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Receiver trovato.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DinLocal'
+                description: Receiver completo con i dati del DIN associato e i link
+        '404':
+          description: Receiver non trovato.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        default:
+          description: Errore interno del server.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    put:
+      description: Aggiorna un receiver specifico.
+      parameters:
+        - name: receiverId
+          in: path
+          description: ID del receiver
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                din:
+                  $ref: '#/components/schemas/Din'
+                title:
+                  type: string
+                  description: Nome del receiver
+                enable:
+                  type: boolean
+                  description: Flag per abilitare/disabilitare il receiver
+                acpt_all:
+                  type: boolean
+                  description: Flag per accettare messaggi da nodi non mappati                
+              required:
+                # TODO: rendere il din non obbligatorio
+                - din
+                - title
+              example:
+                receiverId: 1
+                din: { "sid": "100", "din": "87" }
+                title: "Receiver 1"
+      responses:
+        '200':
+          description: Receiver aggiornato con successo.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Messaggio di successo
+        '400':
+          description: Errore nei parametri della richiesta.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Receiver o Din non trovato.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        default:
+          description: Errore interno del server.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        
+    delete:
+      description: Elimina un receiver specifico.
+      parameters:
+        - name: receiverId
+          in: path
+          description: ID del receiver
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Receiver eliminato con successo.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Messaggio di successo
+        '404':
+          description: Receiver non trovato.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        default:
+          description: Errore interno del server.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+#region Receivers links
+
+  /receivers/{receiverId}/links:
+    get:
+      description: Ritorna i link associati al receiver.
+      parameters:
+        - name: receiverId
+          in: path
+          description: ID del receiver
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Lista di tutti i link associati al receiver.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/DinLink'
+        '404':
+          description: Receiver non trovato.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        default:
+          description: Errore interno del server.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    post:
+      description: Aggiunge un link al receiver.
+      parameters:
+        - name: receiverId
+          in: path
+          description: ID del receiver
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                url:
+                  type: string
+                  description: URL del link
+                link:
+                  type: integer
+                  description: Tipo di link
+                  enum: [1, 2, 3, 4]
+              required:
+                - url
+                - link
+              example:
+                receiverId: 1
+                link: 2
+                url: "151.81.1.4:2001"
+      responses:
+        '200':
+          description: Link aggiunto con successo.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DinLink'
+        '400':
+          description: Errore nei parametri della richiesta.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Receiver non trovato.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        default:
+          description: Errore interno del server.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /receivers/{receiverId}/links/{id}:
+    get:
+      description: Ritorna un link specifico associato al receiver.
+      parameters:
+        - name: receiverId
+          in: path
+          description: ID del receiver
+          required: true
+          schema:
+            type: integer
+        - name: id
+          in: path
+          description: ID del link
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Link trovato.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DinLink'
+        '404':
+          description: Link non trovato.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        default:
+          description: Errore interno del server.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    put:
+      description: Aggiorna un link specifico associato al receiver.
+      parameters:
+        - name: receiverId
+          in: path
+          description: ID del receiver
+          required: true
+          schema:
+            type: integer
+        - name: id
+          in: path
+          description: ID del link
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                url:
+                  type: string
+                  description: URL del link
+                link:
+                  type: integer
+                  description: Tipo di link
+                  enum: [1, 2, 3, 4]
+              example:
+                receiverId: 1
+                id: 1
+                url: "1.2.3.4:6045"
+      responses:
+        '200':
+          description: Link aggiornato con successo.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Messaggio di successo
+        '400':
+          description: Errore nei parametri della richiesta.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Link non appartiene al receiver.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Link o Receiver non trovato.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        default:
+          description: Errore interno del server.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      
+    delete:
+      description: Elimina un link specifico associato al receiver.
+      parameters:
+        - name: receiverId
+          in: path
+          description: ID del receiver
+          required: true
+          schema:
+            type: integer
+        - name: id
+          in: path
+          description: ID del link
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Link eliminato con successo.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Messaggio di successo
+        '404':
+          description: Link o Receiver non trovato.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Link non appartiene al receiver.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        default:
+          description: Errore interno del server.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+#region DINs
+
+  /dins:
+    get:
+      description: Ritorna una lista di tutti i DINs.
+      responses:
+        '200':
+          description: Lista di tutti i DINs.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Din'
+        default:
+          description: Errore interno del server.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /remotes:
+    get:
+      description: Ritorna una lista di tutti i nodi remoti, ovvero i DINs non associati ad un receiver.
+      responses:
+        '200':
+          description: Lista di tutti i nodi remoti.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Din_with_links'
+
+        default:
+          description: Errore interno del server.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+#region Receivers remotes
+
+
+  /receivers/{receiverId}/remotes:
+    get:
+      description: Ritorna tutti i nodi mappati sul receiver.
+      parameters:
+        - name: receiverId
+          in: path
+          description: ID del receiver
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Lista di tutti i nodi mappati sul receiver.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/DinHasDin_with_CDin'
+        '404':
+          description: Receiver non trovato.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        default:
+          description: Errore interno del server.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+
+    post:
+      description: Associa e modifica un nodo remoto al receiver, se non esiste lo crea.
+      parameters:
+        - name: receiverId
+          in: path
+          description: ID del receiver
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                din:
+                  $ref: '#/components/schemas/Din'
+              required:
+                - din
+            examples:
+              new remote:
+                value:
+                  receiverId: 1
+                  din: { "sid": "100", "din": "87", "p_res": "011", "skey": "9efb9832494f" }
+              existing remote:
+                value:
+                  receiverId: 1
+                  din: { "id": 2 }
+              existing remote, make changes:
+                value:
+                  receiverId: 1
+                  din: { "id": 2, "din": "1669" }
+
+      responses:
+        '200':
+          description: Nodo remoto associato con successo.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DinHasDin_with_CDin'
+        '400':
+          description: Errore nei parametri della richiesta.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Receiver o remote non trovato.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        default:
+          description: Errore interno del server.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+
+    delete:
+      description: Elimina tutte le associazione del receiver con i nodi remoti.
+      parameters:
+        - name: receiverId
+          in: path
+          description: ID del receiver
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Associazioni eliminate con successo.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Messaggio di successo
+        '404':
+          description: Receiver non trovato.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '501':
+          description: Non ancora implementato.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        default:
+          description: Errore interno del server.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /receivers/{receiverId}/remotes/{id}:
+    get:
+      description: Ritorna un nodo remoto specifico associato al receiver.
+      parameters:
+        - name: receiverId
+          in: path
+          description: ID del receiver
+          required: true
+          schema:
+            type: integer
+        - name: id
+          in: path
+          description: ID del nodo remoto
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Nodo remoto trovato.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DinHasDin_with_CDin'
+        '404':
+          description: Receiver o nodo remoto mappato a receiver non trovato.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        default:
+          description: Errore interno del server.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    delete:
+      description: Elimina l'associazione tra il nodo remoto e il receiver, se il nodo remoto non ha altre associazioni, viene cancellato.
+      parameters:
+        - name: receiverId
+          in: path
+          description: ID del receiver
+          required: true
+          schema:
+            type: integer
+        - name: id
+          in: path
+          description: ID del nodo remoto
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Nodo remoto eliminato con successo.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Messaggio di successo
+        '404':
+          description: Receiver o nodo remoto non trovato.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        default:
+          description: Errore interno del server.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
