@@ -93,7 +93,7 @@ router.post('/send', async function (req, res) {
     try {
         const din = parseInt(req.body.din);
         const typeset = parseInt(req.body.typeset);
-        const payload = req.body.payload || [];
+        const payload = req.body.payload || {};
 
         daasNode.send(din, typeset, JSON.stringify(payload));
         res.send({ message: "Messaggio inviato" });
@@ -212,13 +212,13 @@ router.put('/receivers/:receiverId', async function (req, res) {
             throw new Error("Non è possibile aggiungere i link durante la creazione del receiver, usa l'endpoint /api/receivers/:receiverId/links");
         }
 
-        const oldDinLocal = await DinLocal.findByPk(receiverId);
+        const oldDinLocal = await DinLocal.findByPk(receiverId, { transaction: t });
         if (!oldDinLocal) {
             res.status(404);
             throw new Error(`Receiver con id=${receiverId} non trovato.`);
         }
 
-        const oldDin = await Din.findByPk(oldDinLocal.din_id);
+        const oldDin = await Din.findByPk(oldDinLocal.din_id, { transaction: t });
         if (!oldDin) {
             res.status(404);
             throw new Error(`Din con id=${oldDinLocal.din_id} non trovato.`);
@@ -242,14 +242,14 @@ router.delete('/receivers/:receiverId', async function (req, res) {
     const t = await db.sequelize.transaction();
 
     try {
-        const receiver = await DinLocal.findByPk(receiverId);
+        const receiver = await DinLocal.findByPk(receiverId, { transaction: t });
 
         if (receiver === null) {
             res.status(404);
             throw new Error(`Receiver con id=${receiverId} non trovato.`);
         }
 
-        const mappedDins = await DinHasDin.findAll({ where: { pdin_id: receiver.din_id } });
+        const mappedDins = await DinHasDin.findAll({ where: { pdin_id: receiver.din_id }, transaction: t });
         if (mappedDins.length > 0) {
             res.status(409);
             const mappedDinsIds = mappedDins.map(m => m.cdin_id);
@@ -374,13 +374,12 @@ router.put('/receivers/:receiverId/links/:id', async function (req, res) {
 
         const updatedRows = await DinLink.update({ ...rest, din_id: dinLocal.din_id }, { where: { id: linkId } });
 
-        if (!!updatedRows) {
-            res.send({ message: "Link aggiornato con successo." });
-        } else {
-            res.status(400).send({
-                message: `Non è stato possibile aggiornare il link con id=${id}. Forse il Link non esiste oppure il body della richiesta è vuoto!`
-            });
+        if (!updatedRows) {
+            res.status(404);
+            throw new Error(`Link con id=${linkId} non trovato.`);
         }
+
+        res.send({ message: "Link aggiornato con successo." });
     } catch (err) {
         sendError(res, err);
     }
@@ -426,11 +425,6 @@ router.delete('/receivers/:receiverId/links/:id', async function (req, res) {
 // restituisce tutti i dins e i link associat (se il parametro links è diverso da false)
 router.get('/dins/', async function (req, res) {
     try {
-        // includi i link associati al din se il parametro links è diverso da false (default è true)
-        let showLinks = true;
-        if (req.query.links && req.query.links.toLowerCase() === 'false')
-            showLinks = false;
-
         const data = await Din.findAll();
         res.send(data);
     } catch (err) {
@@ -699,6 +693,13 @@ router.delete('/receivers/:receiverId/remotes', async function (req, res) {
     sendError(res, new Error("Not yet implemented."), 501);
 });
 
+router.all('*', function (req, res) {
+    res.status(404);
+    res.send({
+        error_name: "NotFound",
+        message: "Endpoint non trovato."
+    });
+});
 
 function sendError(res, error, status) {
     
