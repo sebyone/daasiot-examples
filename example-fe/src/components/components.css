@@ -1,0 +1,56 @@
+.div_form {
+  width: 70%;
+}
+
+.flex-container.default {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: flex-start;
+  max-width: 100%;
+  min-width: 0;
+}
+
+.flex-container.singleTable {
+  width: 100%;
+  margin-top: 50px;
+  max-height: 590px;
+}
+
+.panel-content-list.default {
+  transform: scale(0.85);
+}
+
+.panel-content-view.default {
+  transform: scale(0.9);
+}
+
+.mobile-message {
+  display: none;
+  font-size: 1.2em;
+  text-align: center;
+  padding: 20px;
+}
+
+@media (max-width: 600px) {
+  .panel-content-view {
+    display: none;
+  }
+
+  .panel-content-list {
+    display: none;
+  }
+
+  .mobile-message {
+    display: block;
+  }
+}
+
+.title {
+  font-size: 14px;
+  font-weight: bold;
+}
+
+label {
+  font-size: 5px;
+}

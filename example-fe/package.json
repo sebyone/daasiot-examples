@@ -1,0 +1,29 @@
+{
+  "name": "daas-nodejs-fe",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "@ant-design/nextjs-registry": "^1.0.1",
+    "antd": "^5.20.6",
+    "axios": "^1.7.7",
+    "jwt-decode": "^4.0.0",
+    "next": "14.2.11",
+    "next-auth": "^4.24.7",
+    "react": "^18",
+    "react-dom": "^18"
+  },
+  "devDependencies": {
+    "@types/node": "^20",
+    "@types/react": "^18",
+    "@types/react-dom": "^18",
+    "eslint": "^8",
+    "eslint-config-next": "14.2.11",
+    "typescript": "^5"
+  }
+}
