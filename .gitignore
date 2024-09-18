@@ -139,3 +139,6 @@ dist
 
 # VSCode
 .vscode/sftp.json
+
+# Custom
+.42c
