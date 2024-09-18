@@ -26,6 +26,8 @@ const daasApi = require('./daas/daas');
 const viewRouter = require('./routes/views');
 const apiRouter = require('./routes/api');
 
+const swaggerApp = require('./swagger');
+
 // Database
 const db = require("./db/models");
 
@@ -52,6 +54,8 @@ app.use(express.urlencoded({ extended: false }));
 
 app.use('/', viewRouter);
 app.use('/api', apiRouter);
+
+app.use(swaggerApp);
 
 
 // Web Server

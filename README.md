@@ -1,6 +1,6 @@
 # daas-nodejs
 
-[documentazione REST API](REST-API.md)
+[documentazione REST API](REST-API.md) oppure, una volta avviato il server, visitare la pagina `http://localhost:3000/api-docs` per visualizzare la documentazione interattiva.
 
 ## Setup
 

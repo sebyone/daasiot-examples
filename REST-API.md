@@ -26,6 +26,8 @@ curl -Xs DELETE  localhost:3000/api/config/dins/:id
 
 **!!! LA DOCUMENTAZIONE È IN FASE DI SVILUPPO !!!**
 
+la documentazione più recente è disponibile all'interno del server, visitare la pagina `http://localhost:3000/api-docs` per visualizzare la documentazione interattiva, una volta avviato il server.
+
 Il server include un web server RESTful API per la gestione delle configurazioni e di tante altre funzionalità.
 
 ## Sviluppo
