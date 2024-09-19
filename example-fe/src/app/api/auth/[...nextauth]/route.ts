@@ -60,7 +60,6 @@ const authOptions: AuthOptions = {
       return baseUrl + '/admin';
     },
     async jwt({ token, account }) {
-      console.log(token);
       if (account) {
         token.role = jwtDecode(account.access_token);
         token.id_token = account.id_token;

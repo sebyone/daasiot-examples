@@ -17,7 +17,7 @@ export default function Admin() {
         <Col xs={24} sm={8}>
           <Card hoverable>
             <Statistic
-              title="Recievers"
+              title="Receivers"
               value={0}
               prefix={<WifiOutlined style={{ fontSize: '24px', color: '#1890ff', marginRight: 290 }} />}
               className={styles.customStatistic}

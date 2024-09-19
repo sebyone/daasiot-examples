@@ -25,6 +25,15 @@ import {
   StatusDataType,
 } from '@/types';
 import axiosAuthInstance from '@/utils/api';
+import axios from 'axios';
+
+const axiosInstance = axios.create({
+  baseURL: `http://158.220.97.43:3000/api`,
+  timeout: 10000,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
 
 const ConfigService = {
   /**
@@ -252,13 +261,15 @@ const ConfigService = {
     }
   },
 
+ 
+
   /**
    * Recupera lo stato del nodo
    * Promise<StatusDataType> - Oggetto con le informazioni sullo stato del nodo
    */
   getStatus: async (): Promise<StatusDataType> => {
     try {
-      const response = await axiosAuthInstance.get('/status');
+      const response = await axiosInstance.get('/status');
       return response.data;
     } catch (error) {
       console.error('Error:', error);
