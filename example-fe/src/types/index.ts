@@ -1,4 +1,3 @@
-import deviceComponents, { DeviceComponentsRegistry } from '@/utils/deviceComponentsRegistry';
 import { FormInstance } from 'antd';
 import { AppRouterInstance } from 'next/dist/shared/lib/app-router-context.shared-runtime';
 import React from 'react';
@@ -6,10 +5,6 @@ import React from 'react';
 export type TableDataType =
   | LinkDataType
   | MapDataType
-  | AmbientiElementiDataType
-  | ShowDataDataType
-  | TypesetInDataType
-  | TypesetOutDataType
   | DinLocalDataType
   | StatusDataType;
 
@@ -22,25 +17,6 @@ export interface DinLocalDataType {
   links: string;
   status: string;
 }
-
-export interface AmbientiElementiDataType {
-  id?: number;
-  denominazione: string;
-}
-
-export interface ShowDataDataType {
-  timestamp: string;
-  typeset: number;
-}
-
-export interface TypesetInDataType {
-  in: number;
-}
-
-export interface TypesetOutDataType {
-  out: number;
-}
-
 export interface ActionsButtonProps {
   data: any;
   onEdit: (data: any) => void;
@@ -136,14 +112,6 @@ export interface DinLocalFormProps {
   showStatus: boolean;
   statusData?: StatusDataType | null;
 }
-
-export interface NodoFormProps {
-  form: FormInstance;
-  setIsDataSaved: (status: boolean) => void;
-  onHideTestComponent: () => void;
-  onMapClick: () => void;
-}
-
 export interface ConfigFormData {
   id: number;
   title: string;
@@ -187,12 +155,6 @@ export interface MapFormProps {
   form: FormInstance;
   onFinish: (values: DinDataType) => void;
   setIsDataSaved: (status: boolean) => void;
-}
-
-export interface MapDispositiviFormProps {
-  form: FormInstance;
-  onFinish: (values: DinDataType) => void;
-  sid: string;
 }
 
 export interface LinkDataType {
@@ -243,56 +205,5 @@ export interface MapDataType {
   tech: string;
 }
 
-export interface CardDispositivoProps {
-  status: boolean;
-  setStatus: (enabled: boolean) => void;
-  onChangeComplete: (value: number | number[]) => void;
-  onChange: (status: boolean) => void;
-  onSend: () => void;
-  dinOptions: number[];
-  selectedDin: number | null;
-  setSelectedDin: (din: number) => void;
-  onTest: () => void;
-  showTestControl: boolean;
-}
-
-export interface BaseCardDispositivoProps {
-  deviceName: string;
-  dinOptions: number[];
-  selectedDin: number | null;
-  setSelectedDin: (din: number | null) => void;
-  onTest: () => void;
-  status: boolean;
-  setStatus: (status: boolean) => void;
-  value: number;
-  setValue: (value: number) => void;
-  showTestControl: boolean;
-  onSend: () => void;
-  options?: { label: string; value: number }[];
-  children?: React.ReactNode;
-}
-
-export interface CardDispositivoFactoryProps {
-  deviceType: keyof DeviceComponentsRegistry;
-  deviceName: string;
-  dinOptions: number[];
-  selectedDin: number | null;
-  setSelectedDin: (din: number | null) => void;
-  onTest: () => void;
-  onSend: () => void;
-  status: boolean;
-  setStatus: (status: boolean) => void;
-  value: number;
-  setValue: (value: number) => void;
-  showTestControl: boolean;
-}
-
-export interface UPLDispositivoCardProps extends BaseCardDispositivoProps {
-  status: boolean;
-  setStatus: (status: boolean) => void;
-  value: number;
-  setValue: (value: number) => void;
-  showTestControl: boolean;
-}
 
 
