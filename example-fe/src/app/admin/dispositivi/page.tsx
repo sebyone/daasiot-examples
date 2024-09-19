@@ -8,29 +8,24 @@ import 'leaflet/dist/leaflet.css';
 
 const { Sider, Content } = Layout;
 
-const mockDevices = [
-  'Disposiitivo1',
-  'Disposiitivo1',
-  'Disposiitivo1',
-  'Disposiitivo1',
-  
-];
-
-const markers = [
+const devices = [
   {
     id: 1,
-    geocode: [39.3017,16.2537],
-    popup: "marker1"
+    name: "Dispositivo1",
+    latitudine: 39.3017,
+    longitudine: 16.2537,
   },
   {
     id: 2,
-    geocode: [39.2854,16.2619],
-    popup: "marker2"
+    name: "Dispositivo2",
+    latitudine: 39.2854,
+    longitudine: 16.2619,
   },
   {
     id: 3,
-    geocode: [39.3154,16.2426],
-    popup: "marker3"
+    name: "Dispositivo3",
+    latitudine: 39.3154,
+    longitudine: 16.2426,
   },
 ]
 
@@ -40,13 +35,11 @@ const customIcon = new Icon({
 })
 
 
-
-
 export default function Admin() {
   const [searchTerm, setSearchTerm] = useState('');
   const mapRef = useRef();
-  const filteredDevices = mockDevices.filter(device => 
-    device.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredDevices = devices.filter(device => 
+    device.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
 
@@ -60,9 +53,9 @@ export default function Admin() {
           <TileLayer
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"/>
         
-          {markers.map(marker => (
-            <Marker key={marker.id} position={marker.geocode} icon={customIcon} >
-              <Popup>{marker.popup}</Popup>
+          {devices.map(device => (
+            <Marker key={device.id} position={[device.latitudine,device.longitudine]} icon={customIcon} >
+              <Popup>{device.name}</Popup>
             </Marker>
           ))}
         </MapContainer>
@@ -93,7 +86,7 @@ export default function Admin() {
           dataSource={filteredDevices}
           renderItem={item => (
             <List.Item style={{ borderBottom: '1px solid #303030', padding: '8px 16px' }}>
-              <span style={{ color: 'white' }}>{item}</span>
+              <span style={{ color: 'white' }}>{item.name}</span>
             </List.Item>
           )}
           style={{ height: '535px', overflowY: 'auto' }}
