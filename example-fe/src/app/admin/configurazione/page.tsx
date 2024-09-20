@@ -1,9 +1,11 @@
 'use client';
 import { useCustomNotification } from '@/hooks/useNotificationHook';
+import ConfigService from '@/services/configService';
 import { DinLocalDataType } from '@/types';
 
 import dynamic from 'next/dynamic';
 import { useRouter } from 'next/navigation';
+import { title } from 'process';
 import { useEffect, useState } from 'react';
 
 const DataPanel = dynamic(() => import('@/components/DataPanel'), { ssr: false });
@@ -13,20 +15,30 @@ const PanelList = dynamic(() => import('@/components/PanelList'), { ssr: false }
 
 export default function Dispositivi() {
   const router = useRouter();
-  //const [dinLocalData, setDinLocalData] = useState<DinLocalDataType[]>([]);
+  const [receiversData, setReceiversData] = useState<DinLocalDataType[]>([]);
   const { notify, contextHolder } = useCustomNotification();
 
-  const dinLocalData: DinLocalDataType[] = [
-    {
-      id: 1,
-      title: 'dinLocal',
-      sid: 1,
-      din: 1,
-      acp_all: 'true',
-      links: 'link',
-      status: 'ok',
-    },
-  ];
+  const fetchReceivers = async () => {
+    try {
+      const data = await ConfigService.getAll();
+      const receivers = data.map((receiver) => ({
+        id: receiver.id,
+        title: receiver.title,
+        sid: receiver.din.sid,
+        din: receiver.din.din,
+        acpt_all: receiver.acpt_all ? 'Yes' : 'No',
+        links: receiver.links.length.toString(),
+        status: '',
+      }));
+      setReceiversData(receivers);
+    } catch (error) {
+      notify('error', 'Qualcosa non ha funzionato', 'Errore nel caricamento dei receivers');
+    }
+  };
+
+  useEffect(() => {
+    fetchReceivers();
+  }, []);
 
   const handleRowClick = (dinLocal: DinLocalDataType) => {
     if (!dinLocal?.id) return;
@@ -52,7 +64,7 @@ export default function Dispositivi() {
         <Panel showAddButton={false} layoutStyle="singleTable">
           <PanelList layoutStyle="singleTable">
             <ReceiversTable
-              items={dinLocalData}
+              items={receiversData}
               showButton={false}
               rowKey="id"
               route={router}

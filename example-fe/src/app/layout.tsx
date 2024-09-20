@@ -14,8 +14,6 @@ const config: ThemeConfig = {
   // },
 };
 
-import SessionProviderWrapper from '@/utils/sessionProviderWrapper';
-
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
@@ -35,14 +33,12 @@ export default function RootLayout({
   };
 
   return (
-    <SessionProviderWrapper>
-      <html lang="it">
-        <body className={inter.className} suppressHydrationWarning={true}>
-          <AntdRegistry>
-            <ConfigProvider theme={theme}>{children}</ConfigProvider>
-          </AntdRegistry>
-        </body>
-      </html>
-    </SessionProviderWrapper>
+    <html lang="it">
+      <body className={inter.className} suppressHydrationWarning={true}>
+        <AntdRegistry>
+          <ConfigProvider theme={theme}>{children}</ConfigProvider>
+        </AntdRegistry>
+      </body>
+    </html>
   );
 }

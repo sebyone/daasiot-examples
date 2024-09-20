@@ -23,6 +23,9 @@ const MapForm = ({ form, onFinish, setIsDataSaved }: MapFormProps) => {
         onFinish={handleFinish}
         onValuesChange={handleValuesChange}
       >
+        <Form.Item name="receiverId" noStyle>
+          <Input type="hidden" />
+        </Form.Item>
         <Form.Item label="SID" name="sid" rules={[{ required: true, message: 'Inserisci un SID' }]}>
           <Input />
         </Form.Item>

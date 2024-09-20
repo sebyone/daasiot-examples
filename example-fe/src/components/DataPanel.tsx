@@ -14,7 +14,7 @@ const DataPanel = ({ title, children, isEditing, showSemaphore }: DataPanelProps
       }
       bordered={false}
       size="small"
-      style={{ width: '100%', marginTop: 25 }}
+      style={{ width: '100%', marginTop: 10 }}
     >
       {children}
     </Card>

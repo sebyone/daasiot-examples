@@ -1,4 +1,4 @@
-import { ColumnType, ConfigData, DinLocalDataType, EdificiDataType } from '@/types';
+import { ColumnType, DinLocalDataType } from '@/types';
 import GenericTable from './generics/GenericTable';
 
 const defaultColumns: ColumnType[] = [
@@ -19,13 +19,14 @@ const defaultColumns: ColumnType[] = [
   },
   {
     title: 'Acp. All',
-    dataIndex: 'acp_all',
-    key: 'acp_all',
+    dataIndex: 'acpt_all',
+    key: 'acpt_all',
   },
   {
     title: 'Links',
     dataIndex: 'links',
     key: 'links',
+    render: (links: string) => links,
   },
   {
     title: 'Status',

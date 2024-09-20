@@ -22,8 +22,10 @@ const NewMap = () => {
   const onFinish = async (values: DinDataType) => {
     try {
       await configService.createMap(values);
-      notify('success', 'Operazione riuscita', 'Operazione avvenuta con successo');
-    } catch {
+      notify('success', 'Operazione riuscita', 'Map creato con successo');
+      setIsDataSaved(true);
+      router.push('/admin/configurazione');
+    } catch (error) {
       notify('error', 'Qualcosa non ha funzionato', 'Errore nella creazione del map');
     }
   };
@@ -37,13 +39,13 @@ const NewMap = () => {
         okText: 'Ok',
         cancelText: 'Annulla',
         onOk: () => {
-          router.push('/admin/configurazione');
+          router.push('/admin/configurazione/editDinLocal/1');
         },
       });
       return;
     }
 
-    router.push('/admin/configurazione');
+    router.push('/admin/configurazione/editDinLocal/1');
   };
 
   const handleSave = () => {

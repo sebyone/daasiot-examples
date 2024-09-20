@@ -2,18 +2,14 @@ import { FormInstance } from 'antd';
 import { AppRouterInstance } from 'next/dist/shared/lib/app-router-context.shared-runtime';
 import React from 'react';
 
-export type TableDataType =
-  | LinkDataType
-  | MapDataType
-  | DinLocalDataType
-  | StatusDataType;
+export type TableDataType = LinkDataType | MapDataType | DinLocalDataType | StatusDataType;
 
 export interface DinLocalDataType {
   id?: number;
   title: string;
-  sid: number;
-  din: number;
-  acp_all: string;
+  sid: string | number;
+  din: string | number;
+  acpt_all: string;
   links: string;
   status: string;
 }
@@ -191,7 +187,6 @@ export interface DinDataType {
   p_res: string;
   skey: string;
 }
-
 export interface DinFormData {
   sid: number;
   din: number;
@@ -204,6 +199,3 @@ export interface MapDataType {
   din: string;
   tech: string;
 }
-
-
-

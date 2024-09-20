@@ -1,9 +1,6 @@
-import ConfigService from '@/services/configService';
-import DispositiviService from '@/services/dispositiviService';
-import { ConfigFormData, DinLocalFormProps, StatusDataType } from '@/types';
-import { Button, Card, Checkbox, Col, Form, Input, List, Row, Select, Switch, Table } from 'antd';
-import React, { useState } from 'react';
-import StatusTable from './StatusTabel';
+import { ConfigFormData, DinLocalFormProps } from '@/types';
+import { Button, Card, Checkbox, Col, Form, Input, List, Row, Select, Switch } from 'antd';
+import React from 'react';
 
 const DinLocalForm = ({
   form,
@@ -146,7 +143,7 @@ const DinLocalForm = ({
           </div>
         )}
       </Form>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', maxWidth: '400px' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', maxWidth: '400px', marginTop: -15 }}>
         {showPowerActions && (
           <div style={{ height: 50, marginBottom: 30 }}>
             <Card bordered={false} style={{ width: 400, backgroundColor: '#f0f0f0' }}>

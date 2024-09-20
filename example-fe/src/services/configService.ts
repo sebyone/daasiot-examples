@@ -19,30 +19,35 @@ import {
   ConfigData,
   ConfigFormData,
   DinDataType,
+  DinLocalDataType,
   LinkDataType,
   LinkFormData,
   MapDataType,
   StatusDataType,
 } from '@/types';
-import axiosAuthInstance from '@/utils/api';
-import axios from 'axios';
-
-const axiosInstance = axios.create({
-  baseURL: `http://158.220.97.43:3000/api`,
-  timeout: 10000,
-  headers: {
-    'Content-Type': 'application/json',
-  },
-});
+import axiosInstance from '@/utils/api';
 
 const ConfigService = {
+  /**
+   * Recupera l'elenco di tutti i receivers
+   * Promise<DinLocalDataType[]> - Array di oggetti DinLocalDataType
+   */
+  getAll: async (): Promise<DinLocalDataType[]> => {
+    try {
+      const response = await axiosInstance.get('/receivers');
+      return response.data;
+    } catch (error) {
+      console.error('Error:', error);
+      throw error;
+    }
+  },
   /**
    * Recupera la configurazione completa del nodo locale
    * Promise<ConfigData> - Oggetto ConfigData con la configurazione completa del nodo locale
    */
   getDinLocal: async (): Promise<ConfigData> => {
     try {
-      const response = await axiosAuthInstance.get('/config');
+      const response = await axiosInstance.get('/receivers/1');
       return response.data;
     } catch (error) {
       console.error('Error:', error);
@@ -73,7 +78,7 @@ const ConfigService = {
     };
 
     try {
-      await axiosAuthInstance.put('/config', data);
+      await axiosInstance.put('/receivers/1', data);
     } catch (error) {
       console.error('Error:', error);
       throw error;
@@ -86,7 +91,7 @@ const ConfigService = {
    */
   deleteLink: async (id: number): Promise<void> => {
     try {
-      await axiosAuthInstance.delete(`/config/links/${id}`);
+      await axiosInstance.delete(`/receivers/1/links/${id}`);
     } catch (error) {
       console.error('Error:', error);
       throw error;
@@ -99,7 +104,7 @@ const ConfigService = {
    */
   deleteMap: async (id: number): Promise<void> => {
     try {
-      await axiosAuthInstance.delete(`/config/dins/${id}`);
+      await axiosInstance.delete(`/receivers/1/remotes/${id}`);
     } catch (error) {
       console.error('Error:', error);
       throw error;
@@ -111,7 +116,7 @@ const ConfigService = {
    */
   start: async (): Promise<void> => {
     try {
-      await axiosAuthInstance.post('/start');
+      await axiosInstance.post('/start');
     } catch (error) {
       console.error('Error:', error);
       throw error;
@@ -124,7 +129,7 @@ const ConfigService = {
    */
   getLinks: async (): Promise<LinkDataType[]> => {
     try {
-      const response = await axiosAuthInstance.get('/links');
+      const response = await axiosInstance.get('/receivers/1/links');
       return response.data;
     } catch (error) {
       console.error('Error:', error);
@@ -138,7 +143,7 @@ const ConfigService = {
    */
   getMaps: async (): Promise<MapDataType[]> => {
     try {
-      const response = await axiosAuthInstance.get('/dins');
+      const response = await axiosInstance.get('/receivers/1/remotes');
       return response.data;
     } catch (error) {
       console.error('Error:', error);
@@ -153,7 +158,7 @@ const ConfigService = {
    */
   createLink: async (link: Omit<LinkDataType, 'id'>) => {
     try {
-      const response = await axiosAuthInstance.post<LinkDataType>('/links', link);
+      const response = await axiosInstance.post<LinkDataType>('/receivers/1/links', link);
       return response.data;
     } catch (error) {
       console.error('Error:', error);
@@ -168,7 +173,7 @@ const ConfigService = {
    */
   createMap: async (map: Omit<DinDataType, 'id'>) => {
     try {
-      const response = await axiosAuthInstance.post<DinDataType>('/dins', map);
+      const response = await axiosInstance.post<DinDataType>('/receivers/1/remotes', map);
       return response.data;
     } catch (error) {
       console.error('Error:', error);
@@ -183,7 +188,7 @@ const ConfigService = {
    */
   getLinkById: async (id: number): Promise<LinkDataType> => {
     try {
-      const response = await axiosAuthInstance.get(`/links/${id}`);
+      const response = await axiosInstance.get(`/receivers/1/links/${id}`);
       return response.data;
     } catch (error) {
       console.error('Error:', error);
@@ -198,7 +203,7 @@ const ConfigService = {
    */
   updateLink: async (id: number, formData: LinkDataType): Promise<void> => {
     try {
-      const response = await axiosAuthInstance.put(`/links/${id}`, formData);
+      const response = await axiosInstance.put(`/receivers/1/links/${id}`, formData);
       return response.data;
     } catch (error) {
       console.error('Error:', error);
@@ -213,7 +218,7 @@ const ConfigService = {
    */
   getMapById: async (id: number): Promise<MapDataType> => {
     try {
-      const response = await axiosAuthInstance.get(`/dins/${id}`);
+      const response = await axiosInstance.get(`/receivers/1/remotes/${id}`);
       return response.data;
     } catch (error) {
       console.error('Error:', error);
@@ -228,7 +233,7 @@ const ConfigService = {
    */
   updateMap: async (id: number, mapData: DinDataType): Promise<void> => {
     try {
-      const response = await axiosAuthInstance.put(`/dins/${id}`, mapData);
+      const response = await axiosInstance.put(`/receivers/1/remotes/${id}`, mapData);
       return response.data;
     } catch (error) {
       console.error('Error:', error);
@@ -246,7 +251,7 @@ const ConfigService = {
     try {
       const st = status ? 1 : 0;
       const va = value || 0;
-      const response = await axiosAuthInstance.post(
+      const response = await axiosInstance.post(
         '/send',
         JSON.stringify({
           din: din,
@@ -261,8 +266,6 @@ const ConfigService = {
     }
   },
 
- 
-
   /**
    * Recupera lo stato del nodo
    * Promise<StatusDataType> - Oggetto con le informazioni sullo stato del nodo
@@ -271,6 +274,20 @@ const ConfigService = {
     try {
       const response = await axiosInstance.get('/status');
       return response.data;
+    } catch (error) {
+      console.error('Error:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Recupera il numero di remotes
+   * Promise<number> - Intero che rappresenta il numero di remotes
+   */
+  getRemotesCount: async (): Promise<number> => {
+    try {
+      const response = await axiosInstance.get<{ count: number }>('/remotes/count');
+      return response.data.count;
     } catch (error) {
       console.error('Error:', error);
       throw error;

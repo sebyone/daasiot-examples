@@ -53,13 +53,13 @@ const EditDinLocal = () => {
     try {
       await ConfigService.getMaps().then((data) => {
         const maps = data.map((map) => ({
-          id: map.id,
-          din: map.din,
-          tech: map.tech,
+          id: map.cdin.id,
+          din: map.cdin.din,
+          tech: map.cdin,
         }));
         setMapsData(maps);
       });
-    } catch {
+    } catch (error) {
       notify('error', 'Qualcosa non ha funzionato', 'Errore nel caricamento del map');
     }
   };

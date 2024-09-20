@@ -72,13 +72,13 @@ const EditLink = () => {
         okText: 'Ok',
         cancelText: 'Annulla',
         onOk: () => {
-          router.push('/admin/configurazione');
+          router.push('/admin/configurazione/editDinLocal/1');
         },
       });
       return;
     }
 
-    router.push('/admin/configurazione');
+    router.push('/admin/configurazione/editDinLocal/1');
   };
 
   const handleSave = () => {
