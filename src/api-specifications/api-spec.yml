@@ -139,7 +139,74 @@ components:
         cdin:
           $ref: '#/components/schemas/Din'
 
-    
+
+    Device:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: ID del device
+        device_model_id:
+          type: integer
+          description: ID del modello del device
+        serial:
+          type: string
+          description: seriale del device
+          maxLength: 20
+        din_id:
+          type: integer
+          description: ID del DIN associato al device
+        device_model:
+          $ref: '#/components/schemas/DeviceModel'
+        din:
+          $ref: '#/components/schemas/Din'
+
+    DeviceModel:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: ID del modello del device
+          nullable: false
+        device_group_id:
+          type: integer
+          description: ID del gruppo del device
+          nullable: false
+        productcode:
+          type: string
+          description: codice prodotto
+          maxLength: 45
+        datasheet:
+          type: string
+          description: datasheet
+          maxLength: 45
+        userguide:
+          type: string
+          description: guida utente
+          maxLength: 45
+
+    DeviceFull:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: ID del device
+        device_model_id:
+          type: integer
+          description: ID del modello del device
+        serial:
+          type: string
+          description: seriale del device
+          maxLength: 20
+        din_id:
+          type: integer
+          description: ID del DIN associato al device
+        device_model:
+          $ref: '#/components/schemas/DeviceModel'
+        din:
+          $ref: '#/components/schemas/Din'
+
+
     Error:
       type: object
       properties:
@@ -391,6 +458,27 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
       
+  /receivers/count:
+    get:
+      description: Ritorna il numero di receivers presenti.
+      responses:
+        '200':
+          description: Numero di receivers presenti.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  count:
+                    type: integer
+                    description: Numero di receivers presenti
+        default:
+          description: Errore interno del server.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
   /receivers/{receiverId}:
     get:
       description: Ritorna un receiver specifico.
@@ -798,6 +886,27 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
 
+  /remotes/count:
+    get:
+      description: Ritorna il numero di nodi remoti presenti.
+      responses:
+        '200':
+          description: Numero di nodi remoti presenti.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  count:
+                    type: integer
+                    description: Numero di nodi remoti presenti
+        default:
+          description: Errore interno del server.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
 #region Receivers remotes
 
 
@@ -1007,3 +1116,201 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+
+#region Devices
+
+
+  /devices:
+    get:
+      description: mostra di tutti i devices.
+      responses:
+        '200':
+          description: Lista di tutti i devices.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/DeviceFull'
+        default:
+          description: Errore interno del server.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    post:
+      description: Crea un nuovo device
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                device_model:
+                  $ref: '#/components/schemas/DeviceModel'
+                serial:
+                  type: string
+                  description: Seriale del device
+                din:
+                  $ref: '#/components/schemas/Din'
+              required:
+                - device_model
+                - serial
+                - din
+              example:
+                device_model: { "device_group_id": 1, "productcode": "123400001234", "datasheet": "datasheet", "userguide": "userguide" }
+                serial: "1234567890"
+                din: { "sid": "100", "din": "87" }
+      responses:
+        '200':
+          description: Device aggiunto con successo.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Device'
+        '400':
+          description: Errore nei parametri della richiesta.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Device model o DIN non trovato.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        default:
+          description: Errore interno del server.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+
+  /devices/{deviceId}:
+    get:
+      description: Ritorna un device specifico.
+      parameters:
+        - name: deviceId
+          in: path
+          description: ID del device
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Device trovato.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeviceFull'
+        '404':
+          description: Device non trovato.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        default:
+          description: Errore interno del server.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    put:
+      description: Aggiorna un device specifico.
+      parameters:
+        - name: deviceId
+          in: path
+          description: ID del device
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                device_model:
+                  $ref: '#/components/schemas/DeviceModel'
+                serial:
+                  type: string
+                  description: Seriale del device
+                din:
+                  $ref: '#/components/schemas/Din'
+              required:
+                - device_model
+                - serial
+                - din
+              example:
+                device_model: { "device_group_id": 1, "productcode": "123400001234", "datasheet": "datasheet", "userguide": "userguide" }
+                serial: "1234567890"
+                din: { "sid": "100", "din": "87" }
+      responses:
+        '200':
+          description: Device aggiornato con successo.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Messaggio di successo
+        '400':
+          description: Errore nei parametri della richiesta.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Device model o DIN non trovato.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        default:
+          description: Errore interno del server.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    delete:
+      description: Elimina un device specifico.
+      parameters:
+        - name: deviceId
+          in: path
+          description: ID del device
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Device eliminato con successo.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Messaggio di successo
+        '404':
+          description: Device non trovato.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        default:
+          description: Errore interno del server.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  
+

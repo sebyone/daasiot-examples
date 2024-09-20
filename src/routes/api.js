@@ -19,7 +19,7 @@ const daasNode = require('../daas/daas');
 const router = express.Router();
 
 const db = require("../db/models");
-const { where, Op } = require('sequelize');
+const { Op } = require('sequelize');
 const DinLocal = db.DinLocal;
 const Din = db.Din;
 const DinLink = db.DinLink;
@@ -52,7 +52,7 @@ router.post('/stop', function (req, res) {
     console.log("[API] /stop Node stopped.");
     try {
         const isStopped = daasNode.stop();
-        
+
         if (!isStopped) {
             throw new Error("Impossibile fermare il nodo.");
         }
@@ -72,7 +72,7 @@ router.post('/start', async function (req, res) {
         await DaasService.loadConfig(daasNode.getNode());
 
         daasNode.start();
-        res.send({ message: "Nodo locale avviato."});
+        res.send({ message: "Nodo locale avviato." });
     } catch (error) {
         sendError(res, error);
     }
@@ -128,6 +128,17 @@ router.get('/receivers', async function (req, res) {
     }
 });
 
+
+router.get('/receivers/count', async function (req, res) {
+    try {
+        const count = await DinLocal.count();
+        res.send({ count });
+    } catch (err) {
+        sendError(res, err);
+    }
+});
+
+
 router.get('/receivers/:receiverId', async function (req, res) {
     try {
         const receiverId = parseInt(req.params.receiverId);
@@ -136,7 +147,7 @@ router.get('/receivers/:receiverId', async function (req, res) {
             res.status(404);
             throw new Error(`Receiver con id=${receiverId} non trovato.`);
         }
-        
+
         res.send(data);
     } catch (err) {
         sendError(res, err);
@@ -159,7 +170,7 @@ router.post('/receivers', async function (req, res) {
             res.status(400);
             throw new Error("l'oggetto din è obbligatorio.");
         }
-        
+
         const requiredFields = ['sid', 'din'];
         for (const field of requiredFields) {
             if (din[field] == undefined) {
@@ -167,7 +178,7 @@ router.post('/receivers', async function (req, res) {
                 throw new Error(`Il campo din.${field} è obbligatorio.`);
             }
         }
-        
+
         if (!dinLocal.title) {
             res.status(400);
             throw new Error("Il campo title è obbligatorio.");
@@ -186,7 +197,7 @@ router.post('/receivers', async function (req, res) {
 
         const data = await DinLocal.findByPk(newDinLocal.id, { include: ['din'] });
         res.send(data);
-        
+
     } catch (err) {
         await t.rollback();
         sendError(res, err);
@@ -195,7 +206,7 @@ router.post('/receivers', async function (req, res) {
 
 router.put('/receivers/:receiverId', async function (req, res) {
     const t = await db.sequelize.transaction();
-    
+
     console.log(`PUT /config (req.body)`, req.body);
     try {
         const receiverId = parseInt(req.params.receiverId);
@@ -274,6 +285,9 @@ router.delete('/receivers/:receiverId', async function (req, res) {
 });
 
 
+
+
+
 //#region Receivers links
 
 router.get('/receivers/:receiverId/links', async function (req, res) {
@@ -287,7 +301,7 @@ router.get('/receivers/:receiverId/links', async function (req, res) {
 });
 
 router.get('/receivers/:receiverId/links/:id', async function (req, res) {
-    
+
     try {
         const linkId = parseInt(req.params.id);
         const receiverId = parseInt(req.params.receiverId);
@@ -297,7 +311,7 @@ router.get('/receivers/:receiverId/links/:id', async function (req, res) {
             res.status(404);
             throw new Error(`Link con id=${linkId} non trovato.`);
         }
-        
+
         const dinLocal = await DinLocal.findByPk(data.din_id);
         if (dinLocal === null) {
             res.status(404);
@@ -308,7 +322,7 @@ router.get('/receivers/:receiverId/links/:id', async function (req, res) {
             res.status(403);
             throw new Error(`Link con id=${linkId} non appartiene al receiver con id=${receiverId}.`);
         }
-        
+
         res.send(data);
     } catch (err) {
         sendError(res, err);
@@ -333,7 +347,7 @@ router.post('/receivers/:receiverId/links', async function (req, res) {
             res.status(400);
             throw new Error(`Il campo link deve essere 1, 2, 3 o 4, invece è ${req.body.link}.`);
         }
-        
+
         const dinLocal = await DinLocal.findByPk(receiverId);
 
         if (dinLocal === null) {
@@ -391,7 +405,7 @@ router.delete('/receivers/:receiverId/links/:id', async function (req, res) {
     try {
         const dinLocal = await DinLocal.findByPk(receiverId);
         const link = await DinLink.findByPk(id);
-        
+
         if (link === null) {
             res.status(404);
             throw new Error(`Link con id=${id} non trovato.`);
@@ -411,7 +425,7 @@ router.delete('/receivers/:receiverId/links/:id', async function (req, res) {
             res.status(404)
             throw new Error(`Link con id=${id} non trovato.`);
         }
-            
+
         res.send({ message: "Link eliminato con successo." });
     } catch (err) {
         sendError(res, err);
@@ -446,8 +460,29 @@ router.get('/remotes/', async function (req, res) {
             },
             include: ['links']
         });
-        
+
         res.send(allRemotesDins);
+    } catch (err) {
+        sendError(res, err);
+    }
+});
+
+
+router.get('/remotes/count', async function (req, res) {
+    try {
+        const allReceivers = await DinLocal.findAll();
+        const allReceiversDinsIds = allReceivers.map(r => r.din_id);
+
+        const count = await Din.count({
+            where: {
+                id: {
+                    // NOT IN -> troviamo tutti i dins non hanno associato un receiver e quindi sono remote
+                    [Op.notIn]: allReceiversDinsIds
+                }
+            }
+        });
+
+        res.send({ count });
     } catch (err) {
         sendError(res, err);
     }
@@ -466,7 +501,7 @@ router.get('/receivers/:receiverId/remotes', async function (req, res) {
             throw new Error(`Receiver con id=${receiverId} non trovato.`);
         }
         const mappedDins = await DinHasDin.findAll({ where: { pdin_id: receiver.din_id }, include: ['cdin'] });
-    
+
         res.send(mappedDins);
     } catch (err) {
         sendError(res, err);
@@ -485,9 +520,9 @@ router.get('/receivers/:receiverId/remotes/:id', async function (req, res) {
             res.status(404);
             throw new Error(`Receiver con id=${receiverId} non trovato.`);
         }
-        
+
         const mappedDin = await DinHasDin.findOne({ where: { pdin_id: receiver.din_id, cdin_id: dinId }, include: ['cdin'] });
-        
+
         if (mappedDin === null) {
             res.status(404);
             throw new Error(`Non è stato trovato un nodo mappato con id=${dinId} dal receiver con id=${receiverId}.`);
@@ -520,14 +555,14 @@ router.post('/receivers/:receiverId/remotes/', async function (req, res) {
             throw new Error(`Receiver con id=${receiverId} non trovato.`);
         }
 
-        const { din, link } = req.body;
+        const { din } = req.body;
 
         if (!din) {
             res.status(400);
             throw new Error("l'oggetto din è obbligatorio.");
         }
 
-        if (!din.id) {            
+        if (!din.id) {
             // se non è stato passato l'id del din, lo creo
             const requiredFields = ['sid', 'din'];
             for (const field of requiredFields) {
@@ -548,7 +583,7 @@ router.post('/receivers/:receiverId/remotes/', async function (req, res) {
             await Din.update(din, { where: { id: din.id }, transaction: t });
         }
 
-        if(!remoteDin) {
+        if (!remoteDin) {
             res.status(400);
             throw new Error("Non è stato possibile creare un nodo remoto.");
         }
@@ -597,27 +632,27 @@ router.post('/receivers/:receiverId/remotes/', async function (req, res) {
 
 
         // does the receiver already have the remote din mapped?
-        let mappedDin = await DinHasDin.findOne({ 
-            where: { 
-                pdin_id: receiver.din_id, 
-                cdin_id: remoteDin.id 
-            }, 
-            transaction: t, 
-            include: ['cdin'] 
+        let mappedDin = await DinHasDin.findOne({
+            where: {
+                pdin_id: receiver.din_id,
+                cdin_id: remoteDin.id
+            },
+            transaction: t,
+            include: ['cdin']
         });
 
 
         if (mappedDin === null) {
             console.log(`[API] receiver (id ${receiver.id}, din_id ${receiver.din_id}) ${receiver.din.din} Mapping remote din (id ${remoteDin.id}) ${remoteDin.din} to `);
 
-            mappedDin = await DinHasDin.create({ 
-                pdin_id: receiver.din_id, 
+            mappedDin = await DinHasDin.create({
+                pdin_id: receiver.din_id,
                 cdin_id: remoteDin.id
             }, { transaction: t, include: ['cdin'] });
         }
-    
+
         await t.commit();
-        
+
         res.send(mappedDin);
     } catch (err) {
         await t.rollback();
@@ -648,14 +683,14 @@ router.delete('/receivers/:receiverId/remotes/:id', async function (req, res) {
             res.status(404);
             throw new Error(`Receiver con id=${receiverId} non trovato.`);
         }
-        
+
         const dinToDelete = await DinHasDin.findOne({ where: { pdin_id: receiver.din_id, cdin_id: id } });
         if (dinToDelete === null) {
             res.status(404);
             throw new Error(`Non è stato trovato un nodo mappato con id=${id} dal receiver con id=${receiverId}.`);
         }
 
-        const deletedMaps = await DinHasDin.destroy({ where: { pdin_id: receiver.din_id, cdin_id: id }});
+        const deletedMaps = await DinHasDin.destroy({ where: { pdin_id: receiver.din_id, cdin_id: id } });
         console.log(`[API] deletedMaps`, deletedMaps);
 
         if (deletedMaps == 0) {
@@ -668,10 +703,10 @@ router.delete('/receivers/:receiverId/remotes/:id', async function (req, res) {
         console.log(`[API] receiversWithRemoteDinMapped`, receiversWithRemoteDinMapped);
 
         // if the remote din is not mapped to any receiver, delete it
-        if (receiversWithRemoteDinMapped === 0){
+        if (receiversWithRemoteDinMapped === 0) {
             const deletedDins = await Din.destroy({ where: { id }, cascade: true });
             console.log(`[API] deletedDins`, deletedDins);
-            
+
             if (deletedDins === 0) {
                 res.status(404)
                 throw new Error(`Non è stato trovato un nodo remoto con id=${id}.`);
@@ -693,6 +728,66 @@ router.delete('/receivers/:receiverId/remotes', async function (req, res) {
     sendError(res, new Error("Not yet implemented."), 501);
 });
 
+//#region Devices
+
+router.get('/devices', async function (req, res) {
+    try {
+        const devices = [
+            {
+                id: 1,
+                name: 'Dispositivo1',
+                latitudine: 39.3017,
+                longitudine: 16.2537,
+                serial: '907712866',
+                device_model: {},
+                din: {},
+            },
+            {
+                id: 2,
+                name: 'Dispositivo2',
+                latitudine: 39.2854,
+                longitudine: 16.2619,
+                serial: '177899912',
+                device_model: {},
+                din: {},
+            },
+            {
+                id: 3,
+                name: 'Dispositivo3',
+                latitudine: 39.3154,
+                longitudine: 16.2426,
+                serial: '171004882',
+                device_model: {},
+                din: {},
+            },
+        ];
+
+        res.send(devices);
+    } catch (err) {
+        sendError(res, err);
+    }
+});
+
+router.get('/devices/:id', async function (req, res) {
+    sendError(res, new Error("Not yet implemented."), 501);
+});
+
+router.post('/devices', async function (req, res) {
+    sendError(res, new Error("Not yet implemented."), 501);
+});
+
+router.put('/devices/:id', async function (req, res) {
+    sendError(res, new Error("Not yet implemented."), 501);
+});
+
+router.delete('/devices/:id', async function (req, res) {
+    sendError(res, new Error("Not yet implemented."), 501);
+});
+
+
+
+
+
 router.all('*', function (req, res) {
     res.status(404);
     res.send({
@@ -702,10 +797,10 @@ router.all('*', function (req, res) {
 });
 
 function sendError(res, error, status) {
-    
+
     // 200 è lo stato di default, se non è stato impostato uno stato custom usa quello passato alla funzione
     if (res.statusCode === 200) {
-        res.status(status || 500 );
+        res.status(status || 500);
     }
     res.send({
         error_name: error.name,
