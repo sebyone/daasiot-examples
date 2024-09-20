@@ -76,9 +76,6 @@ const EditDinLocal = () => {
 
   useEffect(() => {
     fetchStatus();
-    /*const intervalId = setInterval(fetchStatus, 5000);
-
-    return () => clearInterval(intervalId);*/
   }, []);
 
   const handleAddLink = () => {
