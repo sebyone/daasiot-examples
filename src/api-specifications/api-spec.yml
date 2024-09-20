@@ -458,6 +458,27 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
       
+  /receivers/count:
+    get:
+      description: Ritorna il numero di receivers presenti.
+      responses:
+        '200':
+          description: Numero di receivers presenti.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  count:
+                    type: integer
+                    description: Numero di receivers presenti
+        default:
+          description: Errore interno del server.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
   /receivers/{receiverId}:
     get:
       description: Ritorna un receiver specifico.
@@ -858,6 +879,27 @@ paths:
                 items:
                   $ref: '#/components/schemas/Din_with_links'
 
+        default:
+          description: Errore interno del server.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /remotes/count:
+    get:
+      description: Ritorna il numero di nodi remoti presenti.
+      responses:
+        '200':
+          description: Numero di nodi remoti presenti.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  count:
+                    type: integer
+                    description: Numero di nodi remoti presenti
         default:
           description: Errore interno del server.
           content:
