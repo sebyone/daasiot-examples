@@ -1,4 +1,33 @@
 .customStatistic :global(.ant-statistic-title) {
-    display: flex;
-    justify-content: center;
+  display: flex;
+  justify-content: center;
+}
+
+.mobileMessage {
+  display: none;
+  padding: 24px;
+  font-size: 1.2em;
+  text-align: center;
+}
+
+.container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  min-height: 80vh;
+  padding: 24px;
+}
+
+@media (max-width: 600px) {
+  .container {
+    display: none;
   }
+
+  .mobileMessage {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+  }
+}

@@ -5,6 +5,7 @@ import { Input, Layout, List, Tabs, TabsProps } from 'antd';
 import 'leaflet/dist/leaflet.css';
 import dynamic from 'next/dynamic';
 import { useRef, useState } from 'react';
+import styles from './Dispositivi.module.css';
 
 const { Sider, Content } = Layout;
 
@@ -53,27 +54,36 @@ export default function Admin() {
   ];
 
   return (
-    <Layout style={{ height: '85vh' }}>
-      <Sider width={250} theme="dark" style={{ marginLeft: -23, marginTop: -3, height: 625 }}>
-        <span style={{ display: 'flex', justifyContent: 'center', fontSize: 20, color: 'white' }}>Dispositivi</span>
-        <div style={{ padding: '16px' }}>
-          <Input placeholder="Cerca..." onChange={(e) => setSearchTerm(e.target.value)} suffix={<SearchOutlined />} />
-        </div>
-        <List
-          dataSource={filteredDevices}
-          renderItem={(item) => (
-            <List.Item style={{ borderBottom: '1px solid #303030', padding: '8px 16px' }}>
-              <span style={{ color: 'white' }}>{item.name}</span>
-            </List.Item>
-          )}
-          style={{ height: '535px', overflowY: 'auto' }}
-        />
-      </Sider>
-      <Layout>
-        <Content style={{ padding: '24px', background: '#fff' }}>
-          <Tabs defaultActiveKey="1" type="card" items={items} style={{ marginTop: -25, marginLeft: -15 }} />
-        </Content>
-      </Layout>
-    </Layout>
+    <>
+      <div className={styles.container}>
+        <Layout style={{ height: '85vh' }}>
+          <Sider width={250} theme="dark" style={{ marginLeft: -23, marginTop: -3, height: 625 }}>
+            <span style={{ display: 'flex', justifyContent: 'center', fontSize: 20, color: 'white' }}>Dispositivi</span>
+            <div style={{ padding: '16px' }}>
+              <Input
+                placeholder="Cerca..."
+                onChange={(e) => setSearchTerm(e.target.value)}
+                suffix={<SearchOutlined />}
+              />
+            </div>
+            <List
+              dataSource={filteredDevices}
+              renderItem={(item) => (
+                <List.Item style={{ borderBottom: '1px solid #303030', padding: '8px 16px' }}>
+                  <span style={{ color: 'white' }}>{item.name}</span>
+                </List.Item>
+              )}
+              style={{ height: '535px', overflowY: 'auto' }}
+            />
+          </Sider>
+          <Layout>
+            <Content style={{ padding: '24px', background: '#fff' }}>
+              <Tabs defaultActiveKey="1" type="card" items={items} style={{ marginTop: -25, marginLeft: -15 }} />
+            </Content>
+          </Layout>
+        </Layout>
+      </div>
+      <div className={styles.mobileMessage}>Questo contenuto non è disponibile sui dispositivi mobile.</div>
+    </>
   );
 }
