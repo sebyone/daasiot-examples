@@ -965,15 +965,12 @@ paths:
             examples:
               new remote:
                 value:
-                  receiverId: 1
                   din: { "sid": "100", "din": "87", "p_res": "011", "skey": "9efb9832494f" }
               existing remote:
                 value:
-                  receiverId: 1
                   din: { "id": 2 }
               existing remote, make changes:
                 value:
-                  receiverId: 1
                   din: { "id": 2, "din": "1669" }
 
       responses:
