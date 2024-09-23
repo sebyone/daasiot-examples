@@ -1,0 +1,23 @@
+.mobileMessage {
+  display: none;
+  padding: 24px;
+  font-size: 1.2em;
+  text-align: center;
+}
+
+.container {
+  height: 85vh;
+}
+
+@media (max-width: 600px) {
+  .container {
+    display: none;
+  }
+
+  .mobileMessage {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+  }
+}
