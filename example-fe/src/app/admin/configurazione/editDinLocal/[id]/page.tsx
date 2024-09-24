@@ -50,14 +50,6 @@ const EditDinLocal = () => {
     router.push(`/admin/configurazione/editMap/${data.id}`);
   };
 
-  /*const mapsData = [
-    {
-      id: 1,
-      din: '101',
-      tech: '2',
-    },
-  ];*/
-
   const fetchLinks = async () => {
     try {
       await ConfigService.getLinks().then((data) => {
