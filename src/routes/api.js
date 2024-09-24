@@ -236,7 +236,7 @@ router.put('/receivers/:receiverId', async function (req, res) {
         }
 
         await DinLocal.update(dinLocal, { where: { id: receiverId }, transaction: t });
-        await Din.update({ id: din_id, ...din }, { where: { id: din_id }, transaction: t });
+        await Din.update({ id: oldDinLocal.din_id, ...din }, { where: { id: oldDinLocal.din_id }, transaction: t });
 
         await t.commit();
 
