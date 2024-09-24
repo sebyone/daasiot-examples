@@ -247,7 +247,7 @@ const ConfigService = {
    * status - Stato del dispositivo (acceso/spento)
    * value - Valore del dimmer da inviare
    */
-  sendPayload: async (din: number | null, status: boolean, value: number) => {
+  sendPayload: async (din: number | null, status: boolean, value: number | number[]) => {
     try {
       const st = status ? 1 : 0;
       const va = value || 0;

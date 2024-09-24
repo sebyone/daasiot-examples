@@ -18,6 +18,17 @@ export default function Dispositivi() {
   const [receiversData, setReceiversData] = useState<DinLocalDataType[]>([]);
   const { notify, contextHolder } = useCustomNotification();
 
+  /* receiversData: DinLocalDataType[] = [
+    {
+      id: 1,
+      title: 'dinLocal',
+      sid: 1,
+      din: 1,
+      acpt_all: 'true',
+      links: 'link',
+      status: 'ok',
+    },
+  ];*/
   const fetchReceivers = async () => {
     try {
       const data = await ConfigService.getAll();

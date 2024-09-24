@@ -18,6 +18,8 @@ export interface ActionsButtonProps {
   onEdit: (data: any) => void;
 
   onDelete: (data: any) => void;
+  onOpenModal?: (data: any) => void;
+  showOpenModal?: boolean;
 }
 
 export interface ColumnType<T = any> {
@@ -44,6 +46,8 @@ export interface GenericTableProps<T> {
   confirm: (data: any) => void;
   onRowClick: (data: T) => void;
   onEditClick: (data: any) => void;
+  onOpenModal?: (data: T) => void;
+  showOpenModal?: boolean;
 }
 
 export interface FormMenuProps {
@@ -198,4 +202,12 @@ export interface MapDataType {
   id?: number;
   din: string;
   tech: string;
+}
+
+export interface CardDispositivoProps {
+  status: boolean;
+  setStatus: (enabled: boolean) => void;
+  onChangeComplete: (value: number | number[]) => void;
+  onChange: (status: boolean) => void;
+  onSend: () => void;
 }

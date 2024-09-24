@@ -31,10 +31,28 @@ class GenericTable<T extends TableDataType> extends Component<GenericTableProps<
     };
   }
 
+  getActionColumnWithOpenModal(): ColumnType {
+    const { confirm, onOpenModal } = this.props;
+    return {
+      title: '',
+      dataIndex: 'actions',
+      key: 'actions',
+      render: (_, record) => (
+        <ActionsButton
+          data={record}
+          onEdit={this.props.onRowClick}
+          onDelete={() => this.props.confirm(record)}
+          onOpenModal={onOpenModal}
+          showOpenModal={true}
+        />
+      ),
+    };
+  }
+
   getFilteredColumns() {
-    const { columns, excludeColumns } = this.props;
+    const { columns, excludeColumns, onOpenModal } = this.props;
     const defaultColumns = this.getDefaultColumns();
-    const actionColumn = this.getActionColumn();
+    const actionColumn = onOpenModal ? this.getActionColumnWithOpenModal() : this.getActionColumn();
     return [...filterColumns(columns || defaultColumns, excludeColumns), actionColumn];
   }
 
@@ -47,8 +65,17 @@ class GenericTable<T extends TableDataType> extends Component<GenericTableProps<
   };
 
   render(): ReactNode {
-    const { items, handleClick, showButton, rowKey, route, handleSearchChange, handleEventSearchChange, onRowClick } =
-      this.props;
+    const {
+      items,
+      handleClick,
+      showButton,
+      rowKey,
+      route,
+      handleSearchChange,
+      handleEventSearchChange,
+      onRowClick,
+      onOpenModal,
+    } = this.props;
     const columns = this.getFilteredColumns();
     const pagination = this.paginationConfig;
 

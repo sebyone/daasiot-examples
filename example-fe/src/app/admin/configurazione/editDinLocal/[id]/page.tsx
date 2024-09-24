@@ -1,6 +1,7 @@
 'use client';
 import LinkTable from '@/components/LinkTable';
 import MapTable from '@/components/MapTable';
+import ModalDispositivo from '@/components/ModalDispositivo';
 import { useCustomNotification } from '@/hooks/useNotificationHook';
 import { default as ConfigService, default as configService } from '@/services/configService';
 import { ConfigData, ConfigFormData, LinkDataType, MapDataType, StatusDataType } from '@/types';
@@ -25,6 +26,21 @@ const EditDinLocal = () => {
   const [linksData, setLinksData] = useState<LinkDataType[]>([]);
   const [mapsData, setMapsData] = useState<MapDataType[]>([]);
   const [statusData, setStatusData] = useState<StatusDataType | null>(null);
+  const [status, setStatus] = useState(false);
+  const [value, setValue] = useState<number | number[]>(0);
+  const [ws, setSocket] = useState<WebSocket | null>(null);
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [selectedMap, setSelectedMap] = useState<MapDataType | null>(null);
+
+  const handleOpenModal = (data: MapDataType) => {
+    setSelectedMap(data);
+    setIsModalVisible(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalVisible(false);
+    setSelectedMap(null);
+  };
 
   const handleEditLink = (data: LinkDataType) => {
     router.push(`/admin/configurazione/editLink/${data.id}`);
@@ -33,6 +49,14 @@ const EditDinLocal = () => {
   const handleEditMap = (data: MapDataType) => {
     router.push(`/admin/configurazione/editMap/${data.id}`);
   };
+
+  /*const mapsData = [
+    {
+      id: 1,
+      din: '101',
+      tech: '2',
+    },
+  ];*/
 
   const fetchLinks = async () => {
     try {
@@ -177,6 +201,56 @@ const EditDinLocal = () => {
     }
   };
 
+  useEffect(() => {
+    const socket = new WebSocket(`${process.env.NEXT_PUBLIC_API_BASE_URL}`);
+
+    socket.onmessage = (event) => {
+      console.log('Ricevuto messaggio', event.data);
+      const data = JSON.parse(event.data);
+
+      if (data.event === 'ddo') {
+        setStatus(data.status);
+        setValue(data.value);
+      }
+    };
+
+    socket.onopen = () => {
+      console.log('Connesso al server');
+    };
+
+    socket.onclose = () => {
+      console.log('Disconnesso dal server');
+    };
+
+    setSocket(socket);
+
+    return () => {
+      if (socket && socket.readyState === WebSocket.OPEN) {
+        socket.close();
+      }
+    };
+  }, []);
+
+  const onChangeComplete = (value: number | number[]) => {
+    setValue(value);
+  };
+
+  const onChange = (status: boolean) => {
+    setStatus(status);
+  };
+
+  const onSend = async () => {
+    try {
+      if (selectedMap) {
+        await configService.sendPayload(Number(selectedMap.din), status, value);
+        notify('success', 'Invio riuscito', 'Operazione avvenuta con successo');
+      }
+    } catch (error) {
+      notify('error', 'Qualcosa non ha funzionato', "Errore nell'invio dei dati");
+      console.error("Errore nell'invio dei dati:", error);
+    }
+  };
+
   const items: TabsProps['items'] = [
     {
       key: '1',
@@ -218,16 +292,32 @@ const EditDinLocal = () => {
       key: '3',
       label: 'Map',
       children: (
-        <MapTable
-          items={mapsData}
-          handleClick={handleAddMap}
-          showButton={true}
-          rowKey="din"
-          route={router}
-          confirm={handleDeleteMap}
-          onRowClick={handleEditMap}
-          onEditClick={handleEditMap}
-        />
+        <>
+          <MapTable
+            items={mapsData}
+            handleClick={handleAddMap}
+            showButton={true}
+            rowKey="din"
+            route={router}
+            confirm={handleDeleteMap}
+            onRowClick={handleEditMap}
+            onEditClick={handleEditMap}
+            onOpenModal={handleOpenModal}
+            showOpenModal={true}
+          />
+          {selectedMap && (
+            <ModalDispositivo
+              isVisible={isModalVisible}
+              onClose={handleCloseModal}
+              data={selectedMap}
+              status={status}
+              setStatus={setStatus}
+              onChangeComplete={onChangeComplete}
+              onChange={onChange}
+              onSend={onSend}
+            />
+          )}
+        </>
       ),
     },
   ];

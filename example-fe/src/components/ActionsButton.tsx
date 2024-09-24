@@ -1,9 +1,9 @@
 import { ActionsButtonProps } from '@/types';
-import { DeleteFilled, EditFilled } from '@ant-design/icons';
+import { DeleteFilled, EditFilled, SelectOutlined } from '@ant-design/icons';
 import { Popconfirm } from 'antd';
 import React from 'react';
 
-const ActionsButton = ({ data, onEdit, onDelete }: ActionsButtonProps) => {
+const ActionsButton = ({ data, onEdit, onDelete, onOpenModal, showOpenModal }: ActionsButtonProps) => {
   const handleStopPropagation = (e: React.MouseEvent | undefined) => {
     e?.stopPropagation();
     e?.preventDefault();
@@ -16,6 +16,14 @@ const ActionsButton = ({ data, onEdit, onDelete }: ActionsButtonProps) => {
     e?.stopPropagation();
     e?.preventDefault();
     onDelete(data);
+  };
+
+  const handleOpenModal = (e: React.MouseEvent | undefined) => {
+    if (onOpenModal) {
+      e?.stopPropagation();
+      e?.preventDefault();
+      onOpenModal(data);
+    }
   };
 
   return (
@@ -32,6 +40,7 @@ const ActionsButton = ({ data, onEdit, onDelete }: ActionsButtonProps) => {
       >
         <DeleteFilled style={{ color: 'red', margin: 12 }} onClick={handleStopPropagation} />
       </Popconfirm>
+      {showOpenModal && <SelectOutlined onClick={handleOpenModal} style={{ marginLeft: -20 }} />}
     </div>
   );
 };
