@@ -5,7 +5,6 @@ import { DinLocalDataType } from '@/types';
 
 import dynamic from 'next/dynamic';
 import { useRouter } from 'next/navigation';
-import { title } from 'process';
 import { useEffect, useState } from 'react';
 
 const DataPanel = dynamic(() => import('@/components/DataPanel'), { ssr: false });
