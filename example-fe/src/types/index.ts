@@ -1,3 +1,4 @@
+import { DeviceComponentsRegistry } from '@/utils/deviceComponentsRegistry';
 import { FormInstance } from 'antd';
 import { AppRouterInstance } from 'next/dist/shared/lib/app-router-context.shared-runtime';
 import React from 'react';
@@ -63,7 +64,7 @@ export interface FormMenuProps {
 
 export interface PanelViewProps {
   children: React.ReactNode;
-  layoutStyle?: 'default' | 'singleTable' | 'formAndTable';
+  layoutStyle?: 'default' | 'singleTable' | 'formAndTable' | 'devices';
 }
 
 export interface DataPanelProps {
@@ -72,6 +73,8 @@ export interface DataPanelProps {
   style?: React.CSSProperties;
   isEditing?: boolean;
   showSemaphore?: boolean;
+  showLinkStatus?: boolean;
+  showAlignmentStatus?: boolean;
 }
 
 export interface PanelProps {
@@ -84,7 +87,7 @@ export interface PanelProps {
   handleEdit?: () => void;
   handleSave?: () => void;
   children: React.ReactNode;
-  layoutStyle?: 'default' | 'singleTable' | 'formAndTable';
+  layoutStyle?: 'default' | 'singleTable' | 'formAndTable' | 'devices';
   form?: FormInstance;
 }
 
@@ -230,4 +233,48 @@ export interface Device {
   name: string;
   latitudine: number;
   longitudine: number;
+}
+
+export interface NodoFormProps {
+  form: FormInstance;
+  onHideTestComponent: () => void;
+}
+
+export interface BaseCardDispositivoProps {
+  deviceName: string;
+  dinOptions: number[];
+  selectedDin: number | null;
+  setSelectedDin: (din: number | null) => void;
+  onTest: () => void;
+  status: boolean;
+  setStatus: (status: boolean) => void;
+  value: number;
+  setValue: (value: number) => void;
+  showTestControl: boolean;
+  onSend: () => void;
+  options?: { label: string; value: number }[];
+  children?: React.ReactNode;
+}
+
+export interface CardDispositivoFactoryProps {
+  deviceType: keyof DeviceComponentsRegistry;
+  deviceName: string;
+  dinOptions: number[];
+  selectedDin: number | null;
+  setSelectedDin: (din: number | null) => void;
+  onTest: () => void;
+  onSend: () => void;
+  status: boolean;
+  setStatus: (status: boolean) => void;
+  value: number;
+  setValue: (value: number) => void;
+  showTestControl: boolean;
+}
+
+export interface UPLDispositivoCardProps extends BaseCardDispositivoProps {
+  status: boolean;
+  setStatus: (status: boolean) => void;
+  value: number;
+  setValue: (value: number) => void;
+  showTestControl: boolean;
 }

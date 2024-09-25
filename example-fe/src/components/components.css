@@ -17,6 +17,12 @@
   max-height: 500px;
 }
 
+.flex-container.devices {
+  width: 100%;
+  margin-top: 50px;
+  max-height: 500px;
+}
+
 .panel-content-list.default {
   transform: scale(0.85);
 }

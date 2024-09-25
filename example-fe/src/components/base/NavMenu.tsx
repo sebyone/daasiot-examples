@@ -1,9 +1,5 @@
 'use client';
-import {
-  DesktopOutlined,
-  DeploymentUnitOutlined,
-  SettingOutlined,
-} from '@ant-design/icons';
+import { DeploymentUnitOutlined, DesktopOutlined, EnvironmentOutlined, SettingOutlined } from '@ant-design/icons';
 import { Menu, MenuProps } from 'antd';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -12,9 +8,9 @@ import { useEffect, useMemo, useState } from 'react';
 type MenuItem = Required<MenuProps>['items'][number] & { roles?: string[] };
 
 const pathMap = {
-  
   '/admin/configurazione': '/admin/configurazione',
   '/admin/dispositivi': '/admin/dispositivi',
+  '/admin/mappa': '/admin/mappa',
   '/admin': '/admin',
 };
 
@@ -34,7 +30,7 @@ export default function NavMenu({ role }: { role: string }) {
   const allMenuItems: MenuItem[] = [
     {
       key: '/admin',
-      icon: <DesktopOutlined /> ,
+      icon: <DesktopOutlined />,
       label: <Link href={'/admin'}>Dashboard</Link>,
     },
     {
@@ -46,6 +42,11 @@ export default function NavMenu({ role }: { role: string }) {
       key: '/admin/dispositivi',
       icon: <DeploymentUnitOutlined />,
       label: <Link href={'/admin/dispositivi'}>Dispositivi</Link>,
+    },
+    {
+      key: '/admin/mappa',
+      icon: <EnvironmentOutlined />,
+      label: <Link href={'/admin/mappa'}>Geolocalizzazione</Link>,
     },
   ];
 
@@ -62,6 +63,12 @@ export default function NavMenu({ role }: { role: string }) {
   }, [role]);
 
   return (
-    <Menu theme='dark' mode="inline" selectedKeys={[selectedKey]} style={{ height: '100%', borderRight: 0 }} items={menuItems} />
+    <Menu
+      theme="dark"
+      mode="inline"
+      selectedKeys={[selectedKey]}
+      style={{ height: '100%', borderRight: 0 }}
+      items={menuItems}
+    />
   );
 }

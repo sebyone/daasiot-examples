@@ -1,21 +1,18 @@
 'use client';
-import { SearchOutlined } from '@ant-design/icons';
-import { Button, Drawer, Input, Layout, List, Table, Tabs, TabsProps } from 'antd';
-
+import CardDispositivoFactory from '@/components/CardDispositivoFactory';
+import DataPanel from '@/components/DataPanel';
+import NodoForm from '@/components/NodoForm';
+import Panel from '@/components/Panel';
+import PanelView from '@/components/PanelView';
 import { useCustomNotification } from '@/hooks/useNotificationHook';
-import ConfigService from '@/services/configService';
-import { ColumnType, Device } from '@/types';
-import 'leaflet/dist/leaflet.css';
-import dynamic from 'next/dynamic';
-import { useEffect, useRef, useState } from 'react';
+import { default as ConfigService, default as configService } from '@/services/configService';
+import { Device } from '@/types';
+import { DeploymentUnitOutlined, PlusOutlined, SearchOutlined } from '@ant-design/icons';
+import { Button, Empty, Form, Input, Layout, List, Modal, Table, Tabs, TabsProps } from 'antd';
+import { useEffect, useState } from 'react';
 import styles from './Dispositivi.module.css';
 
 const { Sider, Content } = Layout;
-
-const Map = dynamic(() => import('../../../components/Map'), {
-  ssr: false,
-  loading: () => <p>Caricamento mappa...</p>,
-});
 
 /*const devices = [
   {
@@ -38,29 +35,6 @@ const Map = dynamic(() => import('../../../components/Map'), {
   },
 ];*/
 
-const columns: ColumnType[] = [
-  {
-    title: 'Funzione',
-    dataIndex: 'funzione',
-    key: 'funzione',
-  },
-  {
-    title: 'Parametri',
-    dataIndex: 'parametri',
-    key: 'parametri',
-  },
-  {
-    title: 'Ingressi',
-    dataIndex: 'ingressi',
-    key: 'ingressi',
-  },
-  {
-    title: 'Uscite',
-    dataIndex: 'uscite',
-    key: 'uscite',
-  },
-];
-
 const data = [
   {
     id: 1,
@@ -73,15 +47,107 @@ const data = [
 ];
 
 export default function Admin() {
+  const [formDaasIoT] = Form.useForm();
   const [searchTerm, setSearchTerm] = useState('');
   const [devicesData, setDevicesData] = useState<Device[]>([]);
   const { notify, contextHolder } = useCustomNotification();
   const filteredDevices = devicesData.filter((device) => device.name.toLowerCase().includes(searchTerm.toLowerCase()));
   const [selectedDevice, setSelectedDevice] = useState<Device | null>(null);
+  const [showTestComponent, setShowTestComponent] = useState(false);
+  const [status, setStatus] = useState<boolean>(false);
+  const [value, setValue] = useState<number>(0);
+  const [ws, setSocket] = useState<WebSocket | null>(null);
+  const [dinOptions, setDinOptions] = useState<number[]>([]);
+  const [selectedDin, setSelectedDin] = useState<number | null>(null);
+  const [showTestControl, setShowTestControl] = useState<boolean>(false);
+  const [functions, setFunctions] = useState([]);
+  const [availableFunctions, setAvailableFunctions] = useState([
+    { id: 1, name: 'funzione1' },
+    { id: 2, name: 'funzione2' },
+  ]);
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [isDeviceSelected, setIsDeviceSelected] = useState(false);
+
+  const columns = [
+    {
+      title: 'Funzione',
+      dataIndex: 'name',
+      key: 'name',
+      render: (text, record, index) => {
+        if (record.id === 'add') {
+          return availableFunctions.length > 0 ? (
+            <Button type="link" icon={<PlusOutlined />} onClick={() => setIsModalVisible(true)}>
+              Aggiungi funzione
+            </Button>
+          ) : null;
+        }
+        return text;
+        {
+          /*(
+          <Select style={{ width: '100%' }} value={text} onChange={(value) => handleFunctionChange(value, index)}>
+            {availableFunctions.map((func) => (
+              <Select.Option key={func.id} value={func.name}>
+                {func.name}
+              </Select.Option>
+            ))}
+          </Select>*/
+        }
+      },
+    },
+    { title: 'Parametri', dataIndex: 'parametri', key: 'parametri' },
+    { title: 'Ingressi', dataIndex: 'ingressi', key: 'ingressi' },
+    { title: 'Uscite', dataIndex: 'uscite', key: 'uscite' },
+  ];
+
+  /*
+  const addFunction = async (func) => {
+    try {
+      const functionDetails = await ConfigService.getFunctionDetails(func.id);
+      setFunctions([...functions, {
+        id: Date.now(),
+        name: func.name,
+        parameters: functionDetails.parameters,
+        inputs: functionDetails.inputs,
+        outputs: functionDetails.outputs
+      }]);
+      setIsModalVisible(false);
+    } catch (error) {
+    } 
+  };
+
+  */
+
+  const addFunction = (func) => {
+    setFunctions([...functions, { id: Date.now(), name: func.name }]);
+    setAvailableFunctions(availableFunctions.filter((f) => f.id !== func.id));
+    setIsModalVisible(false);
+  };
 
   const handleDeviceClick = (device: Device) => {
     setSelectedDevice(device);
+    setIsDeviceSelected(true);
   };
+
+  const ActionButtons = () => (
+    <div style={{ marginTop: 16 }}>
+      <Button style={{ marginRight: 8 }} type="primary">
+        Recall
+      </Button>
+      <Button type="primary">Modifica</Button>
+    </div>
+  );
+
+  const ProgramButton = () => (
+    <Button
+      type="primary"
+      onClick={() => {
+        // SendProgram
+      }}
+      style={{ float: 'right', marginTop: 16 }}
+    >
+      Programma
+    </Button>
+  );
 
   useEffect(() => {
     const fetchDevices = async () => {
@@ -102,16 +168,158 @@ export default function Admin() {
     fetchDevices();
   }, []);
 
+  useEffect(() => {
+    if (selectedDevice) {
+      formDaasIoT.setFieldsValue({
+        id: selectedDevice.id,
+        denominazione: selectedDevice.name,
+        latitudine: selectedDevice.latitudine,
+        longitudine: selectedDevice.longitudine,
+      });
+    }
+  }, [selectedDevice, formDaasIoT]);
+
+  const handleTest = () => {
+    setShowTestComponent((prevState) => !prevState);
+  };
+
+  const hideTestComponent = () => {
+    setShowTestComponent(false);
+  };
+
+  useEffect(() => {
+    const socket = new WebSocket(`${process.env.NEXT_PUBLIC_WS_URL}`);
+
+    socket.onmessage = (event) => {
+      console.log('Ricevuto messaggio', event.data);
+      const data = JSON.parse(event.data);
+
+      if (data.event === 'ddo') {
+        setStatus(data.status);
+        setValue(data.value);
+      }
+    };
+
+    socket.onopen = () => {
+      console.log('Connesso al server');
+    };
+
+    socket.onclose = () => {
+      console.log('Disconnesso dal server');
+    };
+
+    setSocket(socket);
+
+    return () => {
+      if (socket && socket.readyState === WebSocket.OPEN) {
+        socket.close();
+      }
+    };
+  }, []);
+
+  const onChangeComplete = (value: number) => {
+    setValue(value);
+  };
+
+  const onChange = (status: boolean) => {
+    setStatus(status);
+  };
+
+  /*useEffect(() => {
+    configService
+      .getDinOptions()
+      .then(setDinOptions)
+      .catch((error) => {
+        console.error('Errore:', error);
+      });
+
+    configService
+      .getSegnalazioni()
+      .then(setSegnalazioni)
+      .catch((error) => {
+        console.error('Errore:', error);
+      });
+  }, []);*/
+
+  const onSend = () => {
+    configService
+      .sendPayload(selectedDin, status, value)
+      .then((response) => {
+        console.log(response);
+      })
+      .catch((error) => {
+        console.error('Errore:', error);
+      });
+    console.log('STATUS:' + status + ' ' + 'VALUE:' + value);
+    /*setTest(false);
+    setValue(0);
+    setStatus(false);
+    setSelectedDin(null);*/
+  };
+
   const items: TabsProps['items'] = [
     {
       key: '1',
-      label: 'Mappa',
-      children: <Map devices={devicesData} />,
+      label: 'Generali',
+      children: (
+        <>
+          <NodoForm form={formDaasIoT} onHideTestComponent={hideTestComponent} />
+          <Button type="primary" onClick={handleTest} style={{ marginBottom: 20 }}>
+            Test
+          </Button>
+          {showTestComponent && (
+            <div style={{ marginTop: -40, marginLeft: 70 }}>
+              <CardDispositivoFactory
+                deviceType="UPL"
+                deviceName="UPL Modello XX"
+                dinOptions={dinOptions}
+                selectedDin={selectedDin}
+                setSelectedDin={setSelectedDin}
+                onTest={handleTest}
+                onSend={onSend}
+                status={status}
+                setStatus={onChange}
+                value={value}
+                setValue={onChangeComplete}
+                showTestControl={showTestControl}
+              />
+            </div>
+          )}
+        </>
+      ),
     },
     {
       key: '2',
-      label: 'Programmazione',
-      children: <Table columns={columns} size="small" rowKey={'parametri'} />,
+      label: 'Parametri',
+      children: (
+        <div>
+          <Table
+            columns={columns}
+            size="small"
+            rowKey="id"
+            dataSource={[...functions, ...(availableFunctions.length > 0 ? [{ id: 'add', name: 'add' }] : [])]}
+            pagination={false}
+          />
+          <ActionButtons />
+          <ProgramButton />
+
+          <Modal
+            title="Aggiungi Funzione"
+            open={isModalVisible}
+            onCancel={() => setIsModalVisible(false)}
+            footer={null}
+          >
+            <List
+              dataSource={availableFunctions}
+              renderItem={(item) => (
+                <List.Item key={item.id} onClick={() => addFunction(item)} style={{ cursor: 'pointer' }}>
+                  {item.name}
+                </List.Item>
+              )}
+            />
+          </Modal>
+        </div>
+      ),
     },
     {
       key: '3',
@@ -202,25 +410,29 @@ export default function Admin() {
               style={{ height: '535px', overflowY: 'auto' }}
             />
           </Sider>
-          <Drawer
-            title="Informazioni dispositivo"
-            placement="top"
-            onClose={() => setSelectedDevice(null)}
-            open={selectedDevice !== null}
-            width={400}
-          >
-            {selectedDevice && (
-              <div>
-                <h2>{selectedDevice.name}</h2>
-                <p>ID: {selectedDevice.id}</p>
-                <p>Latitudine: {selectedDevice.latitudine}</p>
-                <p>Longitudine: {selectedDevice.longitudine}</p>
-              </div>
-            )}
-          </Drawer>
           <Layout>
-            <Content style={{ padding: '24px', background: '#fff', maxHeight: '100%' }}>
-              <Tabs defaultActiveKey="1" type="card" items={items} style={{ marginTop: -25, marginLeft: -15 }} />
+            <Content style={{ padding: 0, background: '#fff', maxHeight: '100%' }}>
+              {isDeviceSelected ? (
+                <DataPanel title={selectedDevice?.name} showSemaphore={false} showLinkStatus showAlignmentStatus>
+                  <Panel showSaveButtons={false} layoutStyle="devices">
+                    <PanelView layoutStyle="devices">
+                      <Tabs type="card" items={items} style={{ marginTop: -70, padding: 10 }} />
+                    </PanelView>
+                  </Panel>
+                </DataPanel>
+              ) : (
+                <Empty
+                  image={<DeploymentUnitOutlined style={{ fontSize: 60, color: '#1890ff' }} />}
+                  imageStyle={{
+                    height: 60,
+                  }}
+                  description={
+                    <span style={{ color: '#595959', fontSize: '16px' }}>
+                      Seleziona un dispositivo nella lista per visualizzarne i dettagli
+                    </span>
+                  }
+                ></Empty>
+              )}
             </Content>
           </Layout>
         </Layout>
