@@ -1,33 +1,50 @@
 'use client';
+import { useCustomNotification } from '@/hooks/useNotificationHook';
 import ConfigService from '@/services/configService';
 import { ApiOutlined, MessageOutlined, WifiOutlined } from '@ant-design/icons';
 import { Card, Col, Row, Statistic } from 'antd';
 import { useEffect, useState } from 'react';
 import styles from './Dashboard.module.css';
-export default function Admin() {
+
+export default function Dashboard() {
+  const { notify, contextHolder } = useCustomNotification();
   const [remotesCount, setRemotesCount] = useState<number>(0);
+  const [receiversCount, setReceiversCount] = useState<number>(0);
 
   useEffect(() => {
-    const fetchReceiversCount = async () => {
+    const fetchRemotesCount = async () => {
       try {
         const count = await ConfigService.getRemotesCount();
         setRemotesCount(count);
       } catch (error) {
-        console.error('Errore nel recupero del conteggio dei receivers:', error);
+        notify('error', 'Qualcosa non ha funzionato', 'Errore nel caricamento del conteggio dei remotes');
+        console.error('Errore nel caricamento del conteggio dei remotes:', error);
+      }
+    };
+    const fetchReceiversCount = async () => {
+      try {
+        const count = await ConfigService.getReceiversCount();
+        setReceiversCount(count);
+      } catch (error) {
+        notify('error', 'Qualcosa non ha funzionato', 'Errore nel caricamento del conteggio dei receivers');
+        console.error('Errore nel caricamento del conteggio dei receivers:', error);
       }
     };
 
+    fetchRemotesCount();
     fetchReceiversCount();
   }, []);
+
   return (
     <>
+      {contextHolder}
       <div className={styles.container}>
         <Row gutter={[16, 16]}>
           <Col xs={24} md={8}>
             <Card hoverable>
               <Statistic
                 title="Receivers"
-                value={0}
+                value={receiversCount}
                 prefix={<WifiOutlined style={{ fontSize: '24px', color: '#1890ff', marginRight: 290 }} />}
                 className={styles.customStatistic}
               />

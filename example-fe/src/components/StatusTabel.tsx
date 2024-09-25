@@ -1,4 +1,4 @@
-import { ColumnType, ConfigData, DinLocalDataType, EdificiDataType, StatusDataType } from '@/types';
+import { ColumnType, StatusDataType } from '@/types';
 import GenericTable from './generics/GenericTable';
 
 const defaultColumns: ColumnType[] = [

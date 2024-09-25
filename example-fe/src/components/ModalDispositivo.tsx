@@ -1,18 +1,7 @@
-import { MapDataType } from '@/types';
+import { MapDataType, ModalDispositivoProps } from '@/types';
 import { Modal } from 'antd';
 import React from 'react';
 import CardDispositivo from './CardDispositivo';
-
-interface ModalDispositivoProps {
-  isVisible: boolean;
-  onClose: () => void;
-  data: MapDataType;
-  status: boolean;
-  setStatus: (enabled: boolean) => void;
-  onChangeComplete: (value: number | number[]) => void;
-  onChange: (status: boolean) => void;
-  onSend: () => void;
-}
 
 const ModalDispositivo: React.FC<ModalDispositivoProps> = ({
   isVisible,

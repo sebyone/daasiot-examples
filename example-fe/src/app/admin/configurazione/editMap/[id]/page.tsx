@@ -1,7 +1,7 @@
 'use client';
 import { useCustomNotification } from '@/hooks/useNotificationHook';
 import configService from '@/services/configService';
-import { DinDataType, LinkDataType, MapDataType } from '@/types';
+import { DinDataType, DinFormData, LinkDataType, MapDataType } from '@/types';
 import { Form, Modal, notification } from 'antd';
 import dynamic from 'next/dynamic';
 import { useParams, useRouter } from 'next/navigation';
@@ -26,7 +26,13 @@ const EditMap = () => {
     configService
       .getMapById(id)
       .then((data) => {
-        form.setFieldsValue(data);
+        form.setFieldsValue({
+          id: data.cdin.id,
+          sid: data.cdin.sid,
+          din: data.cdin.din,
+          p_res: data.cdin.p_res,
+          skey: data.cdin.skey,
+        });
         setMap(data.din);
       })
       .catch((error) => {
@@ -35,7 +41,7 @@ const EditMap = () => {
       });
   }, []);
 
-  const onFinish = async (values: DinDataType) => {
+  const onFinish = async (values: DinFormData) => {
     try {
       await configService.updateMap(id, values);
       notify('success', 'Operazione riuscita', 'Operazione avvenuta con successo');

@@ -18,7 +18,9 @@
 import {
   ConfigData,
   ConfigFormData,
+  Device,
   DinDataType,
+  DinFormData,
   DinLocalDataType,
   LinkDataType,
   LinkFormData,
@@ -171,7 +173,7 @@ const ConfigService = {
    * map - Oggetto DinDataType senza l'ID (verrà generato dal server)
    * Promise<DinDataType> - Oggetto DinDataType della nuova mappa creata
    */
-  createMap: async (map: Omit<DinDataType, 'id'>) => {
+  createMap: async (map: Omit<DinFormData, 'id'>) => {
     try {
       const response = await axiosInstance.post<DinDataType>('/receivers/1/remotes', map);
       return response.data;
@@ -231,9 +233,9 @@ const ConfigService = {
    * id - ID del nodo mappato da aggiornare
    * mapData - Oggetto DinDataType con i nuovi dati del nodo mappato
    */
-  updateMap: async (id: number, mapData: DinDataType): Promise<void> => {
+  updateMap: async (id: number, mapData: DinFormData): Promise<void> => {
     try {
-      const response = await axiosInstance.put(`/receivers/1/remotes/${id}`, mapData);
+      const response = await axiosInstance.post(`/receivers/1/remotes/${id}`, mapData);
       return response.data;
     } catch (error) {
       console.error('Error:', error);
@@ -288,6 +290,34 @@ const ConfigService = {
     try {
       const response = await axiosInstance.get<{ count: number }>('/remotes/count');
       return response.data.count;
+    } catch (error) {
+      console.error('Error:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Recupera il numero di receivers
+   * Promise<number> - Intero che rappresenta il numero di receivers
+   */
+  getReceiversCount: async (): Promise<number> => {
+    try {
+      const response = await axiosInstance.get<{ count: number }>('/receivers/count');
+      return response.data.count;
+    } catch (error) {
+      console.error('Error:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Recupera l'elenco di tutti i dispositivi
+   * Promise<Device[]> - Array di oggetti Device
+   */
+  getDevices: async (): Promise<Device[]> => {
+    try {
+      const response = await axiosInstance.get('/devices');
+      return response.data;
     } catch (error) {
       console.error('Error:', error);
       throw error;

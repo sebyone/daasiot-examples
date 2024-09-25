@@ -1,7 +1,7 @@
 'use client';
 import { useCustomNotification } from '@/hooks/useNotificationHook';
 import configService from '@/services/configService';
-import { DinDataType, LinkDataType, MapDataType } from '@/types';
+import { DinDataType, DinFormData, LinkDataType, MapDataType } from '@/types';
 import { Form, Modal, notification } from 'antd';
 import dynamic from 'next/dynamic';
 import { useRouter } from 'next/navigation';
@@ -19,12 +19,19 @@ const NewMap = () => {
   const [title, setTitle] = useState('New Map');
   const [isDataSaved, setIsDataSaved] = useState(true);
 
-  const onFinish = async (values: DinDataType) => {
+  const onFinish = async (values: DinFormData) => {
     try {
-      await configService.createMap(values);
+      const formattedValues = {
+        din: {
+          sid: values.sid,
+          din: values.din,
+          p_res: values.p_res,
+          skey: values.skey,
+        },
+      };
+      await configService.createMap(formattedValues);
       notify('success', 'Operazione riuscita', 'Map creato con successo');
       setIsDataSaved(true);
-      router.push('/admin/configurazione');
     } catch (error) {
       notify('error', 'Qualcosa non ha funzionato', 'Errore nella creazione del map');
     }

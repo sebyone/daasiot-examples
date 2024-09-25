@@ -1,9 +1,9 @@
-import { DinDataType, MapDataType, MapFormProps } from '@/types';
+import { DinDataType, DinFormData, MapDataType, MapFormProps } from '@/types';
 import { Button, Form, Input } from 'antd';
 import React from 'react';
 
 const MapForm = ({ form, onFinish, setIsDataSaved }: MapFormProps) => {
-  const handleFinish = (values: DinDataType) => {
+  const handleFinish = (values: DinFormData) => {
     onFinish(values);
     setIsDataSaved(true);
   };

@@ -153,7 +153,7 @@ export interface LinkFormProps {
 
 export interface MapFormProps {
   form: FormInstance;
-  onFinish: (values: DinDataType) => void;
+  onFinish: (values: DinFormData) => void;
   setIsDataSaved: (status: boolean) => void;
 }
 
@@ -192,10 +192,12 @@ export interface DinDataType {
   skey: string;
 }
 export interface DinFormData {
-  sid: number;
-  din: number;
-  p_res: string;
-  skey: string;
+  din: {
+    sid: number;
+    din: number;
+    p_res: string;
+    skey: string;
+  };
 }
 
 export interface MapDataType {
@@ -210,4 +212,22 @@ export interface CardDispositivoProps {
   onChangeComplete: (value: number | number[]) => void;
   onChange: (status: boolean) => void;
   onSend: () => void;
+}
+
+export interface ModalDispositivoProps {
+  isVisible: boolean;
+  onClose: () => void;
+  data: MapDataType;
+  status: boolean;
+  setStatus: (enabled: boolean) => void;
+  onChangeComplete: (value: number | number[]) => void;
+  onChange: (status: boolean) => void;
+  onSend: () => void;
+}
+
+export interface Device {
+  id: number;
+  name: string;
+  latitudine: number;
+  longitudine: number;
 }
