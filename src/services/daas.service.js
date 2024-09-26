@@ -53,9 +53,9 @@ async function loadConfig(node) {
 
         let isEnabled = node.enableDriver(link, url);
         if (isEnabled) {
-            console.log(`[daas] enableDriver link=${link} din=${url} OK`);
+            console.log(`[daas] enableDriver link=${link} url=${url} OK`);
         } else {
-            console.log(`[daas] enableDriver link=${link} din=${url} ERROR`);
+            console.log(`[daas] enableDriver link=${link} url=${url} ERROR`);
         }
 
     });
