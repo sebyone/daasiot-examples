@@ -9,13 +9,29 @@ module.exports = (sequelize, DataTypes) => {
 		}
 	}
 	DeviceModelGroup.init({
-		name: DataTypes.STRING
+		title: {
+			type: DataTypes.STRING,
+			allowNull: false,
+			maxLength: 45,
+		},
+		description: {
+			type: DataTypes.STRING,
+			allowNull: false,
+			maxLength: 45,
+			defaultValue: '',
+		},
+		link_image: {
+			type: DataTypes.STRING,
+			allowNull: false,
+			maxLength: 45,
+			defaultValue: '',
+		},
 	}, {
 		sequelize,
 		modelName: 'DeviceModelGroup',
-		tableName: 'device_group',
+		tableName: 'device_model_group',
+		timestamps: false,
 		underscored: true,
-		timestamps: false
 	});
 
 	return DeviceModelGroup;

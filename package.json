@@ -6,10 +6,10 @@
     "scripts": {
         "test": "echo \"Error: no test specified\" && exit 1",
         "start": "node server.js",
-        "start:server": "node src/server.js",
-        "start:sender": "node src/sender.js",
-        "start:dev:server": "nodemon --force-node-api-uncaught-exceptions-policy=true src/server.js",
-        "start:dev:client": "nodemon src/sender.js"
+        "start:server": "NODE_ENV=production node src/server.js",
+        "start:sender": "NODE_ENV=production node src/sender.js",
+        "start:dev:server": "NODE_ENV=development nodemon --force-node-api-uncaught-exceptions-policy=true src/server.js",
+        "start:dev:client": "NODE_ENV=development nodemon src/sender.js"
     },
     "keywords": [],
     "author": "",

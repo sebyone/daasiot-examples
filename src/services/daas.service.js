@@ -32,6 +32,11 @@ async function loadConfig(node) {
         raw: true
     });
 
+    if (dinLocal === null) {
+        console.error(`[daas] ERROR while loading config: dinLocal not found`);
+        return;
+    }
+
     const sid = parseInt(dinLocal['din.sid']);
     const din = parseInt(dinLocal['din.din']);
     

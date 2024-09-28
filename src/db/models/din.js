@@ -14,6 +14,7 @@ module.exports = (sequelize, DataTypes) => {
       this.belongsToMany(models.Din, { through: models.DinHasDin, as: 'parents', foreignKey: 'pdin_id', onDelete: 'CASCADE'});
       this.belongsToMany(models.Din, { through: models.DinHasDin, as: 'children', foreignKey: 'cdin_id', onDelete: 'CASCADE'});
       this.hasMany(models.DinLink, { foreignKey: 'din_id', as: 'links', onDelete: 'CASCADE' });
+      this.hasOne(models.Device, { foreignKey: 'din_id', onDelete: 'CASCADE' });
       // define association here
     }
   }
@@ -28,7 +29,7 @@ module.exports = (sequelize, DataTypes) => {
     },
     p_res: {
       type: DataTypes.STRING.BINARY,
-      defaultValue: 0
+      defaultValue: 0,
     },
     skey: {
       type: DataTypes.STRING,
@@ -38,9 +39,10 @@ module.exports = (sequelize, DataTypes) => {
     sequelize,
     tableName: 'din',
     modelName: 'Din',
+    timestamps: true,
     underscored: true,
-    timestamps: false,
   });
 
+  
   return Din;
 };

@@ -24,6 +24,9 @@ const DinLocal = db.DinLocal;
 const Din = db.Din;
 const DinLink = db.DinLink;
 const DinHasDin = db.DinHasDin;
+const Device = db.Device;
+const DeviceModel = db.DeviceModel;
+const DeviceModelGroup = db.DeviceModelGroup;
 
 const DaasService = require('../services/daas.service');
 
@@ -121,7 +124,7 @@ router.get('/version', function (req, res) {
  */
 router.get('/receivers', async function (req, res) {
     try {
-        const data = await DinLocal.findAll({ include: ['din', 'links'] });
+        const data = await DinLocal.findAll({ include: ['din', 'links', 'device'] });
         res.send(data);
     } catch (err) {
         sendError(res, err);
@@ -142,7 +145,7 @@ router.get('/receivers/count', async function (req, res) {
 router.get('/receivers/:receiverId', async function (req, res) {
     try {
         const receiverId = parseInt(req.params.receiverId);
-        const data = await DinLocal.findByPk(receiverId, { include: ['din', 'links'] });
+        const data = await DinLocal.findByPk(receiverId, { include: ['din', 'links', 'device'] });
         if (!data) {
             res.status(404);
             throw new Error(`Receiver con id=${receiverId} non trovato.`);
@@ -769,11 +772,50 @@ router.get('/devices', async function (req, res) {
 });
 
 router.get('/devices/:id', async function (req, res) {
-    sendError(res, new Error("Not yet implemented."), 501);
+    try {
+        const id = parseInt(req.params.id);
+
+        const device = Device.findByPk(id, { include: ['device_model', 'din'] });
+        if (device === null) {
+            res.status(404);
+            throw new Error(`Dispositivo con id=${id} non trovato.`);
+        }
+        res.send(device);
+    }
+    catch (err) {
+        sendError(res, err);
+    }
 });
 
 router.post('/devices', async function (req, res) {
-    sendError(res, new Error("Not yet implemented."), 501);
+    try {
+        const device = req.body;
+
+        for (const field of ['device_model_id', 'din_id', 'name']) {
+            if (!device[field]) {
+                res.status(400);
+                throw new Error(`Il campo ${field} è obbligatorio.`);
+            }
+        }
+
+        const din = await Din.findByPk(parseInt(device.din_id));
+        if (din === null) {
+            res.status(404);
+            throw new Error(`Din con id=${device.din_id} non trovato.`);
+        }
+
+        const deviceModel = await DeviceModel.findByPk(parseInt(device.device_model_id));
+        if (deviceModel === null) {
+            res.status(404);
+            throw new Error(`DeviceModel con id=${device.device_model_id} non trovato.`);
+        }
+
+        const newDevice = await Device.create(device);
+        res.send(newDevice);
+    }
+    catch (err) {
+        sendError(res, err);
+    }
 });
 
 router.put('/devices/:id', async function (req, res) {
