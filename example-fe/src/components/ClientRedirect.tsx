@@ -8,7 +8,7 @@ export default function ClientRedirect() {
   const router = useRouter();
 
   useEffect(() => {
-    router.push('/admin');
+    router.push(`/admin`);
   }, [router]);
 
   return <></>;

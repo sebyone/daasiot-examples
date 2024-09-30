@@ -6,8 +6,9 @@ const { Header, Sider, Content } = Layout;
 
 import NavMenu from '@/components/base/NavMenu';
 import DaaSIoTLogo from '@/components/DaaSIoTLogo';
+import LanguageSwitcher from '@/components/LanguageSwitcher';
 import { Footer } from 'antd/es/layout/layout';
-import version from '../../../version';
+import version from '../../../../version';
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -32,7 +33,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             padding: '0 1rem',
             height: '20px',
           }}
-        ></Header>
+        >
+          <LanguageSwitcher />
+        </Header>
         <Content
           style={{
             margin: '24px',
@@ -49,7 +52,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       </Layout>
       <Footer
         style={{
-          position: 'absolute',
+          position: 'fixed',
           bottom: '0',
           width: '100%',
           textAlign: 'left',

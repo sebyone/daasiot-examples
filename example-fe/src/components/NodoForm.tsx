@@ -1,10 +1,12 @@
 import ConfigService from '@/services/configService';
 import { DinDataType, NodoFormProps } from '@/types';
 import { Button, Checkbox, Col, Form, FormInstance, Input, Row, Select } from 'antd';
+import { useTranslations } from 'next-intl';
 import React, { useEffect, useState } from 'react';
 
 const NodoForm = ({ form, onHideTestComponent }: NodoFormProps) => {
   const marginBottom = { marginBottom: -22 };
+  const t = useTranslations('NodoForm');
   const style = {
     minWidth: '550px',
     width: '100%',
@@ -46,8 +48,8 @@ const NodoForm = ({ form, onHideTestComponent }: NodoFormProps) => {
         </Form.Item>
         <Row gutter={32} style={marginBottom}>
           <Col span={16}>
-            <Form.Item name="denominazione" label="Denominazione">
-              <Input name="denominazione" placeholder="Denominazione" />
+            <Form.Item name="denominazione" label={t('name')}>
+              <Input name="denominazione" placeholder={t('name')} />
             </Form.Item>
           </Col>
           <Col span={8}>
@@ -58,15 +60,15 @@ const NodoForm = ({ form, onHideTestComponent }: NodoFormProps) => {
         </Row>
         <Row gutter={20} style={marginBottom}>
           <Col span={16}>
-            <Form.Item name="matricola" label="Matricola">
-              <Input name="matricola" placeholder="Matricola" />
+            <Form.Item name="matricola" label={t('serialNumber')}>
+              <Input name="matricola" placeholder={t('serialNumber')} />
             </Form.Item>
           </Col>
         </Row>
         <Row gutter={20} style={marginBottom}>
           <Col span={16}>
-            <Form.Item label="Modello" name="modello">
-              <Select placeholder="Modello">
+            <Form.Item label={t('model')} name="modello">
+              <Select placeholder={t('model')}>
                 {/*models.map(model => (
                   <Select.Option key={model} value={model}>{model}</Select.Option>
                 ))*/}
@@ -88,13 +90,13 @@ const NodoForm = ({ form, onHideTestComponent }: NodoFormProps) => {
         </Row>
         <Row gutter={16} style={marginBottom}>
           <Col span={8}>
-            <Form.Item name="latitudine" label="Latitudine">
-              <Input name="latitudine" placeholder="Latitudine" />
+            <Form.Item name="latitudine" label={t('latitude')}>
+              <Input name="latitudine" placeholder={t('latitude')} />
             </Form.Item>
           </Col>
           <Col span={8}>
-            <Form.Item name="longitudine" label="Longitudine">
-              <Input name="longitudine" placeholder="Longitudine" />
+            <Form.Item name="longitudine" label={t('longitude')}>
+              <Input name="longitudine" placeholder={t('longitude')} />
             </Form.Item>
           </Col>
         </Row>

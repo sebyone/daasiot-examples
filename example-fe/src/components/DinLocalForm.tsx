@@ -1,5 +1,6 @@
 import { ConfigFormData, DinLocalFormProps } from '@/types';
 import { Button, Card, Checkbox, Col, Form, Input, List, Row, Select, Switch } from 'antd';
+import { useTranslations } from 'next-intl';
 import React from 'react';
 
 const DinLocalForm = ({
@@ -19,7 +20,7 @@ const DinLocalForm = ({
   const tipologiaOptions = [{ value: '0' }, { value: '1' }];
   const marginBottom = { marginBottom: -8 };
   const style = { minWidth: '550px', width: '100%', maxWidth: '680px', marginTop: -35 };
-
+  const t = useTranslations('DinLocalForm');
   const handleFinish = (values: ConfigFormData) => {
     if (onFinish) {
       onFinish(values);
@@ -134,28 +135,20 @@ const DinLocalForm = ({
             </Form.Item>
           )}
         </Row>
-
-        {showSaveButton && (
-          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-            <Button type="primary" htmlType="submit">
-              Salva
-            </Button>
-          </div>
-        )}
       </Form>
       <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', maxWidth: '400px', marginTop: -15 }}>
         {showPowerActions && (
           <div style={{ height: 50, marginBottom: 30 }}>
             <Card bordered={false} style={{ width: 400, backgroundColor: '#f0f0f0' }}>
               <div style={{ display: 'flex', justifyContent: 'space-around', gap: 15 }}>
-                <span>Avvio Automatico:</span>
+                <span>{t('autoStart')}</span>
                 <Switch checked={autoStart} onChange={handleAutoStartChange} />
 
                 <Button type="primary" onClick={handleStart}>
-                  Avvia
+                  {t('start')}
                 </Button>
                 <Button type="primary" onClick={() => {}}>
-                  Riavvia
+                  {t('restart')}
                 </Button>
               </div>
             </Card>

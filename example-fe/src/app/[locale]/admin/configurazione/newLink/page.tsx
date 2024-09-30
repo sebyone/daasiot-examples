@@ -3,9 +3,10 @@ import { useCustomNotification } from '@/hooks/useNotificationHook';
 import configService from '@/services/configService';
 import { LinkDataType } from '@/types';
 import { Form, Modal, notification } from 'antd';
+import { useLocale, useTranslations } from 'next-intl';
 import dynamic from 'next/dynamic';
 import { useRouter } from 'next/navigation';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 const DataPanel = dynamic(() => import('@/components/DataPanel'), { ssr: false });
 const LinkForm = dynamic(() => import('@/components/LinkForm'), { ssr: false });
@@ -19,32 +20,40 @@ const NewLink = () => {
   const [title, setTitle] = useState('New Link');
   const [isDataSaved, setIsDataSaved] = useState(true);
   const [networkTech, setNetworkTech] = useState<number | null>(null);
+  const t = useTranslations('NewLink');
+  const tBack = useTranslations('handleGoBack');
+  const locale = useLocale();
+  const [, updateState] = useState<object>();
+
+  useEffect(() => {
+    updateState({});
+  }, [locale]);
 
   const onFinish = async (values: LinkDataType) => {
     try {
       await configService.createLink(values);
-      notify('success', 'Operazione riuscita', 'Operazione avvenuta con successo');
+      notify('success', t('success'), t('successSave'));
     } catch {
-      notify('error', 'Qualcosa non ha funzionato', 'Errore nella creazione del link');
+      notify('error', t('error'), t('errorCreateLink'));
     }
   };
 
   const handleGoBack = () => {
     if (!isDataSaved) {
-      notify('warning', 'Dati non salvati', 'Operazione non riuscita, salva prima di uscire');
+      notify('warning', tBack('warning'), tBack('warningContent'));
       Modal.confirm({
-        title: 'Sei sicuro?',
-        content: 'I dati non salvati verranno persi. Vuoi continuare?',
+        title: tBack('title'),
+        content: tBack('content'),
         okText: 'Ok',
-        cancelText: 'Annulla',
+        cancelText: tBack('cancelText'),
         onOk: () => {
-          router.push('/admin/configurazione/editDinLocal/1');
+          router.push(`/${locale}/admin/configurazione/editDinLocal/1`);
         },
       });
       return;
     }
 
-    router.push('/admin/configurazione/editDinLocal/1');
+    router.push(`/${locale}/admin/configurazione/editDinLocal/1`);
   };
 
   const handleSave = () => {

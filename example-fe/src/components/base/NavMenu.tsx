@@ -1,20 +1,22 @@
 'use client';
 import { DeploymentUnitOutlined, DesktopOutlined, EnvironmentOutlined, SettingOutlined } from '@ant-design/icons';
 import { Menu, MenuProps } from 'antd';
+import { useLocale, useTranslations } from 'next-intl';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useEffect, useMemo, useState } from 'react';
 
 type MenuItem = Required<MenuProps>['items'][number] & { roles?: string[] };
 
-const pathMap = {
-  '/admin/configurazione': '/admin/configurazione',
-  '/admin/dispositivi': '/admin/dispositivi',
-  '/admin/mappa': '/admin/mappa',
-  '/admin': '/admin',
-};
+const getPathMap = (locale: string) => ({
+  [`/${locale}/admin/configurazione`]: '/admin/configurazione',
+  [`/${locale}/admin/dispositivi`]: '/admin/dispositivi',
+  [`/${locale}/admin/mappa`]: '/admin/mappa',
+  [`/${locale}/admin`]: '/admin',
+});
 
-const getSelectedKey = (pathname: string): string => {
+const getSelectedKey = (pathname: string, locale: string): string => {
+  const pathMap = getPathMap(locale);
   for (const [path, key] of Object.entries(pathMap)) {
     if (pathname.startsWith(path)) {
       return key;
@@ -25,33 +27,36 @@ const getSelectedKey = (pathname: string): string => {
 
 export default function NavMenu({ role }: { role: string }) {
   const pathname = usePathname();
-  const [selectedKey, setSelectedKey] = useState<string>(getSelectedKey(pathname));
+  const t = useTranslations('NavMenu');
+  const locale = useLocale();
+
+  const [selectedKey, setSelectedKey] = useState<string>(getSelectedKey(pathname, locale));
 
   const allMenuItems: MenuItem[] = [
     {
       key: '/admin',
       icon: <DesktopOutlined />,
-      label: <Link href={'/admin'}>Dashboard</Link>,
+      label: <Link href={`/${locale}/admin`}>{t('dashboard')}</Link>,
     },
     {
       key: '/admin/configurazione',
       icon: <SettingOutlined />,
-      label: <Link href={'/admin/configurazione'}>Configurazione</Link>,
+      label: <Link href={`/${locale}/admin/configurazione`}>{t('configuration')}</Link>,
     },
     {
       key: '/admin/dispositivi',
       icon: <DeploymentUnitOutlined />,
-      label: <Link href={'/admin/dispositivi'}>Dispositivi</Link>,
+      label: <Link href={`/${locale}/admin/dispositivi`}>{t('devices')}</Link>,
     },
     {
       key: '/admin/mappa',
       icon: <EnvironmentOutlined />,
-      label: <Link href={'/admin/mappa'}>Geolocalizzazione</Link>,
+      label: <Link href={`/${locale}/admin/mappa`}>{t('geolocation')}</Link>,
     },
   ];
 
   useEffect(() => {
-    setSelectedKey(getSelectedKey(pathname));
+    setSelectedKey(getSelectedKey(pathname, locale));
   }, [pathname]);
 
   const menuItems = useMemo(() => {

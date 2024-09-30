@@ -1,8 +1,10 @@
 import { LinkDataType, LinkFormData, LinkFormProps } from '@/types';
 import { Button, Form, Input, Select } from 'antd';
+import { useTranslations } from 'next-intl';
 import React, { useEffect, useState } from 'react';
 
 const LinkForm = ({ form, onFinish, setIsDataSaved, networkTech, setNetworkTech }: LinkFormProps) => {
+  const t = useTranslations('LinkForm');
   const tipologiaOptions = [
     { label: 'INET4', value: 2 },
     { label: 'RS232', value: 'RS232', disabled: true },
@@ -46,21 +48,17 @@ const LinkForm = ({ form, onFinish, setIsDataSaved, networkTech, setNetworkTech 
         <Form.Item name="din_id_din" noStyle>
           <Input type="hidden" />
         </Form.Item>
-        <Form.Item label="Link" name="link" rules={[{ required: true, message: 'Seleziona un link' }]}>
+        <Form.Item label="Link" name="link" rules={[{ required: true, message: t('selectLink') }]}>
           <Select options={tipologiaOptions} onChange={handleNetworkChange} />
         </Form.Item>
 
         {networkTech === 2 && (
           <>
-            <Form.Item
-              label="IP Address"
-              name="ipAddress"
-              rules={[{ required: true, message: 'Inserisci un indirizzo IP' }]}
-            >
-              <Input placeholder="IP Address" />
+            <Form.Item label={t('ipAddress')} name="ipAddress" rules={[{ required: true, message: t('enterIP') }]}>
+              <Input placeholder={t('ipAddress')} />
             </Form.Item>
-            <Form.Item label="Port" name="port" rules={[{ required: true, message: 'Inserisci una porta' }]}>
-              <Input placeholder="Port" />
+            <Form.Item label={t('port')} name="port" rules={[{ required: true, message: t('enterPort') }]}>
+              <Input placeholder={t('port')} />
             </Form.Item>
           </>
         )}
@@ -68,15 +66,15 @@ const LinkForm = ({ form, onFinish, setIsDataSaved, networkTech, setNetworkTech 
         {networkTech === 3 && (
           <Form.Item
             name="macAddress"
-            label="MAC Address"
+            label={t('macAddress')}
             rules={[
               {
                 required: true,
-                message: 'Inserisci un MAC Address',
+                message: t('enterMAC'),
               },
             ]}
           >
-            <Input placeholder="MAC Address" />
+            <Input placeholder={t('macAddress')} />
           </Form.Item>
         )}
       </Form>

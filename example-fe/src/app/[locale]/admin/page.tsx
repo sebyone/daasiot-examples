@@ -3,6 +3,7 @@ import { useCustomNotification } from '@/hooks/useNotificationHook';
 import ConfigService from '@/services/configService';
 import { ApiOutlined, MessageOutlined, WifiOutlined } from '@ant-design/icons';
 import { Card, Col, Row, Statistic } from 'antd';
+import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 import styles from './Dashboard.module.css';
 
@@ -10,6 +11,7 @@ export default function Dashboard() {
   const { notify, contextHolder } = useCustomNotification();
   const [remotesCount, setRemotesCount] = useState<number>(0);
   const [receiversCount, setReceiversCount] = useState<number>(0);
+  const t = useTranslations('Dashboard');
 
   useEffect(() => {
     const fetchRemotesCount = async () => {
@@ -53,7 +55,7 @@ export default function Dashboard() {
           <Col xs={24} md={8}>
             <Card hoverable>
               <Statistic
-                title="Nodi Gestiti"
+                title={t('managedNodes')}
                 value={remotesCount}
                 prefix={<ApiOutlined style={{ fontSize: '24px', color: '#52c41a', marginRight: 290 }} />}
                 className={styles.customStatistic}
@@ -63,7 +65,7 @@ export default function Dashboard() {
           <Col xs={24} md={8}>
             <Card hoverable>
               <Statistic
-                title="Messaggi Scambiati"
+                title={t('messagesExchanged')}
                 value={0}
                 prefix={<MessageOutlined style={{ fontSize: '24px', color: '#faad14', marginRight: 290 }} />}
                 className={styles.customStatistic}

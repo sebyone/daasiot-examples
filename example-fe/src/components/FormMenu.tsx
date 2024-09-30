@@ -1,8 +1,10 @@
 import { FormMenuProps } from '@/types';
 import { Button } from 'antd';
+
+import { useTranslations } from 'next-intl';
 import './components.css';
 
-const FormMenu = ({
+export default function FormMenu({
   onGoBack,
   onSave,
   onDelete,
@@ -11,12 +13,14 @@ const FormMenu = ({
   showAddButton,
   showDetailButtons,
   showSaveButton,
-}: FormMenuProps) => {
+}: FormMenuProps) {
   const style = {
     display: 'flex',
     gap: '7px',
     marginTop: '-7px',
   };
+
+  const t = useTranslations('FormMenu');
 
   const handleGoBack = () => {
     onGoBack?.();
@@ -42,34 +46,32 @@ const FormMenu = ({
     <div style={style}>
       {showAddButton && (
         <Button type="primary" onClick={handleAdd}>
-          Aggiungi
+          {t('add')}
         </Button>
       )}
       {showDetailButtons && (
         <>
           <Button type="primary" onClick={handleGoBack}>
-            Indietro
+            {t('back')}
           </Button>
           <Button type="primary" onClick={handleEdit}>
-            Modifica
+            {t('edit')}
           </Button>
           <Button type="primary" onClick={handleDelete}>
-            Elimina
+            {t('delete')}
           </Button>
         </>
       )}
       {showSaveButton && (
         <>
           <Button type="primary" onClick={handleGoBack}>
-            Indietro
+            {t('back')}
           </Button>
           <Button type="primary" onClick={handleSave}>
-            Salva
+            {t('save')}
           </Button>
         </>
       )}
     </div>
   );
-};
-
-export default FormMenu;
+}

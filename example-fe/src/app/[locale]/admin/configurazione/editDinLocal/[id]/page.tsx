@@ -6,6 +6,7 @@ import { useCustomNotification } from '@/hooks/useNotificationHook';
 import { default as ConfigService, default as configService } from '@/services/configService';
 import { ConfigData, ConfigFormData, LinkDataType, MapDataType, StatusDataType } from '@/types';
 import { Button, Form, Modal, Tabs, TabsProps } from 'antd';
+import { useLocale, useTranslations } from 'next-intl';
 import dynamic from 'next/dynamic';
 import { useParams, useRouter } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
@@ -31,6 +32,9 @@ const EditDinLocal = () => {
   const [ws, setSocket] = useState<WebSocket | null>(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [selectedMap, setSelectedMap] = useState<MapDataType | null>(null);
+  const t = useTranslations('EditDinLocal');
+  const tBack = useTranslations('handleGoBack');
+  const locale = useLocale();
 
   const handleOpenModal = (data: MapDataType) => {
     setSelectedMap(data);
@@ -43,11 +47,11 @@ const EditDinLocal = () => {
   };
 
   const handleEditLink = (data: LinkDataType) => {
-    router.push(`/admin/configurazione/editLink/${data.id}`);
+    router.push(`/${locale}/admin/configurazione/editLink/${data.id}`);
   };
 
   const handleEditMap = (data: MapDataType) => {
-    router.push(`/admin/configurazione/editMap/${data.id}`);
+    router.push(`/${locale}/admin/configurazione/editMap/${data.id}`);
   };
 
   const fetchLinks = async () => {
@@ -61,7 +65,7 @@ const EditDinLocal = () => {
         setLinksData(links);
       });
     } catch {
-      notify('error', 'Qualcosa non ha funzionato', 'Errore nel caricamento dei links');
+      notify('error', t('error'), t('errorGetLinks'));
     }
   };
 
@@ -76,7 +80,7 @@ const EditDinLocal = () => {
         setMapsData(maps);
       });
     } catch (error) {
-      notify('error', 'Qualcosa non ha funzionato', 'Errore nel caricamento del map');
+      notify('error', t('error'), t('errorGetLinksMap'));
     }
   };
 
@@ -85,7 +89,7 @@ const EditDinLocal = () => {
       const data = await ConfigService.getStatus();
       setStatusData(data);
     } catch (error) {
-      notify('error', 'Qualcosa non ha funzionato', 'Errore nel caricamento dello stato');
+      notify('error', t('error'), t('errorGetStatus'));
       console.error('Errore nel caricamento dello stato:', error);
     }
   };
@@ -95,20 +99,20 @@ const EditDinLocal = () => {
   }, []);
 
   const handleAddLink = () => {
-    router.push(`/admin/configurazione/newLink`);
+    router.push(`/${locale}/admin/configurazione/newLink`);
   };
 
   const handleAddMap = () => {
-    router.push(`/admin/configurazione/newMap`);
+    router.push(`/${locale}/admin/configurazione/newMap`);
   };
 
   const onFinish = async (values: ConfigFormData) => {
     try {
       await configService.update(values);
 
-      notify('success', 'Salvataggio riuscito', 'Operazione avvenuta con successo');
+      notify('success', t('success'), t('succesSave'));
     } catch {
-      notify('error', 'Qualcosa non ha funzionato', "Errore nell'aggiornamento del din local");
+      notify('error', t('error'), t('errorUpdateDinLocal'));
     }
   };
 
@@ -150,19 +154,19 @@ const EditDinLocal = () => {
 
   const handleGoBack = () => {
     if (!isDataSaved) {
-      notify('warning', 'Dati non salvati', 'Operazione non riuscita, salva prima di uscire');
+      notify('warning', tBack('warning'), tBack('warningContent'));
       Modal.confirm({
-        title: 'Sei sicuro?',
-        content: 'I dati non salvati verranno persi. Vuoi continuare?',
+        title: tBack('title'),
+        content: tBack('content'),
         okText: 'Ok',
-        cancelText: 'Annulla',
+        cancelText: tBack('cancelText'),
         onOk: () => {
-          router.push('/admin/configurazione');
+          router.push(`/${locale}/admin/configurazione`);
         },
       });
       return;
     }
-    router.push('/admin/configurazione');
+    router.push(`/${locale}/admin/configurazione`);
   };
 
   const handleSave = () => {
@@ -174,9 +178,9 @@ const EditDinLocal = () => {
     try {
       await ConfigService.deleteLink(link.id);
       fetchLinks();
-      notify('success', 'Operazione riuscita', 'Link eliminato con successo');
+      notify('success', t('success'), t('successDeleteLink'));
     } catch (error) {
-      notify('error', 'Qualcosa non ha funzionato', "Errore nell'eliminazione del link");
+      notify('error', t('error'), t('errorDeleteLink'));
       console.error("Errore nell'eliminazione del link:", error);
     }
   };
@@ -186,9 +190,9 @@ const EditDinLocal = () => {
     try {
       await ConfigService.deleteMap(map.id);
       fetchMaps();
-      notify('success', 'Operazione riuscita', 'Map eliminato con successo');
+      notify('success', t('success'), t('successDeleteMap'));
     } catch (error) {
-      notify('error', 'Qualcosa non ha funzionato', "Errore nell'eliminazione del map");
+      notify('error', t('error'), t('errorDeleteMap'));
       console.error("Errore nell'eliminazione del map:", error);
     }
   };
@@ -235,10 +239,10 @@ const EditDinLocal = () => {
     try {
       if (selectedMap) {
         await configService.sendPayload(Number(selectedMap.din), status, value);
-        notify('success', 'Invio riuscito', 'Operazione avvenuta con successo');
+        notify('success', t('success'), t('successSend'));
       }
     } catch (error) {
-      notify('error', 'Qualcosa non ha funzionato', "Errore nell'invio dei dati");
+      notify('error', t('error'), t('errorSend'));
       console.error("Errore nell'invio dei dati:", error);
     }
   };

@@ -3,13 +3,15 @@ import { useCustomNotification } from '@/hooks/useNotificationHook';
 import ConfigService from '@/services/configService';
 import { Device } from '@/types';
 import 'leaflet/dist/leaflet.css';
+import { useTranslations } from 'next-intl';
 import dynamic from 'next/dynamic';
 import React, { useEffect, useState } from 'react';
 
 const Mappa = () => {
-  const MapComponent = dynamic(() => import('../../../components/Map'), {
+  const t = useTranslations('Mappa');
+  const MapComponent = dynamic(() => import('@/components/Map'), {
     ssr: false,
-    loading: () => <p>Caricamento mappa...</p>,
+    loading: () => <p>{t('loading')}</p>,
   });
   const { notify, contextHolder } = useCustomNotification();
   const [devicesData, setDevicesData] = useState<Device[]>([]);
@@ -25,7 +27,7 @@ const Mappa = () => {
         }));
         setDevicesData(devices);
       } catch (error) {
-        notify('error', 'Qualcosa non ha funzionato', 'Errore nel caricamento dei dispositivi');
+        notify('error', t('error'), t('errorGetDevices'));
       }
     };
 

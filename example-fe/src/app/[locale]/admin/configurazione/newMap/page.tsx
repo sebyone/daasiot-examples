@@ -3,9 +3,10 @@ import { useCustomNotification } from '@/hooks/useNotificationHook';
 import configService from '@/services/configService';
 import { DinDataType, DinFormData, LinkDataType, MapDataType } from '@/types';
 import { Form, Modal, notification } from 'antd';
+import { useLocale, useTranslations } from 'next-intl';
 import dynamic from 'next/dynamic';
 import { useRouter } from 'next/navigation';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 const DataPanel = dynamic(() => import('@/components/DataPanel'), { ssr: false });
 const MapForm = dynamic(() => import('@/components/MapForm'), { ssr: false });
@@ -18,6 +19,14 @@ const NewMap = () => {
   const { notify, contextHolder } = useCustomNotification();
   const [title, setTitle] = useState('New Map');
   const [isDataSaved, setIsDataSaved] = useState(true);
+  const t = useTranslations('NewMap');
+  const tBack = useTranslations('handleGoBack');
+  const locale = useLocale();
+  const [, updateState] = useState<object>();
+
+  useEffect(() => {
+    updateState({});
+  }, [locale]);
 
   const onFinish = async (values: DinFormData) => {
     try {
@@ -30,29 +39,29 @@ const NewMap = () => {
         },
       };
       await configService.createMap(formattedValues);
-      notify('success', 'Operazione riuscita', 'Map creato con successo');
+      notify('success', t('success'), t('successSave'));
       setIsDataSaved(true);
     } catch (error) {
-      notify('error', 'Qualcosa non ha funzionato', 'Errore nella creazione del map');
+      notify('error', t('error'), t('errorCreateMap'));
     }
   };
 
   const handleGoBack = () => {
     if (!isDataSaved) {
-      notify('warning', 'Dati non salvati', 'Operazione non riuscita, salva prima di uscire');
+      notify('warning', tBack('warning'), tBack('warningContent'));
       Modal.confirm({
-        title: 'Sei sicuro?',
-        content: 'I dati non salvati verranno persi. Vuoi continuare?',
+        title: tBack('title'),
+        content: tBack('content'),
         okText: 'Ok',
-        cancelText: 'Annulla',
+        cancelText: tBack('cancelText'),
         onOk: () => {
-          router.push('/admin/configurazione/editDinLocal/1');
+          router.push(`/${locale}/admin/configurazione/editDinLocal/1`);
         },
       });
       return;
     }
 
-    router.push('/admin/configurazione/editDinLocal/1');
+    router.push(`/${locale}/admin/configurazione/editDinLocal/1`);
   };
 
   const handleSave = () => {

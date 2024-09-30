@@ -3,6 +3,7 @@ import { useCustomNotification } from '@/hooks/useNotificationHook';
 import configService from '@/services/configService';
 import { DinDataType, DinFormData, LinkDataType, MapDataType } from '@/types';
 import { Form, Modal, notification } from 'antd';
+import { useLocale, useTranslations } from 'next-intl';
 import dynamic from 'next/dynamic';
 import { useParams, useRouter } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
@@ -19,6 +20,9 @@ const EditMap = () => {
   const [title, setTitle] = useState('');
   const [isDataSaved, setIsDataSaved] = useState(true);
   const [map, setMap] = useState<string>();
+  const t = useTranslations('EditMap');
+  const tBack = useTranslations('handleGoBack');
+  const locale = useLocale();
   const params = useParams();
   const id = Number(params.id);
 
@@ -36,7 +40,7 @@ const EditMap = () => {
         setMap(data.din);
       })
       .catch((error) => {
-        notify('error', 'Qualcosa non ha funzionato', 'Errore nel caricamento dei dati del map');
+        notify('error', t('error'), t('errorGetMap'));
         console.error('Errore:', error);
       });
   }, []);
@@ -44,28 +48,28 @@ const EditMap = () => {
   const onFinish = async (values: DinFormData) => {
     try {
       await configService.updateMap(id, values);
-      notify('success', 'Operazione riuscita', 'Operazione avvenuta con successo');
+      notify('success', t('success'), t('successSave'));
     } catch {
-      notify('error', 'Qualcosa non ha funzionato', "Errore nell'aggiornamento  del map");
+      notify('error', t('error'), t('errorUpdateMap'));
     }
   };
 
   const handleGoBack = () => {
     if (!isDataSaved) {
-      notify('warning', 'Dati non salvati', 'Operazione non riuscita, salva prima di uscire');
+      notify('warning', tBack('warning'), tBack('warningContent'));
       Modal.confirm({
-        title: 'Sei sicuro?',
-        content: 'I dati non salvati verranno persi. Vuoi continuare?',
+        title: tBack('title'),
+        content: tBack('content'),
         okText: 'Ok',
-        cancelText: 'Annulla',
+        cancelText: tBack('cancelText'),
         onOk: () => {
-          router.push('/admin/configurazione/editDinLocal/1');
+          router.push(`/${locale}/admin/configurazione/editDinLocal/1`);
         },
       });
       return;
     }
 
-    router.push('/admin/configurazione/editDinLocal/1');
+    router.push(`/${locale}/admin/configurazione/editDinLocal/1`);
   };
 
   const handleSave = () => {

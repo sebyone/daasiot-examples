@@ -1,0 +1,125 @@
+{
+  "handleGoBack": {
+    "warning": "Dati non salvati",
+    "warningContent": "Operazione non riuscita, salva prima di uscire",
+    "title": "Sei sicuro?",
+    "content": "I dati non salvati verranno persi. Vuoi continuare?",
+    "cancelText": "Annulla"
+  },
+  "NavMenu": {
+    "dashboard": "Dashboard",
+    "configuration": "Configurazione",
+    "devices": "Dispositivi",
+    "geolocation": "Geolocalizzazione"
+  },
+  "FormMenu": {
+    "add": "Aggiungi",
+    "back": "Indietro",
+    "edit": "Modifica",
+    "delete": "Elimina",
+    "save": "Salva"
+  },
+  "Dashboard": {
+    "managedNodes": "Nodi Gestiti",
+    "messagesExchanged": "Messaggi Scambiati"
+  },
+  "Dispositivi": {
+    "selectDevice": "Seleziona un dispositivo nella lista per visualizzarne i dettagli",
+    "mobileMessage": "Questo contenuto non è disponibile sui dispositivi mobile.",
+    "general": "Generali",
+    "parameters": "Parametri",
+    "events": "Eventi",
+    "search": "Cerca...",
+    "function": "Funzione",
+    "addFunction": "Aggiungi funzione",
+    "input": "Ingressi",
+    "output": "Uscite",
+    "edit": "Modifica",
+    "schedule": "Programma",
+    "error": "Qualcosa non ha funzionato",
+    "errorGetDevices": "Errore nel caricamento dei dispositivi"
+  },
+  "NodoForm": {
+    "name": "Denominazione",
+    "serialNumber": "Matricola",
+    "model": "Modello",
+    "latitude": "Latitudine",
+    "longitude": "Longitudine"
+  },
+  "Mappa": {
+    "loading": "Caricamento mappa...",
+    "error": "Qualcosa non ha funzionato",
+    "errorGetDevices": "Errore nel caricamento dei dispositivi"
+  },
+  "GenericTable": {
+    "search": "Cerca..."
+  },
+  "BaseCardDispositivo": {
+    "send": "Invia"
+  },
+  "DinLocalForm": {
+    "autoStart": "Avvio Automatico:",
+    "start": "Avvia",
+    "restart": "Riavvia"
+  },
+  "LinkForm": {
+    "selectLink": "Seleziona un link",
+    "ipAddress": "Indirizzo IP",
+    "enterIP": "Inserisci un indirizzo IP",
+    "port": "Porta",
+    "enterPort": "Inserisci una porta",
+    "macAddress": "Indirizzo MAC",
+    "enterMAC": "Inserisci un indirizzo MAC"
+  },
+  "MapForm": {
+    "enterSID": "Inserisci un SID",
+    "enterDIN": "Inserisci un DIN",
+    "enterPRES": "Inserisci PRES",
+    "enterSkey": "Inserisci una SKey"
+  },
+  "EditDinLocal": {
+    "error": "Qualcosa non ha funzionato",
+    "errorGetLinks": "Errore nel caricamento dei links",
+    "errorGetMap": "Errore nel caricamento del map",
+    "errorGetStatus": "Errore nel caricamento dello stato",
+    "errorUpdateDinLocal": "Errore nell'aggiornamento del din local",
+    "errorDeleteLink": "Errore nell'eliminazione del link",
+    "errorDeleteMap": "Errore nell'eliminazione del map",
+    "errorSend": "Errore nell'invio dei dati",
+    "success": "Operazione riuscita",
+    "successSave": "Salvataggio avvenuto con successo",
+    "successDeleteLink": "Link eliminato con successo",
+    "successDeleteMap": "Map eliminato con successo",
+    "successSend": "Invio avvenuto con successo"
+  },
+  "EditLink": {
+    "error": "Qualcosa non ha funzionato",
+    "errorGetLink": "Errore nel caricamento dei dati del link",
+    "success": "Operazione riuscita",
+    "successSave": "Salvataggio avvenuto con successo",
+    "errorUpdateLink": "Errore nell'aggiornamento del link"
+  },
+  "EditMap": {
+    "error": "Qualcosa non ha funzionato",
+    "errorGetMap": "Errore nel caricamento dei dati del map",
+    "success": "Operazione riuscita",
+    "successSave": "Salvataggio avvenuto con successo",
+    "errorUpdateMap": "Errore nell'aggiornamento del map"
+  },
+  "NewLink": {
+    "error": "Qualcosa non ha funzionato",
+    "errorCreateLink": "Errore nella creazione del link",
+    "success": "Operazione riuscita",
+    "successSave": "Salvataggio avvenuto con successo"
+  },
+  "NewMap": {
+    "error": "Qualcosa non ha funzionato",
+    "errorCreateMap": "Errore nella creazione del map",
+    "success": "Operazione riuscita",
+    "successSave": "Salvataggio avvenuto con successo"
+  },
+  "Configurazione": {
+    "error": "Qualcosa non ha funzionato",
+    "errorGetReceivers": "Errore nel caricamento dei receivers"
+  }
+}

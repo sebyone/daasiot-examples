@@ -2,6 +2,7 @@
 import { useCustomNotification } from '@/hooks/useNotificationHook';
 import ConfigService from '@/services/configService';
 import { DinLocalDataType } from '@/types';
+import { useTranslations } from 'next-intl';
 
 import dynamic from 'next/dynamic';
 import { useRouter } from 'next/navigation';
@@ -12,9 +13,10 @@ const ReceiversTable = dynamic(() => import('@/components/ReceiversTable'), { ss
 const Panel = dynamic(() => import('@/components/Panel'), { ssr: false });
 const PanelList = dynamic(() => import('@/components/PanelList'), { ssr: false });
 
-export default function Dispositivi() {
+export default function Configurazione() {
   const router = useRouter();
   const [receiversData, setReceiversData] = useState<DinLocalDataType[]>([]);
+  const t = useTranslations('Configurazione');
   const { notify, contextHolder } = useCustomNotification();
 
   /* receiversData: DinLocalDataType[] = [
@@ -42,7 +44,7 @@ export default function Dispositivi() {
       }));
       setReceiversData(receivers);
     } catch (error) {
-      notify('error', 'Qualcosa non ha funzionato', 'Errore nel caricamento dei receivers');
+      notify('error', t('error'), t('errorGetReceivers'));
     }
   };
 

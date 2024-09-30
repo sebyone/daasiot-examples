@@ -1,0 +1,125 @@
+{
+  "handleGoBack": {
+    "warning": "Data not saved",
+    "warningContent": "Operation failed, save before exiting",
+    "title": "Are you sure?",
+    "content": "Unsaved data will be lost. Do you want to continue?",
+    "cancelText": "Cancel"
+  },
+  "NavMenu": {
+    "dashboard": "Dashboard",
+    "configuration": "Configuration",
+    "devices": "Devices",
+    "geolocation": "Geolocation"
+  },
+  "FormMenu": {
+    "add": "Add",
+    "back": "Back",
+    "edit": "Edit",
+    "delete": "Delete",
+    "save": "Save"
+  },
+  "Dashboard": {
+    "managedNodes": "Managed Nodes",
+    "messagesExchanged": "Messages Exchanged"
+  },
+  "Dispositivi": {
+    "selectDevice": "Select a device in the list to view its details",
+    "mobileMessage": "This content is not available on mobile devices.",
+    "general": "General",
+    "parameters": "Parameters",
+    "events": "Events",
+    "search": "Search...",
+    "function": "Function",
+    "addFunction": "Add function",
+    "input": "Input",
+    "output": "Output",
+    "edit": "Edit",
+    "schedule": "Schedule",
+    "error": "Something didn't work",
+    "errorGetDevices": "Error loading devices"
+  },
+  "NodoForm": {
+    "name": "Name",
+    "serialNumber": "Serial number",
+    "model": "Model",
+    "latitude": "Latitude",
+    "longitude": "Longitude"
+  },
+  "Mappa": {
+    "loading": "Loading map...",
+    "error": "Something didn't work",
+    "errorGetDevices": "Error loading devices"
+  },
+  "GenericTable": {
+    "search": "Search..."
+  },
+  "BaseCardDispositivo": {
+    "send": "Send"
+  },
+  "DinLocalForm": {
+    "autoStart": "Auto Start:",
+    "start": "Start",
+    "restart": "Restart"
+  },
+  "LinkForm": {
+    "selectLink": "Select a link",
+    "ipAddress": "IP Address",
+    "enterIP": "Enter an IP address",
+    "port": "Port",
+    "enterPort": "Enter a port",
+    "macAddress": "MAC Address",
+    "enterMAC": "Enter a MAC address"
+  },
+  "MapForm": {
+    "enterSID": "Enter a SID",
+    "enterDIN": "Enter a DIN",
+    "enterPRES": "Enter PRES",
+    "enterSkey": "Enter an SKey"
+  },
+  "EditDinLocal": {
+    "error": "Something didn't work",
+    "errorGetLinks": "Error loading links",
+    "errorGetMap": "Error loading map",
+    "errorGetStatus": "Error loading state",
+    "errorUpdateDinLocal": "Error updating din local",
+    "errorDeleteLink": "Error deleting link",
+    "errorDeleteMap": "Error deleting map",
+    "errorSend": "Error sending data",
+    "success": "Operation successful",
+    "successSave": "Save successful",
+    "successDeleteLink": "Link successfully deleted",
+    "successDeleteMap": "Map successfully deleted",
+    "successSend": "Send successful"
+  },
+  "EditLink": {
+    "error": "Something didn't work",
+    "errorGetLink": "Error loading link data",
+    "success": "Operation successful",
+    "successSave": "Save successful",
+    "errorUpdateLink": "Error updating link"
+  },
+  "EditMap": {
+    "error": "Something didn't work",
+    "errorGetLink": "Error loading map data",
+    "success": "Operation successful",
+    "successSave": "Save successful",
+    "errorUpdateLink": "Error updating map"
+  },
+  "NewLink": {
+    "error": "Something didn't work",
+    "errorCreateLink": "Error creating link",
+    "success": "Operation successful",
+    "successSave": "Save successful"
+  },
+  "NewMap": {
+    "error": "Something didn't work",
+    "errorCreateMap": "Error creating map",
+    "success": "Operation successful",
+    "successSave": "Save successful"
+  },
+  "Configurazione": {
+    "error": "Something didn't work",
+    "errorGetReceivers": "Error loading receivers"
+  }
+}

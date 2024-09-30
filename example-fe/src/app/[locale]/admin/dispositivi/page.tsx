@@ -9,6 +9,7 @@ import { default as ConfigService, default as configService } from '@/services/c
 import { Device } from '@/types';
 import { DeploymentUnitOutlined, PlusOutlined, SearchOutlined } from '@ant-design/icons';
 import { Button, Empty, Form, Input, Layout, List, Modal, Table, Tabs, TabsProps } from 'antd';
+import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 import styles from './Dispositivi.module.css';
 
@@ -46,7 +47,8 @@ const data = [
   },
 ];
 
-export default function Admin() {
+export default function Dispositivi() {
+  const t = useTranslations('Dispositivi');
   const [formDaasIoT] = Form.useForm();
   const [searchTerm, setSearchTerm] = useState('');
   const [devicesData, setDevicesData] = useState<Device[]>([]);
@@ -70,14 +72,14 @@ export default function Admin() {
 
   const columns = [
     {
-      title: 'Funzione',
+      title: t('function'),
       dataIndex: 'name',
       key: 'name',
       render: (text, record, index) => {
         if (record.id === 'add') {
           return availableFunctions.length > 0 ? (
             <Button type="link" icon={<PlusOutlined />} onClick={() => setIsModalVisible(true)}>
-              Aggiungi funzione
+              {t('addFunction')}
             </Button>
           ) : null;
         }
@@ -94,9 +96,9 @@ export default function Admin() {
         }
       },
     },
-    { title: 'Parametri', dataIndex: 'parametri', key: 'parametri' },
-    { title: 'Ingressi', dataIndex: 'ingressi', key: 'ingressi' },
-    { title: 'Uscite', dataIndex: 'uscite', key: 'uscite' },
+    { title: t('parameters'), dataIndex: 'parametri', key: 'parametri' },
+    { title: t('input'), dataIndex: 'ingressi', key: 'ingressi' },
+    { title: t('output'), dataIndex: 'uscite', key: 'uscite' },
   ];
 
   /*
@@ -133,7 +135,7 @@ export default function Admin() {
       <Button style={{ marginRight: 8 }} type="primary">
         Recall
       </Button>
-      <Button type="primary">Modifica</Button>
+      <Button type="primary">{t('edit')}</Button>
     </div>
   );
 
@@ -145,7 +147,7 @@ export default function Admin() {
       }}
       style={{ float: 'right', marginTop: 16 }}
     >
-      Programma
+      {t('schedule')}
     </Button>
   );
 
@@ -161,7 +163,7 @@ export default function Admin() {
         }));
         setDevicesData(devices);
       } catch (error) {
-        notify('error', 'Qualcosa non ha funzionato', 'Errore nel caricamento dei dispositivi');
+        notify('error', t('error'), t('errorGetDevices'));
       }
     };
 
@@ -188,7 +190,7 @@ export default function Admin() {
   };
 
   useEffect(() => {
-    const socket = new WebSocket(`${process.env.NEXT_PUBLIC_WS_URL}`);
+    const socket = new WebSocket(`${process.env.NEXT_PUBLIC_API_BASE_URL}`);
 
     socket.onmessage = (event) => {
       console.log('Ricevuto messaggio', event.data);
@@ -250,7 +252,6 @@ export default function Admin() {
       .catch((error) => {
         console.error('Errore:', error);
       });
-    console.log('STATUS:' + status + ' ' + 'VALUE:' + value);
     /*setTest(false);
     setValue(0);
     setStatus(false);
@@ -260,7 +261,7 @@ export default function Admin() {
   const items: TabsProps['items'] = [
     {
       key: '1',
-      label: 'Generali',
+      label: t('general'),
       children: (
         <>
           <NodoForm form={formDaasIoT} onHideTestComponent={hideTestComponent} />
@@ -290,7 +291,7 @@ export default function Admin() {
     },
     {
       key: '2',
-      label: 'Parametri',
+      label: t('parameters'),
       children: (
         <div>
           <Table
@@ -303,12 +304,7 @@ export default function Admin() {
           <ActionButtons />
           <ProgramButton />
 
-          <Modal
-            title="Aggiungi Funzione"
-            open={isModalVisible}
-            onCancel={() => setIsModalVisible(false)}
-            footer={null}
-          >
+          <Modal title={t('addFunction')} open={isModalVisible} onCancel={() => setIsModalVisible(false)} footer={null}>
             <List
               dataSource={availableFunctions}
               renderItem={(item) => (
@@ -323,7 +319,7 @@ export default function Admin() {
     },
     {
       key: '3',
-      label: 'Eventi',
+      label: t('events'),
       children: (
         <>
           <div
@@ -389,12 +385,12 @@ export default function Admin() {
               <br />
               <br />
             </div>
-            <span style={{ display: 'flex', justifyContent: 'center', fontSize: 20, color: 'white' }}>Dispositivi</span>
             <div style={{ padding: '16px' }}>
               <Input
-                placeholder="Cerca..."
+                placeholder={t('search')}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 suffix={<SearchOutlined />}
+                style={{ height: 25 }}
               />
             </div>
             <List
@@ -426,18 +422,14 @@ export default function Admin() {
                   imageStyle={{
                     height: 60,
                   }}
-                  description={
-                    <span style={{ color: '#595959', fontSize: '16px' }}>
-                      Seleziona un dispositivo nella lista per visualizzarne i dettagli
-                    </span>
-                  }
+                  description={<span style={{ color: '#595959', fontSize: '16px' }}>{t('selectDevice')}</span>}
                 ></Empty>
               )}
             </Content>
           </Layout>
         </Layout>
       </div>
-      <div className={styles.mobileMessage}>Questo contenuto non è disponibile sui dispositivi mobile.</div>
+      <div className={styles.mobileMessage}>{t('mobileMessage')}</div>
     </>
   );
 }

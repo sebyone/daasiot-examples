@@ -3,6 +3,7 @@ import { useCustomNotification } from '@/hooks/useNotificationHook';
 import { default as ConfigService, default as configService } from '@/services/configService';
 import { LinkDataType } from '@/types';
 import { Form, Modal, notification } from 'antd';
+import { useLocale, useTranslations } from 'next-intl';
 import dynamic from 'next/dynamic';
 import { useParams, useRouter } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
@@ -20,6 +21,9 @@ const EditLink = () => {
   const [isDataSaved, setIsDataSaved] = useState(true);
   const [networkTech, setNetworkTech] = useState<number | null>(null);
   const [link, setLink] = useState<string>();
+  const t = useTranslations('EditLink');
+  const tBack = useTranslations('handleGoBack');
+  const locale = useLocale();
   const params = useParams();
   const id = Number(params.id);
 
@@ -41,7 +45,7 @@ const EditLink = () => {
         setLink(data.url);
       })
       .catch((error) => {
-        notify('error', 'Qualcosa non ha funzionato', 'Errore nel caricamento dei dati del link');
+        notify('error', t('error'), t('errorGetLink'));
         console.error('Errore:', error);
       });
   }, []);
@@ -57,28 +61,28 @@ const EditLink = () => {
         delete updatedValues.port;
       }
       await configService.updateLink(id, updatedValues);
-      notify('success', 'Operazione riuscita', 'Operazione avvenuta con successo');
+      notify('success', t('success'), t('successSave'));
     } catch {
-      notify('error', 'Qualcosa non ha funzionato', "Errore nell'aggiornamento' del link");
+      notify('error', t('error'), t('errorUpdateLink'));
     }
   };
 
   const handleGoBack = () => {
     if (!isDataSaved) {
-      notify('warning', 'Dati non salvati', 'Operazione non riuscita, salva prima di uscire');
+      notify('warning', tBack('warning'), tBack('warningContent'));
       Modal.confirm({
-        title: 'Sei sicuro?',
-        content: 'I dati non salvati verranno persi. Vuoi continuare?',
+        title: tBack('title'),
+        content: tBack('content'),
         okText: 'Ok',
-        cancelText: 'Annulla',
+        cancelText: tBack('cancelText'),
         onOk: () => {
-          router.push('/admin/configurazione/editDinLocal/1');
+          router.push(`/${locale}/admin/configurazione/editDinLocal/1`);
         },
       });
       return;
     }
 
-    router.push('/admin/configurazione/editDinLocal/1');
+    router.push(`/${locale}/admin/configurazione/editDinLocal/1`);
   };
 
   const handleSave = () => {
