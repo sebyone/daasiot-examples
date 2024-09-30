@@ -235,13 +235,7 @@ export default function Dispositivi() {
         console.error('Errore:', error);
       });
 
-    configService
-      .getSegnalazioni()
-      .then(setSegnalazioni)
-      .catch((error) => {
-        console.error('Errore:', error);
-      });
-  }, []);*/
+    */
 
   const onSend = () => {
     configService
