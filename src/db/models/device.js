@@ -19,21 +19,38 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.INTEGER,
       allowNull: false,
     },
-    serial: {
-      type: DataTypes.STRING,
-      allowNull: false,
-      maxLength: 20,
-    },
     din_id: {
       type: DataTypes.INTEGER,
       allowNull: false,
+    },
+    name: {
+      type: DataTypes.STRING,
+      maxLength: 45,
+      allowNull: false,
+      validate: {
+        notEmpty: true,
+      },
+    },
+    latitude: {
+      type: DataTypes.DECIMAL(10, 8),
+      validate: {
+        min: -90,
+        max: 90,
+      },
+    },
+    longitude: {
+      type: DataTypes.DECIMAL(11, 8),
+      validate: {
+        min: -180,
+        max: 180,
+      },
     },
   }, {
     sequelize,
     modelName: 'Device',
     tableName: 'device',
+    timestamps: true,
     underscored: true,
-    timestamps: false,
   });
   return Device;
 };

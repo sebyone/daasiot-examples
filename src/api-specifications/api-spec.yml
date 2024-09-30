@@ -2,7 +2,7 @@ openapi: '3.0.3'
 info:
   title: DaaS-NodeJS
   version: '1.0'
-
+  
   contact:
     name: API Support
     email: alessio.farfaglia@gmail.com
@@ -18,6 +18,7 @@ servers:
       port:
         default: '3000'
         description: default port for the development server
+
 
 #region Components
 
@@ -139,7 +140,6 @@ components:
         cdin:
           $ref: '#/components/schemas/Din'
 
-
     Device:
       type: object
       properties:
@@ -149,41 +149,22 @@ components:
         device_model_id:
           type: integer
           description: ID del modello del device
-        serial:
-          type: string
-          description: seriale del device
-          maxLength: 20
         din_id:
           type: integer
           description: ID del DIN associato al device
-        device_model:
-          $ref: '#/components/schemas/DeviceModel'
-        din:
-          $ref: '#/components/schemas/Din'
-
-    DeviceModel:
-      type: object
-      properties:
-        id:
-          type: integer
-          description: ID del modello del device
-          nullable: false
-        device_group_id:
-          type: integer
-          description: ID del gruppo del device
-          nullable: false
-        productcode:
+        name:
           type: string
-          description: codice prodotto
+          description: Nome del device
           maxLength: 45
-        datasheet:
-          type: string
-          description: datasheet
-          maxLength: 45
-        userguide:
-          type: string
-          description: guida utente
-          maxLength: 45
+        latitude:
+          type: number
+          description: latitudine
+          example: 39.3015
+        longitude:
+          type: number
+          description: longitudine
+          example: 16.2536
+        
 
     DeviceFull:
       type: object
@@ -194,18 +175,114 @@ components:
         device_model_id:
           type: integer
           description: ID del modello del device
-        serial:
-          type: string
-          description: seriale del device
-          maxLength: 20
         din_id:
           type: integer
           description: ID del DIN associato al device
+        name:
+          type: string
+          description: Nome del device
+          maxLength: 45
+        latitude:
+          type: number
+          description: latitudine
+          example: 39.3015
+        longitude:
+          type: number
+          description: longitudine
+          example: 16.2536
         device_model:
           $ref: '#/components/schemas/DeviceModel'
         din:
           $ref: '#/components/schemas/Din'
 
+
+    DeviceModel:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: ID del modello del device
+          nullable: false
+        device_group_id:
+          type: integer
+          description: ID del gruppo del modello
+          nullable: false
+        description:
+          type: string
+          description: descrizione del modello
+          maxLength: 45
+        serial:
+          type: string
+          description: seriale del modello
+          maxLength: 20
+        link_image:
+          type: string
+          description: collegamento all'immagine del device
+          maxLength: 45
+        link_datasheet:
+          type: string
+          description: collegamento alla scheda tecnica
+          maxLength: 45
+        link_userguide:
+          type: string
+          description: collegamento al manuale utente
+          maxLength: 45
+
+    DeviceModelFull:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: ID del modello del device
+          nullable: false
+        device_group_id:
+          type: integer
+          description: ID del gruppo del modello
+          nullable: false
+        description:
+          type: string
+          description: descrizione del modello
+          maxLength: 45
+        serial:
+          type: string
+          description: seriale del modello
+          maxLength: 20
+        link_image:
+          type: string
+          description: collegamento all'immagine del device
+          maxLength: 45
+        link_datasheet:
+          type: string
+          description: collegamento alla scheda tecnica
+          maxLength: 45
+        link_userguide:
+          type: string
+          description: collegamento al manuale utente
+          maxLength: 45
+        device_group:
+          $ref: '#/components/schemas/DeviceModelGroup'
+    
+
+    DeviceModelGroup:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: ID del gruppo del modello
+          nullable: false
+        title:
+          type: string
+          description: titolo del gruppo
+          maxLength: 45
+        description:
+          type: string
+          description: descrizione del gruppo
+          maxLength: 45
+        link_image:
+          type: string
+          description: collegamento all'immagine del gruppo
+          maxLength: 45
+          example: "https://placehold.co/600x400"
 
     Error:
       type: object
@@ -219,7 +296,8 @@ components:
           description: Messaggio di errore
 
 #region Paths
-
+externalDocs:
+  url: 'https://github.com/sebyone/daas-nodejs'
 paths:
   /:
     get:
@@ -1137,28 +1215,41 @@ paths:
                 $ref: '#/components/schemas/Error'
 
     post:
-      description: Crea un nuovo device
+      description: Crea un nuovo device, con associato un device model e un DIN.
       requestBody:
         content:
           application/json:
             schema:
               type: object
               properties:
-                device_model:
-                  $ref: '#/components/schemas/DeviceModel'
-                serial:
+                device_model_id:
+                  type: integer
+                  description: ID del modello del device
+                din_id:
+                  type: integer
+                  description: ID del DIN associato al device
+                name:
                   type: string
-                  description: Seriale del device
-                din:
-                  $ref: '#/components/schemas/Din'
+                  description: Nome del device
+                  maxLength: 45
+                latitude:
+                  type: number
+                  description: latitudine
+                  example: 39.3015
+                longitude:
+                  type: number
+                  description: longitudine
+                  example: 16.2536
               required:
-                - device_model
-                - serial
-                - din
+                - device_model_id
+                - din_id
+                - name
               example:
-                device_model: { "device_group_id": 1, "productcode": "123400001234", "datasheet": "datasheet", "userguide": "userguide" }
-                serial: "1234567890"
-                din: { "sid": "100", "din": "87" }
+                device_model_id: 1
+                din_id: 1
+                name: "Device 1"
+                latitude: 39.3015
+                longitude: 16.2536
       responses:
         '200':
           description: Device aggiunto con successo.

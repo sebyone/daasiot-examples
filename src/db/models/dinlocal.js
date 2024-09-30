@@ -15,6 +15,7 @@ module.exports = (sequelize, DataTypes) => {
     static associate(models) {
       this.belongsTo(models.Din, { foreignKey: 'din_id', as: 'din', tableName: 'din' });
       this.hasMany(models.DinLink, { foreignKey: 'din_id', sourceKey: 'din_id', as: 'links' });
+      this.hasOne(models.Device, { foreignKey: 'din_id', sourceKey: 'din_id', as: 'device' });
     }
   }
   DinLocal.init({
@@ -38,6 +39,7 @@ module.exports = (sequelize, DataTypes) => {
     sequelize,
     modelName: 'DinLocal',
     tableName: 'din_local',
+    timestamps: true,
     underscored: true,
   });
 

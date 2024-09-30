@@ -32,6 +32,11 @@ async function loadConfig(node) {
         raw: true
     });
 
+    if (dinLocal === null) {
+        console.error(`[daas] ERROR while loading config: dinLocal not found`);
+        return;
+    }
+
     const sid = parseInt(dinLocal['din.sid']);
     const din = parseInt(dinLocal['din.din']);
     
@@ -53,9 +58,9 @@ async function loadConfig(node) {
 
         let isEnabled = node.enableDriver(link, url);
         if (isEnabled) {
-            console.log(`[daas] enableDriver link=${link} din=${url} OK`);
+            console.log(`[daas] enableDriver link=${link} url=${url} OK`);
         } else {
-            console.log(`[daas] enableDriver link=${link} din=${url} ERROR`);
+            console.log(`[daas] enableDriver link=${link} url=${url} ERROR`);
         }
 
     });

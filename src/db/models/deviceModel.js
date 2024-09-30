@@ -14,28 +14,44 @@ module.exports = (sequelize, DataTypes) => {
 			type: DataTypes.INTEGER,
 			allowNull: false,
 		},
-		productcode: {
+		description: {
 			type: DataTypes.STRING,
-			allowNull: true,
+			allowNull: false,
 			maxLength: 45,
 		},
-		datasheet: {
+		serial: {
 			type: DataTypes.STRING,
-			allowNull: true,
-			maxLength: 45,
+			allowNull: false,
+			maxLength: 20,
 		},
-		userguide: {
+		link_image: {
 			type: DataTypes.STRING,
-			allowNull: true,
 			maxLength: 45,
+			validate: {
+				isUrl: true,
+			}
 		},
-		
+		link_datasheet: {
+			type: DataTypes.STRING,
+			maxLength: 45,
+			validate: {
+				isUrl: true,
+			}
+		},
+		link_userguide: {
+			type: DataTypes.STRING,
+			maxLength: 45,
+			validate: {
+				isUrl: true,
+			}
+		},
 	}, {
 		sequelize,
 		modelName: 'DeviceModel',
 		tableName: 'device_model',
+		timestamps: true,
 		underscored: true,
-		timestamps: false,
 	});
 	return DeviceModel;
 };
+

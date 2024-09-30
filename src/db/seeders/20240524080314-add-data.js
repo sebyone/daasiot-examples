@@ -11,14 +11,16 @@ module.exports = {
         din: '101',
         p_res: '000',
         skey: '3b92a1a3d85b8',
-        created_at: '2024-05-24 08:35:57.050 +00:00'
+        created_at: '2024-05-24 08:35:57.050 +00:00',
+        updated_at: '2024-05-24 08:35:57.050 +00:00',
       }, {
         id: 2,
         sid: '100',
         din: '102',
         p_res: '000',
         skey: '9efafc3b2a94f',
-        created_at: '2024-05-24 08:35:57.050 +00:00'
+        created_at: '2024-05-24 08:35:57.050 +00:00',
+        updated_at: '2024-05-24 08:35:57.050 +00:00',
       }
       ], { transaction });
 
@@ -26,20 +28,23 @@ module.exports = {
         title: "Default Gateway node",
         din_id: 1,
         enable: true,
-        created_at: '2024-05-24 08:35:57.050 +00:00'
+        created_at: '2024-05-24 08:35:57.050 +00:00',
+        updated_at: '2024-05-24 08:35:57.050 +00:00',
       }], { transaction });
 
       await queryInterface.bulkInsert('din_link', [{
         din_id: 1,
         link: 2,
         url: '127.0.0.1:2101',
-        created_at: '2024-05-24 08:35:57.050 +00:00'
+        created_at: '2024-05-24 08:35:57.050 +00:00',
+        updated_at: '2024-05-24 08:35:57.050 +00:00',
       },
       {
         din_id: 2,
         link: 2,
         url: '127.0.0.1:2102',
-        created_at: '2024-05-24 08:35:57.050 +00:00'
+        created_at: '2024-05-24 08:35:57.050 +00:00',
+        updated_at: '2024-05-24 08:35:57.050 +00:00',
       }
       ], { transaction });
 

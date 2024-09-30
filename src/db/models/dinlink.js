@@ -20,6 +20,9 @@ module.exports = (sequelize, DataTypes) => {
     link: {
       type: DataTypes.INTEGER,
       allowNull: false,
+      validate: {
+        isIn: [[1, 2, 3, 4]],
+      }
     },
     din_id: {
       type: DataTypes.INTEGER,
@@ -37,6 +40,7 @@ module.exports = (sequelize, DataTypes) => {
     sequelize,
     modelName: 'DinLink',
     tableName: 'din_link',
+    timestamps: true,
     underscored: true,
   });
   return DinLink;
