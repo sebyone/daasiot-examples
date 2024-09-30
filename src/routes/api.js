@@ -735,36 +735,7 @@ router.delete('/receivers/:receiverId/remotes', async function (req, res) {
 
 router.get('/devices', async function (req, res) {
     try {
-        const devices = [
-            {
-                id: 1,
-                name: 'Dispositivo1',
-                latitudine: 39.3017,
-                longitudine: 16.2537,
-                serial: '907712866',
-                device_model: {},
-                din: {},
-            },
-            {
-                id: 2,
-                name: 'Dispositivo2',
-                latitudine: 39.2854,
-                longitudine: 16.2619,
-                serial: '177899912',
-                device_model: {},
-                din: {},
-            },
-            {
-                id: 3,
-                name: 'Dispositivo3',
-                latitudine: 39.3154,
-                longitudine: 16.2426,
-                serial: '171004882',
-                device_model: {},
-                din: {},
-            },
-        ];
-
+        const devices = await Device.findAll({ include: ['device_model', 'din'] });
         res.send(devices);
     } catch (err) {
         sendError(res, err);
@@ -775,7 +746,9 @@ router.get('/devices/:id', async function (req, res) {
     try {
         const id = parseInt(req.params.id);
 
-        const device = Device.findByPk(id, { include: ['device_model', 'din'] });
+        const device = await Device.findByPk(id, { include: ['device_model', 'din'] });
+        console.log(`[API] device`, device);
+        
         if (device === null) {
             res.status(404);
             throw new Error(`Dispositivo con id=${id} non trovato.`);
@@ -823,7 +796,20 @@ router.put('/devices/:id', async function (req, res) {
 });
 
 router.delete('/devices/:id', async function (req, res) {
-    sendError(res, new Error("Not yet implemented."), 501);
+    try {
+        const id = parseInt(req.params.id);
+        const deletedRows = await Device.destroy({ where: { id } });
+
+        if (deletedRows === 0) {
+            res.status(404);
+            throw new Error(`Dispositivo con id=${id} non trovato.`);
+        }
+
+        res.send({ message: "Dispositivo eliminato con successo." });
+    }
+    catch (err) {
+        sendError(res, err);
+    }
 });
 
 

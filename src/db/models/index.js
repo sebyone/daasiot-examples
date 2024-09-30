@@ -43,10 +43,10 @@ db.Sequelize = Sequelize;
 
 console.log('NODE_ENV:', env);
 
-if (env === 'test' || env === 'development') {
-  console.warn('[daas] syncing database to reflect model definitions');
-  db.sequelize.sync();
-}
+// if (env === 'test' || env === 'development') {
+//   console.warn('[daas] syncing database to reflect model definitions');
+//   db.sequelize.sync();
+// }
 
 
 module.exports = db;
