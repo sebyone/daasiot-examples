@@ -54,7 +54,7 @@ const NodoForm = ({ form, onHideTestComponent }: NodoFormProps) => {
           </Col>
           <Col span={8}>
             <Form.Item name="enable" valuePropName="checked">
-              <Checkbox style={{ marginTop: 26 }}>Enabled</Checkbox>
+              <Checkbox style={{ marginTop: 26 }}>{t('enabled')}</Checkbox>
             </Form.Item>
           </Col>
         </Row>

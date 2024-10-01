@@ -10,7 +10,8 @@
     "dashboard": "Dashboard",
     "configuration": "Configuration",
     "devices": "Devices",
-    "geolocation": "Geolocation"
+    "geolocation": "Geolocation",
+    "catalog": "Catalog"
   },
   "FormMenu": {
     "add": "Add",
@@ -28,10 +29,11 @@
     "mobileMessage": "This content is not available on mobile devices.",
     "general": "General",
     "parameters": "Parameters",
-    "events": "Events",
+    "events": "DDO Events",
     "search": "Search...",
     "function": "Function",
     "addFunction": "Add function",
+    "clearLog": "Clear Log",
     "input": "Input",
     "output": "Output",
     "edit": "Edit",
@@ -44,7 +46,8 @@
     "serialNumber": "Serial number",
     "model": "Model",
     "latitude": "Latitude",
-    "longitude": "Longitude"
+    "longitude": "Longitude",
+    "enabled": "Enabled"
   },
   "Mappa": {
     "loading": "Loading map...",
@@ -121,5 +124,11 @@
   "Configurazione": {
     "error": "Something didn't work",
     "errorGetReceivers": "Error loading receivers"
+  },
+  "Catalogo": {
+    "selectGroupModel": "Select a model group to view devices",
+    "mobileMessage": "This content is not available on mobile devices.",
+    "order": "Order",
+    "loadFW": "Load FW"
   }
 }

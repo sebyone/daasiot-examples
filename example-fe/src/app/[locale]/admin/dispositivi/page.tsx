@@ -36,17 +36,6 @@ const { Sider, Content } = Layout;
   },
 ];*/
 
-const data = [
-  {
-    id: 1,
-    name: 'Evento1',
-  },
-  {
-    id: 2,
-    name: 'Evento2',
-  },
-];
-
 export default function Dispositivi() {
   const t = useTranslations('Dispositivi');
   const [formDaasIoT] = Form.useForm();
@@ -69,6 +58,8 @@ export default function Dispositivi() {
   ]);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [isDeviceSelected, setIsDeviceSelected] = useState(false);
+  const [isModalInfoEventVisible, setIsModalInfoEventVisible] = useState(false);
+  const [selectedRow, setSelectedRow] = useState(null);
 
   const columns = [
     {
@@ -99,6 +90,56 @@ export default function Dispositivi() {
     { title: t('parameters'), dataIndex: 'parametri', key: 'parametri' },
     { title: t('input'), dataIndex: 'ingressi', key: 'ingressi' },
     { title: t('output'), dataIndex: 'uscite', key: 'uscite' },
+  ];
+
+  const handleViewClick = (record) => {
+    setSelectedRow(record);
+    setIsModalInfoEventVisible(true);
+  };
+
+  const handleModalClose = () => {
+    setIsModalInfoEventVisible(false);
+    setSelectedRow(null);
+  };
+
+  const columnsEvents = [
+    {
+      title: 'Timestamp',
+      dataIndex: 'timestamp',
+      key: 'timestamp',
+    },
+    {
+      title: 'Typeset',
+      dataIndex: 'typeset',
+      key: 'typeset',
+    },
+    {
+      title: 'Payload Size',
+      dataIndex: 'payloadSize',
+      key: 'payloadSize',
+    },
+    {
+      title: '',
+      key: 'action',
+      render: (text, record) => (
+        <SearchOutlined style={{ cursor: 'pointer' }} onClick={() => handleViewClick(record)} />
+      ),
+    },
+  ];
+
+  const eventsData = [
+    {
+      key: '1',
+      timestamp: '2024-09-30 11:00:00',
+      typeset: 'typeset1',
+      payloadSize: '6',
+    },
+    {
+      key: '2',
+      timestamp: '2024-09-30 11:05:00',
+      typeset: 'typeset2',
+      payloadSize: '10',
+    },
   ];
 
   /*
@@ -316,43 +357,25 @@ export default function Dispositivi() {
       label: t('events'),
       children: (
         <>
-          <div
-            style={{
-              display: 'flex',
-              flexDirection: 'column',
-              justifyContent: 'center',
-              alignItems: 'center',
-              height: '100%',
-              padding: '20px',
-            }}
-          >
-            <div
-              style={{
-                width: '100%',
-                maxWidth: '500px',
-                backgroundColor: '#f0f2f5',
-                borderRadius: '8px',
-                boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
-                overflow: 'hidden',
-              }}
-            >
-              <List
-                dataSource={data}
-                renderItem={(item) => (
-                  <List.Item style={{ borderBottom: '1px solid #7b97c1', padding: '12px 16px' }}>
-                    <span>{item.name}</span>
-                  </List.Item>
-                )}
-                style={{
-                  height: '300px',
-                  overflowY: 'auto',
-                }}
-              />
-            </div>
-            <Button type="primary" style={{ marginTop: '20px' }}>
-              Clear Log
-            </Button>
+          <Table columns={columnsEvents} dataSource={eventsData} pagination={false} />
+          <div style={{ display: 'flex', justifyContent: 'center', marginTop: '20px' }}>
+            <Button type="primary">{t('clearLog')}</Button>
           </div>
+          <Modal title="Dettagli" open={isModalInfoEventVisible} onCancel={handleModalClose} footer={null}>
+            {selectedRow ? (
+              <>
+                <p>
+                  <strong>Timestamp:</strong> {selectedRow.timestamp}
+                </p>
+                <p>
+                  <strong>Typeset:</strong> {selectedRow.typeset}
+                </p>
+                <p>
+                  <strong>Payload Size:</strong> {selectedRow.payloadSize}
+                </p>
+              </>
+            ) : null}
+          </Modal>
         </>
       ),
     },

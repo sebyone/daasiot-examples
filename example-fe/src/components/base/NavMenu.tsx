@@ -1,5 +1,11 @@
 'use client';
-import { DeploymentUnitOutlined, DesktopOutlined, EnvironmentOutlined, SettingOutlined } from '@ant-design/icons';
+import {
+  DeploymentUnitOutlined,
+  DesktopOutlined,
+  EnvironmentOutlined,
+  SettingOutlined,
+  ShoppingOutlined,
+} from '@ant-design/icons';
 import { Menu, MenuProps } from 'antd';
 import { useLocale, useTranslations } from 'next-intl';
 import Link from 'next/link';
@@ -12,6 +18,7 @@ const getPathMap = (locale: string) => ({
   [`/${locale}/admin/configurazione`]: '/admin/configurazione',
   [`/${locale}/admin/dispositivi`]: '/admin/dispositivi',
   [`/${locale}/admin/mappa`]: '/admin/mappa',
+  [`/${locale}/admin/catalogo`]: '/admin/catalogo',
   [`/${locale}/admin`]: '/admin',
 });
 
@@ -52,6 +59,11 @@ export default function NavMenu({ role }: { role: string }) {
       key: '/admin/mappa',
       icon: <EnvironmentOutlined />,
       label: <Link href={`/${locale}/admin/mappa`}>{t('geolocation')}</Link>,
+    },
+    {
+      key: '/admin/catalogo',
+      icon: <ShoppingOutlined />,
+      label: <Link href={`/${locale}/admin/catalogo`}>{t('catalog')}</Link>,
     },
   ];
 
