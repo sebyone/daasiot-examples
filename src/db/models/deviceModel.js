@@ -17,7 +17,6 @@ module.exports = (sequelize, DataTypes) => {
 		description: {
 			type: DataTypes.STRING,
 			allowNull: false,
-			maxLength: 45,
 		},
 		serial: {
 			type: DataTypes.STRING,
