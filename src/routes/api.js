@@ -747,7 +747,6 @@ router.get('/devices/:id', async function (req, res) {
         const id = parseInt(req.params.id);
 
         const device = await Device.findByPk(id, { include: ['device_model', 'din'] });
-        console.log(`[API] device`, device);
         
         if (device === null) {
             res.status(404);
@@ -791,8 +790,49 @@ router.post('/devices', async function (req, res) {
     }
 });
 
+
 router.put('/devices/:id', async function (req, res) {
-    sendError(res, new Error("Not yet implemented."), 501);
+    const t = await db.sequelize.transaction();
+    
+    try {
+        const id = parseInt(req.params.id);
+        const device = req.body;
+
+        const oldDevice = await Device.findByPk(id, { transaction: t });
+        if (oldDevice === null) {
+            res.status(404);
+            throw new Error(`Dispositivo con id=${id} non trovato.`);
+        }
+
+        if (device.id && device.id !== id) {
+            res.status(400);
+            throw new Error(`Non è possibile modificare l'id del dispositivo.`);
+        }
+
+        if (device.din != undefined) {
+            res.status(400);
+            throw new Error(`Non è possibile modificare il din del dispositivo da questo endpoint.`);
+        }
+
+        if (device.device_model != undefined) {
+            res.status(400);
+            throw new Error(`Non è possibile modificare il device_model del dispositivo da questo endpoint.`);
+        }
+
+        const updatedRows = await Device.update(device, { where: { id }, transaction: t });
+
+        if (updatedRows === 0) {
+            res.status(404);
+            throw new Error(`Non è stato possibile aggiornare il dispositivo con id=${id}.`);
+        }
+
+        await t.commit();
+        res.send({ message: "Dispositivo aggiornato con successo." });
+    }
+    catch (err) {
+        await t.rollback();
+        sendError(res, err);
+    }
 });
 
 router.delete('/devices/:id', async function (req, res) {
