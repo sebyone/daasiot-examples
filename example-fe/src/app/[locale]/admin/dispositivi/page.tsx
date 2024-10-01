@@ -4,6 +4,7 @@ import DataPanel from '@/components/DataPanel';
 import NodoForm from '@/components/NodoForm';
 import Panel from '@/components/Panel';
 import PanelView from '@/components/PanelView';
+import PayloadContentViewer from '@/components/PayloadContentView';
 import { useCustomNotification } from '@/hooks/useNotificationHook';
 import { default as ConfigService, default as configService } from '@/services/configService';
 import { Device } from '@/types';
@@ -60,6 +61,12 @@ export default function Dispositivi() {
   const [isDeviceSelected, setIsDeviceSelected] = useState(false);
   const [isModalInfoEventVisible, setIsModalInfoEventVisible] = useState(false);
   const [selectedRow, setSelectedRow] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+
+  const handleTableChange = (pagination) => {
+    //API
+  };
 
   const columns = [
     {
@@ -353,7 +360,17 @@ export default function Dispositivi() {
       label: t('events'),
       children: (
         <>
-          <Table columns={columnsEvents} dataSource={eventsData} pagination={false} />
+          <Table
+            columns={columnsEvents}
+            dataSource={eventsData}
+            pagination={{
+              current: currentPage,
+              pageSize: pageSize,
+              showSizeChanger: true,
+              pageSizeOptions: ['10', '20', '50', '100'],
+            }}
+            onChange={handleTableChange}
+          />
           <div style={{ display: 'flex', justifyContent: 'center', marginTop: '20px' }}>
             <Button type="primary">{t('clearLog')}</Button>
           </div>
@@ -368,6 +385,10 @@ export default function Dispositivi() {
                 </p>
                 <p>
                   <strong>Payload Size:</strong> {selectedRow.payloadSize}
+                </p>
+                <p style={{ marginTop: 10, fontSize: '1.1rem' }}>
+                  <strong>Payload Content</strong>
+                  <PayloadContentViewer payloadContent={'UHJvdmEgY29udmVyc2lvbmU='} />
                 </p>
               </>
             ) : null}
@@ -410,7 +431,12 @@ export default function Dispositivi() {
               dataSource={filteredDevices}
               renderItem={(item) => (
                 <List.Item
-                  style={{ borderBottom: '1px solid #303030', padding: '8px 16px', cursor: 'pointer' }}
+                  style={{
+                    borderBottom: '1px solid #303030',
+                    padding: '8px 16px',
+                    cursor: 'pointer',
+                    backgroundColor: selectedDevice === item ? '#1677ff' : undefined,
+                  }}
                   onClick={() => handleDeviceClick(item)}
                 >
                   <span style={{ color: 'white' }}>{item.name}</span>
