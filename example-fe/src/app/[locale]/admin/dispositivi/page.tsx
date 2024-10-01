@@ -287,10 +287,6 @@ export default function Dispositivi() {
       .catch((error) => {
         console.error('Errore:', error);
       });
-    /*setTest(false);
-    setValue(0);
-    setStatus(false);
-    setSelectedDin(null);*/
   };
 
   const items: TabsProps['items'] = [
