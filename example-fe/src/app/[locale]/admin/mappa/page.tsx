@@ -22,8 +22,8 @@ const Mappa = () => {
         const devices = data.map((device) => ({
           id: device.id,
           name: device.name,
-          latitudine: device.latitudine,
-          longitudine: device.longitudine,
+          latitudine: device.latitude,
+          longitudine: device.longitude,
         }));
         setDevicesData(devices);
       } catch (error) {

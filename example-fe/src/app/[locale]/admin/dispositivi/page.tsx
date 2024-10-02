@@ -206,8 +206,8 @@ export default function Dispositivi() {
         const devices = data.map((device) => ({
           id: device.id,
           name: device.name,
-          latitudine: device.latitudine,
-          longitudine: device.longitudine,
+          latitudine: device.latitude,
+          longitudine: device.longitude,
         }));
         setDevicesData(devices);
       } catch (error) {
@@ -220,11 +220,17 @@ export default function Dispositivi() {
 
   useEffect(() => {
     if (selectedDevice) {
-      formDaasIoT.setFieldsValue({
-        id: selectedDevice.id,
-        denominazione: selectedDevice.name,
-        latitudine: selectedDevice.latitudine,
-        longitudine: selectedDevice.longitudine,
+      configService.getDeviceById(selectedDevice.id).then((data) => {
+        formDaasIoT.setFieldsValue({
+          id: data.id,
+          denominazione: data.name,
+          matricola: data.device_model.serial,
+          modello: data.device_model.description,
+          sid: data.din.sid,
+          din: data.din.din,
+          latitudine: data.latitude,
+          longitudine: data.longitude,
+        });
       });
     }
   }, [selectedDevice, formDaasIoT]);

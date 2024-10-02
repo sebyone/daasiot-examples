@@ -230,9 +230,27 @@ export interface ModalDispositivoProps {
 
 export interface Device {
   id: number;
+  device_model_id: number;
+  din_id: number;
   name: string;
-  latitudine: number;
-  longitudine: number;
+  latitude: number;
+  longitude: number;
+  device_model: {
+    id: number;
+    device_group_id: number;
+    description: string;
+    serial: string;
+    link_image: string;
+    link_datasheet: string;
+    link_userguide: string;
+  };
+  din: {
+    id?: number;
+    sid: string;
+    din: string;
+    p_res: string;
+    skey: string;
+  };
 }
 
 export interface NodoFormProps {

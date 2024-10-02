@@ -323,6 +323,21 @@ const ConfigService = {
       throw error;
     }
   },
+
+  /**
+   * Recupera un dispositivo specifico tramite il suo ID
+   * id - ID del dispositivo da recuperare
+   * Promise<Device> - Oggetto Device del dispositivo richiesto
+   */
+  getDeviceById: async (id: number): Promise<Device> => {
+    try {
+      const response = await axiosInstance.get(`/devices/${id}`);
+      return response.data;
+    } catch (error) {
+      console.error('Error:', error);
+      throw error;
+    }
+  },
 };
 
 export default ConfigService;
