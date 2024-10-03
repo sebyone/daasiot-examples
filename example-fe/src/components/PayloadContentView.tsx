@@ -1,7 +1,7 @@
 import { Checkbox, Input } from 'antd';
 import React, { useEffect, useState } from 'react';
 
-const PayloadContentViewer = ({ payloadContent }: { payloadContent: string }) => {
+const PayloadContentView = ({ payloadContent }: { payloadContent: string }) => {
   const [payloadFormat, setPayloadFormat] = useState('BASE64');
   const [convertedContent, setConvertedContent] = useState('');
 
@@ -72,4 +72,4 @@ const PayloadContentViewer = ({ payloadContent }: { payloadContent: string }) =>
   );
 };
 
-export default PayloadContentViewer;
+export default PayloadContentView;

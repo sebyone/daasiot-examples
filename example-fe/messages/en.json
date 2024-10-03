@@ -39,7 +39,8 @@
     "edit": "Edit",
     "schedule": "Schedule",
     "error": "Something didn't work",
-    "errorGetDevices": "Error loading devices"
+    "errorGetDevices": "Error loading devices",
+    "details": "Details"
   },
   "NodoForm": {
     "name": "Name",

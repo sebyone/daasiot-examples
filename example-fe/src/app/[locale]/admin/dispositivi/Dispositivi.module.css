@@ -10,35 +10,6 @@
   height: 89vh;
 }
 
-.sidebar {
-  width: 300px;
-  overflow-y: auto;
-  display: flex;
-  flex-direction: column;
-}
-
-.deviceList {
-  flex-grow: 1;
-  overflow-y: auto;
-}
-
-.mapContainer {
-  flex-grow: 1;
-  display: flex;
-  flex-direction: column;
-}
-
-.tabsContainer {
-  flex-grow: 1;
-  display: flex;
-  flex-direction: column;
-}
-
-.mapContent {
-  flex-grow: 1;
-  position: relative;
-}
-
 @media (max-width: 600px) {
   .container {
     display: none;

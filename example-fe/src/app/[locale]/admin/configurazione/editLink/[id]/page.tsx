@@ -2,7 +2,7 @@
 import { useCustomNotification } from '@/hooks/useNotificationHook';
 import { default as ConfigService, default as configService } from '@/services/configService';
 import { LinkDataType } from '@/types';
-import { Form, Modal, notification } from 'antd';
+import { Form, Modal } from 'antd';
 import { useLocale, useTranslations } from 'next-intl';
 import dynamic from 'next/dynamic';
 import { useParams, useRouter } from 'next/navigation';
@@ -17,7 +17,6 @@ const EditLink = () => {
   const [form] = Form.useForm();
   const router = useRouter();
   const { notify, contextHolder } = useCustomNotification();
-  const [title, setTitle] = useState('New Link');
   const [isDataSaved, setIsDataSaved] = useState(true);
   const [networkTech, setNetworkTech] = useState<number | null>(null);
   const [link, setLink] = useState<string>();

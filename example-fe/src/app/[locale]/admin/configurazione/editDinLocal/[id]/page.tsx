@@ -1,20 +1,20 @@
 'use client';
-import LinkTable from '@/components/LinkTable';
-import MapTable from '@/components/MapTable';
-import ModalDispositivo from '@/components/ModalDispositivo';
 import { useCustomNotification } from '@/hooks/useNotificationHook';
 import { default as ConfigService, default as configService } from '@/services/configService';
-import { ConfigData, ConfigFormData, LinkDataType, MapDataType, StatusDataType } from '@/types';
-import { Button, Form, Modal, Tabs, TabsProps } from 'antd';
+import { ConfigFormData, LinkDataType, MapDataType, StatusDataType } from '@/types';
+import { Form, Modal, Tabs, TabsProps } from 'antd';
 import { useLocale, useTranslations } from 'next-intl';
 import dynamic from 'next/dynamic';
-import { useParams, useRouter } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
 
 const DataPanel = dynamic(() => import('@/components/DataPanel'), { ssr: false });
 const DinLocalForm = dynamic(() => import('@/components/DinLocalForm'), { ssr: false });
 const Panel = dynamic(() => import('@/components/Panel'), { ssr: false });
 const PanelView = dynamic(() => import('@/components/PanelView'), { ssr: false });
+const LinkTable = dynamic(() => import('@/components/LinkTable'), { ssr: false });
+const MapTable = dynamic(() => import('@/components/MapTable'), { ssr: false });
+const ModalDispositivo = dynamic(() => import('@/components/ModalDispositivo'), { ssr: false });
 
 const EditDinLocal = () => {
   const [form] = Form.useForm();
@@ -336,19 +336,21 @@ const EditDinLocal = () => {
   return (
     <>
       {contextHolder}
-      <DataPanel title={dinLocal} isEditing={isDataSaved} showSemaphore={true}>
-        <Panel handleGoBack={handleGoBack} handleSave={handleSave} showSaveButtons={true} layoutStyle="singleTable">
-          <PanelView layoutStyle="singleTable">
-            <Tabs
-              defaultActiveKey="1"
-              items={items}
-              type="card"
-              onChange={handleTabChange}
-              style={{ marginTop: -55, padding: 0 }}
-            />
-          </PanelView>
-        </Panel>
-      </DataPanel>
+      <div style={{ marginTop: -35 }}>
+        <DataPanel title={dinLocal} isEditing={isDataSaved} showSemaphore={true}>
+          <Panel handleGoBack={handleGoBack} handleSave={handleSave} showSaveButtons={true} layoutStyle="singleTable">
+            <PanelView layoutStyle="singleTable">
+              <Tabs
+                defaultActiveKey="1"
+                items={items}
+                type="card"
+                onChange={handleTabChange}
+                style={{ marginTop: -55, padding: 0 }}
+              />
+            </PanelView>
+          </Panel>
+        </DataPanel>
+      </div>
     </>
   );
 };

@@ -1,8 +1,8 @@
 'use client';
 import { useCustomNotification } from '@/hooks/useNotificationHook';
 import configService from '@/services/configService';
-import { DinDataType, DinFormData, LinkDataType, MapDataType } from '@/types';
-import { Form, Modal, notification } from 'antd';
+import { DinFormData } from '@/types';
+import { Form, Modal } from 'antd';
 import { useLocale, useTranslations } from 'next-intl';
 import dynamic from 'next/dynamic';
 import { useParams, useRouter } from 'next/navigation';
@@ -17,7 +17,6 @@ const EditMap = () => {
   const [form] = Form.useForm();
   const router = useRouter();
   const { notify, contextHolder } = useCustomNotification();
-  const [title, setTitle] = useState('');
   const [isDataSaved, setIsDataSaved] = useState(true);
   const [map, setMap] = useState<string>();
   const t = useTranslations('EditMap');

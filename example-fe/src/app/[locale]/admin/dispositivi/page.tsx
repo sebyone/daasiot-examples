@@ -1,20 +1,22 @@
 'use client';
-import CardDispositivoFactory from '@/components/CardDispositivoFactory';
-import DataPanel from '@/components/DataPanel';
-import NodoForm from '@/components/NodoForm';
-import Panel from '@/components/Panel';
-import PanelView from '@/components/PanelView';
-import PayloadContentViewer from '@/components/PayloadContentView';
 import { useCustomNotification } from '@/hooks/useNotificationHook';
 import { default as ConfigService, default as configService } from '@/services/configService';
 import { Device } from '@/types';
 import { DeploymentUnitOutlined, PlusOutlined, SearchOutlined } from '@ant-design/icons';
 import { Button, Empty, Form, Input, Layout, List, Modal, Table, Tabs, TabsProps } from 'antd';
 import { useTranslations } from 'next-intl';
+import dynamic from 'next/dynamic';
 import { useEffect, useState } from 'react';
 import styles from './Dispositivi.module.css';
 
 const { Sider, Content } = Layout;
+
+const DataPanel = dynamic(() => import('@/components/DataPanel'), { ssr: false });
+const NodoForm = dynamic(() => import('@/components/NodoForm'), { ssr: false });
+const Panel = dynamic(() => import('@/components/Panel'), { ssr: false });
+const PanelView = dynamic(() => import('@/components/PanelView'), { ssr: false });
+const PayloadContentViewer = dynamic(() => import('@/components/PayloadContentView'), { ssr: false });
+const CardDispositivoFactory = dynamic(() => import('@/components/CardDispositivoFactory'), { ssr: false });
 
 /*const devices = [
   {
@@ -291,15 +293,16 @@ export default function Dispositivi() {
 
     */
 
-  const onSend = () => {
-    configService
-      .sendPayload(selectedDin, status, value)
-      .then((response) => {
+  const onSend = async () => {
+    if (selectedDevice) {
+      try {
+        const device = await configService.getDeviceById(selectedDevice.id);
+        const response = await configService.sendPayload(Number(device.din.din), status, value);
         console.log(response);
-      })
-      .catch((error) => {
+      } catch (error) {
         console.error('Errore:', error);
-      });
+      }
+    }
   };
 
   const items: TabsProps['items'] = [
@@ -380,7 +383,7 @@ export default function Dispositivi() {
           <div style={{ display: 'flex', justifyContent: 'center', marginTop: '20px' }}>
             <Button type="primary">{t('clearLog')}</Button>
           </div>
-          <Modal title="Dettagli" open={isModalInfoEventVisible} onCancel={handleModalClose} footer={null}>
+          <Modal title={t('details')} open={isModalInfoEventVisible} onCancel={handleModalClose} footer={null}>
             {selectedRow ? (
               <>
                 <p>

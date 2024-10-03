@@ -13,23 +13,25 @@ const LanguageSwitcher = () => {
     router.push(newPath);
   };
 
-  const menu = (
-    <Menu>
-      <Menu.Item key="it" onClick={() => changeLanguage('it')}>
-        Italiano
-      </Menu.Item>
-      <Menu.Item key="en" onClick={() => changeLanguage('en')}>
-        English
-      </Menu.Item>
-    </Menu>
-  );
+  const menuItems = [
+    {
+      key: 'it',
+      label: 'Italiano',
+      onClick: () => changeLanguage('it'),
+    },
+    {
+      key: 'en',
+      label: 'English',
+      onClick: () => changeLanguage('en'),
+    },
+  ];
 
   return (
-    <Dropdown overlay={menu} placement="bottomRight">
+    <Dropdown menu={{ items: menuItems }} placement="bottomRight">
       <Button
         icon={<GlobalOutlined />}
         style={{ backgroundColor: 'transparent', border: 'none', color: 'white', marginTop: 20, marginRight: 20 }}
-      ></Button>
+      />
     </Dropdown>
   );
 };

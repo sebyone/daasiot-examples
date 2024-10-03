@@ -1,4 +1,4 @@
-import { MapDataType, ModalDispositivoProps } from '@/types';
+import { ModalDispositivoProps } from '@/types';
 import { Modal } from 'antd';
 import React from 'react';
 import CardDispositivo from './CardDispositivo';

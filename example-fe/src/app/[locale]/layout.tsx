@@ -1,7 +1,6 @@
-//import '@/utils/i18n/i18n';
 import { AntdRegistry } from '@ant-design/nextjs-registry';
 import type { ThemeConfig } from 'antd';
-import { ConfigProvider, theme } from 'antd';
+import { ConfigProvider } from 'antd';
 import type { Metadata } from 'next';
 import { NextIntlClientProvider } from 'next-intl';
 import { Inter } from 'next/font/google';

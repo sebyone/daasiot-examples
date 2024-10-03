@@ -1,8 +1,7 @@
-import ConfigService from '@/services/configService';
-import { DinDataType, NodoFormProps } from '@/types';
-import { Button, Checkbox, Col, Form, FormInstance, Input, Row, Select } from 'antd';
+import { NodoFormProps } from '@/types';
+import { Checkbox, Col, Form, Input, Row } from 'antd';
 import { useTranslations } from 'next-intl';
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 
 const NodoForm = ({ form, onHideTestComponent }: NodoFormProps) => {
   const marginBottom = { marginBottom: -22 };

@@ -39,7 +39,8 @@
     "edit": "Modifica",
     "schedule": "Programma",
     "error": "Qualcosa non ha funzionato",
-    "errorGetDevices": "Errore nel caricamento dei dispositivi"
+    "errorGetDevices": "Errore nel caricamento dei dispositivi",
+    "details": "Dettagli"
   },
   "NodoForm": {
     "name": "Denominazione",
