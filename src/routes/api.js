@@ -85,6 +85,7 @@ router.post('/restart', async function (req, res) {
     console.log("[API] /restart Node restarted.");
     try {
         // TODO: IMPLEMENT
+        res.status(501)
         throw new Error("Not ancora implementato.");
     } catch (error) {
         sendError(res, error);
@@ -853,8 +854,18 @@ router.delete('/devices/:id', async function (req, res) {
 });
 
 
+//#region DDOs
 
-
+router.get('/devices/:id/ddos', async function (req, res) {
+    try {
+        // TODO: IMPLEMENT
+        res.status(501)
+        throw new Error("Not ancora implementato.");
+    }
+    catch (err) {
+        sendError(res, err);
+    }
+});
 
 router.all('*', function (req, res) {
     res.status(404);

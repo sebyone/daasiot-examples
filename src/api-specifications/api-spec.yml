@@ -20,6 +20,28 @@ servers:
         description: default port for the development server
 
 
+externalDocs:
+  url: 'https://github.com/sebyone/daas-nodejs'
+
+tags:
+  - name: configuration
+    description: API per la configurazione del nodo daas
+  - name: lifecycle
+    description: API per gestire il del ciclo di vita del nodo daas (avvio, stop, riavvio)
+  - name: commands
+    description: API per l'invio di comandi ai nodi daas, come invio di messaggi
+  - name: receivers
+    description: API per la gestione dei receivers, nodi locali che ricevono e potenzialmente inviano messaggi
+  - name: remotes
+    description: API per la mappare nodi remoti ai receivers e gestire i nodi remoti
+  - name: DDOs
+    description: Daas Data Object, messaggi inviati tra i nodi daas
+  - name: devices
+  - name: device models
+  - name: programming
+    description: API per la programmazione remota dei dispositivi concatenando regole di programmazione
+  
+
 #region Components
 
 components:
@@ -259,7 +281,10 @@ components:
           maxLength: 45
         device_group:
           $ref: '#/components/schemas/DeviceModelGroup'
-    
+        resources:
+          type: array
+          items:
+            $ref: "#/components/schemas/DeviceModelResource"
 
     DeviceModelGroup:
       type: object
@@ -281,6 +306,82 @@ components:
           maxLength: 45
           example: "https://placehold.co/600x400"
 
+    DeviceModelResource:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: ID della risorsa
+          nullable: false
+        title:
+          type: string
+          nullable: false
+        device_model_id:
+          type: integer
+          description: ID del modello di device al quale si riferisce questa risorsa
+          nullable: false
+
+    DDO:
+      description: Daas Data Object
+      type: object
+      properties:
+        id:
+          type: integer
+          description: ID del DDO
+          nullable: false
+          example: 3
+        din_id_dst:
+          type: integer
+          description: ID del DIN che ha ricevuto questo DDO
+          nullable: false
+          example: 2
+        din_id_src:
+          type: integer
+          description: ID del DIN che ha inviato questo DDO
+          nullable: false
+          example: 1
+        timestamp:
+          type: string
+          format: date-time
+          description: Data e orario di quando è stato inviato il DDO
+          nullable: true
+          example: 2024-07-21T17:32:28Z
+        typeset_id:
+          type: integer
+          nullable: false
+          example: 41
+        payload:
+          type: string
+          format: base
+          description: Payload contenuto all'interno del DDO, in codifica Base64
+          nullable: true
+          example: eyJtZXNzYWdnaW8iOiAiY2lhbyBNb25kbyJ9
+
+    PaginationData: 
+      description: Meta dati sulla paginazione dei dati
+      properties:
+        count:
+          type: integer
+          description: numero di oggetti contenuti tra i dati della risposta
+          minimum: 0
+          example: 20
+        offset:
+          type: integer
+          description: gli oggetti contenuti dei dati della risposta partono da questo offset
+          minimum: 40
+        limit:
+          type: integer
+          description: numero massimo di oggetti contenuti tra i dati della risposta
+          minimum: 0
+          example: 20
+        total:
+          description: numero totale di oggetti per questa query
+          type: integer
+          minimum: 0
+          example: 67
+
+
+
     Error:
       type: object
       properties:
@@ -293,8 +394,6 @@ components:
           description: Messaggio di errore
 
 #region Paths
-externalDocs:
-  url: 'https://github.com/sebyone/daas-nodejs'
 paths:
   /:
     get:
@@ -305,6 +404,8 @@ paths:
   /configure:
     post:
       description: Carica la configurazione del nodo locale (per il din_local con id=1)
+      tags:
+        - configuration
       responses:
         '200':
           description: configurazione applicata.
@@ -318,6 +419,8 @@ paths:
   /stop:
     post:
       description: Ferma il nodo daas locale
+      tags:
+        - lifecycle
       responses:
         '200':
           description: Nodo fermato.
@@ -331,6 +434,8 @@ paths:
   /start:
     post:
       description: Avvia il nodo daas locale
+      tags:
+        - lifecycle
       responses:
         '200':
           description: Nodo locale avviato.
@@ -344,6 +449,8 @@ paths:
   /restart:
     post:
       description: Riavvia il nodo daas locale
+      tags:
+        - lifecycle
       responses:
         default:
           description: Non ancora implementato.
@@ -355,6 +462,8 @@ paths:
   /send:
     post:
       description: Invia un messaggio tramite il nodo daas locale al DIN specificato
+      tags:
+        - commands
       requestBody:
         content:
           application/json:
@@ -400,6 +509,8 @@ paths:
   /status: 
     get:
       description: Ritorna lo status del nodo locale.
+      tags:
+        - lifecycle
       responses:
         '200':
           description: Infomazioni sullo stato del nodo.s
@@ -445,6 +556,8 @@ paths:
   /version:
     get:
       description: Restituisce le versioni di librerie e software utilizzate dal nodo.
+      tags:
+        - configuration
       responses:
         '200':
           description: Versioni delle librerie e del software utilizzate dal nodo.
@@ -456,27 +569,35 @@ paths:
                   daasLibrary:
                     type: string
                     description: versione della libreria interna Daas
+                    example: "0.17a"
                   nodeGyp:
                     type: string
                     description: versione di node-gyp utilizzata per costruire il binario (daas-sdk)
+                    example: "8.0.0"
                   compiler:
                     type: string
                     description: nome del compilatore c++ utilizzato e la sua versione (GCC, Clang/LLVM, MSVC)
+                    example: "GCC 10.2.1 20210110"
                   cppStandardLibrary:
                     type: string
                     description: versione della libreria standard c++ utilizzata (GNU libstdc++, LLVM libc++, MSVC STL)
+                    example: "GNU libstdc++ 20210110"
                   node:
                     type: string
                     description: versione di Node.js
+                    example: "20.17.0"
                   nodeAddonApi:
                     type: string
                     description: versione dell'addon API di Node.js
+                    example: "9"
 
 #region Receivers
 
   /receivers:
     get:
       description: Ritorna una lista di tutti i receivers.
+      tags:
+        - receivers
       responses:
         '200':
           description: Lista di tutti i receivers.
@@ -496,6 +617,8 @@ paths:
     
     post:
       description: Crea un nuovo receiver
+      tags:
+        - receivers
       requestBody:
         content:
           application/json:
@@ -536,6 +659,8 @@ paths:
   /receivers/count:
     get:
       description: Ritorna il numero di receivers presenti.
+      tags:
+        - receivers
       responses:
         '200':
           description: Numero di receivers presenti.
@@ -557,6 +682,8 @@ paths:
   /receivers/{receiverId}:
     get:
       description: Ritorna un receiver specifico.
+      tags:
+        - receivers
       parameters:
         - name: receiverId
           in: path
@@ -587,6 +714,8 @@ paths:
 
     put:
       description: Aggiorna un receiver specifico.
+      tags:
+        - receivers
       parameters:
         - name: receiverId
           in: path
@@ -616,7 +745,6 @@ paths:
                 - din
                 - title
               example:
-                receiverId: 1
                 din: { "sid": "100", "din": "87" }
                 title: "Receiver 1"
       responses:
@@ -651,6 +779,8 @@ paths:
         
     delete:
       description: Elimina un receiver specifico.
+      tags:
+        - receivers
       parameters:
         - name: receiverId
           in: path
@@ -687,6 +817,8 @@ paths:
   /receivers/{receiverId}/links:
     get:
       description: Ritorna i link associati al receiver.
+      tags:
+        - receivers
       parameters:
         - name: receiverId
           in: path
@@ -718,6 +850,8 @@ paths:
 
     post:
       description: Aggiunge un link al receiver.
+      tags:
+        - receivers
       parameters:
         - name: receiverId
           in: path
@@ -742,7 +876,6 @@ paths:
                 - url
                 - link
               example:
-                receiverId: 1
                 link: 2
                 url: "151.81.1.4:2001"
       responses:
@@ -774,6 +907,8 @@ paths:
   /receivers/{receiverId}/links/{id}:
     get:
       description: Ritorna un link specifico associato al receiver.
+      tags:
+        - receivers
       parameters:
         - name: receiverId
           in: path
@@ -809,6 +944,8 @@ paths:
 
     put:
       description: Aggiorna un link specifico associato al receiver.
+      tags:
+        - receivers
       parameters:
         - name: receiverId
           in: path
@@ -836,8 +973,6 @@ paths:
                   description: Tipo di link
                   enum: [1, 2, 3, 4]
               example:
-                receiverId: 1
-                id: 1
                 url: "1.2.3.4:6045"
       responses:
         '200':
@@ -877,6 +1012,8 @@ paths:
       
     delete:
       description: Elimina un link specifico associato al receiver.
+      tags:
+        - receivers
       parameters:
         - name: receiverId
           in: path
@@ -925,6 +1062,9 @@ paths:
   /dins:
     get:
       description: Ritorna una lista di tutti i DINs.
+      tags:
+        - receivers
+        - remotes
       responses:
         '200':
           description: Lista di tutti i DINs.
@@ -944,6 +1084,8 @@ paths:
   /remotes:
     get:
       description: Ritorna una lista di tutti i nodi remoti, ovvero i DINs non associati ad un receiver.
+      tags:
+        - remotes
       responses:
         '200':
           description: Lista di tutti i nodi remoti.
@@ -964,6 +1106,8 @@ paths:
   /remotes/count:
     get:
       description: Ritorna il numero di nodi remoti presenti.
+      tags:
+        - remotes
       responses:
         '200':
           description: Numero di nodi remoti presenti.
@@ -988,6 +1132,9 @@ paths:
   /receivers/{receiverId}/remotes:
     get:
       description: Ritorna tutti i nodi mappati sul receiver.
+      tags:
+        - receiver
+        - remotes
       parameters:
         - name: receiverId
           in: path
@@ -1020,6 +1167,9 @@ paths:
 
     post:
       description: Associa e modifica un nodo remoto al receiver, se non esiste lo crea.
+      tags:
+        - receiver
+        - remotes
       parameters:
         - name: receiverId
           in: path
@@ -1077,6 +1227,9 @@ paths:
 
     delete:
       description: Elimina tutte le associazione del receiver con i nodi remoti.
+      tags:
+        - receiver
+        - remotes
       parameters:
         - name: receiverId
           in: path
@@ -1117,6 +1270,9 @@ paths:
   /receivers/{receiverId}/remotes/{id}:
     get:
       description: Ritorna un nodo remoto specifico associato al receiver.
+      tags:
+        - receiver
+        - remotes
       parameters:
         - name: receiverId
           in: path
@@ -1152,6 +1308,9 @@ paths:
 
     delete:
       description: Elimina l'associazione tra il nodo remoto e il receiver, se il nodo remoto non ha altre associazioni, viene cancellato.
+      tags:
+        - receiver
+        - remotes
       parameters:
         - name: receiverId
           in: path
@@ -1195,6 +1354,8 @@ paths:
   /devices:
     get:
       description: mostra di tutti i devices.
+      tags:
+        - devices
       responses:
         '200':
           description: Lista di tutti i devices.
@@ -1213,6 +1374,8 @@ paths:
 
     post:
       description: Crea un nuovo device, con associato un device model e un DIN.
+      tags:
+        - devices
       requestBody:
         content:
           application/json:
@@ -1277,6 +1440,8 @@ paths:
   /devices/{deviceId}:
     get:
       description: Ritorna un device specifico.
+      tags:
+        - devices
       parameters:
         - name: deviceId
           in: path
@@ -1306,6 +1471,8 @@ paths:
 
     put:
       description: Aggiorna un device specifico.
+      tags:
+        - devices
       parameters:
         - name: deviceId
           in: path
@@ -1366,6 +1533,8 @@ paths:
 
     delete:
       description: Elimina un device specifico.
+      tags:
+        - devices
       parameters:
         - name: deviceId
           in: path
@@ -1396,6 +1565,55 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+
+  
+  /devices/{deviceId}/ddos/:
+    get:
+      description: Ritorna i ddo ricevuti dal device specificato
+      tags:
+        - devices
+        - DDOs
+      parameters:
+        - name: deviceId
+          in: path
+          description: ID del device che ha ricevuto i DDO
+          required: true
+          schema:
+            type: integer
+        - name: offset
+          in: query
+          description: offset dei DDO ritornati per la paginazione
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: limit
+          in: query
+          description: Massimo numero di DDO ritornati nella risposta
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 50
+            default: 10
+      responses:
+        '200':
+          description: Pagina di DDO e informazioni sulla paginazione
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/DDO"
+                  pagination:
+                    $ref: "#/components/schemas/PaginationData"
+                    
+
+
 
   
 
