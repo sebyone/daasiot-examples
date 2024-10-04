@@ -45,6 +45,36 @@ tags:
 #region Components
 
 components:
+  parameters:
+    limit:
+      name: limit
+      in: query
+      description: Numero massimo di oggetti da ritornare
+      required: false
+      schema:
+        type: integer
+        minimum: 1
+        default: 20
+      example: 20
+    offset:
+      name: offset
+      in: query
+      description: Offset per la paginazione
+      required: false
+      schema:
+        type: integer
+        minimum: 0
+        default: 0
+      example: 40
+  
+  responses:  
+    InternalError:
+      description: Errore interno del server
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    
   schemas:
     DinLocal:
       type: object
@@ -410,11 +440,7 @@ paths:
         '200':
           description: configurazione applicata.
         default:
-          description: Errore interno del server.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+          $ref: "#/components/responses/InternalError"
   
   /stop:
     post:
@@ -500,11 +526,7 @@ paths:
                     type: string
                     description: Messaggio inviato.
         default:
-          description: Errore interno del server.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+          $ref: "#/components/responses/InternalError"
 
   /status: 
     get:
@@ -547,11 +569,7 @@ paths:
                     type: number
                     description: data encryption level
         default:
-          description: Errore interno del server.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+          $ref: "#/components/responses/InternalError"
 
   /version:
     get:
@@ -609,11 +627,7 @@ paths:
                   $ref: '#/components/schemas/DinLocal'
 
         default:
-          description: Errore interno del server.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+          $ref: "#/components/responses/InternalError"
     
     post:
       description: Crea un nuovo receiver
@@ -650,11 +664,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
         default:
-          description: Errore interno del server.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+          $ref: "#/components/responses/InternalError"
       
   /receivers/count:
     get:
@@ -673,11 +683,7 @@ paths:
                     type: integer
                     description: Numero di receivers presenti
         default:
-          description: Errore interno del server.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+          $ref: "#/components/responses/InternalError"
 
   /receivers/{receiverId}:
     get:
@@ -706,11 +712,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
         default:
-          description: Errore interno del server.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+          $ref: "#/components/responses/InternalError"
 
     put:
       description: Aggiorna un receiver specifico.
@@ -771,11 +773,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
         default:
-          description: Errore interno del server.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+          $ref: "#/components/responses/InternalError"
         
     delete:
       description: Elimina un receiver specifico.
@@ -806,11 +804,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
         default:
-          description: Errore interno del server.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+          $ref: "#/components/responses/InternalError"
 
 #region Receivers links
 
@@ -842,11 +836,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
         default:
-          description: Errore interno del server.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+          $ref: "#/components/responses/InternalError"
 
     post:
       description: Aggiunge un link al receiver.
@@ -898,11 +888,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
         default:
-          description: Errore interno del server.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+          $ref: "#/components/responses/InternalError"
 
   /receivers/{receiverId}/links/{id}:
     get:
@@ -936,11 +922,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
         default:
-          description: Errore interno del server.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+          $ref: "#/components/responses/InternalError"
 
     put:
       description: Aggiorna un link specifico associato al receiver.
@@ -1004,11 +986,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
         default:
-          description: Errore interno del server.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+          $ref: "#/components/responses/InternalError"
       
     delete:
       description: Elimina un link specifico associato al receiver.
@@ -1051,11 +1029,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
         default:
-          description: Errore interno del server.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+          $ref: "#/components/responses/InternalError"
 
 #region DINs
 
@@ -1075,11 +1049,7 @@ paths:
                 items:
                   $ref: '#/components/schemas/Din'
         default:
-          description: Errore interno del server.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+          $ref: "#/components/responses/InternalError"
 
   /remotes:
     get:
@@ -1097,11 +1067,7 @@ paths:
                   $ref: '#/components/schemas/Din_with_links'
 
         default:
-          description: Errore interno del server.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+          $ref: "#/components/responses/InternalError"
 
   /remotes/count:
     get:
@@ -1120,11 +1086,7 @@ paths:
                     type: integer
                     description: Numero di nodi remoti presenti
         default:
-          description: Errore interno del server.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+          $ref: "#/components/responses/InternalError"
 
 #region Receivers remotes
 
@@ -1158,11 +1120,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
         default:
-          description: Errore interno del server.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+          $ref: "#/components/responses/InternalError"
 
 
     post:
@@ -1218,11 +1176,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
         default:
-          description: Errore interno del server.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+          $ref: "#/components/responses/InternalError"
 
 
     delete:
@@ -1261,11 +1215,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
         default:
-          description: Errore interno del server.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+          $ref: "#/components/responses/InternalError"
 
   /receivers/{receiverId}/remotes/{id}:
     get:
@@ -1300,11 +1250,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
         default:
-          description: Errore interno del server.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+          $ref: "#/components/responses/InternalError"
 
     delete:
       description: Elimina l'associazione tra il nodo remoto e il receiver, se il nodo remoto non ha altre associazioni, viene cancellato.
@@ -1342,11 +1288,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
         default:
-          description: Errore interno del server.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+          $ref: "#/components/responses/InternalError"
 
 #region Devices
 
@@ -1366,11 +1308,7 @@ paths:
                 items:
                   $ref: '#/components/schemas/DeviceFull'
         default:
-          description: Errore interno del server.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+          $ref: "#/components/responses/InternalError"
 
     post:
       description: Crea un nuovo device, con associato un device model e un DIN.
@@ -1430,11 +1368,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
         default:
-          description: Errore interno del server.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+          $ref: "#/components/responses/InternalError"
 
 
   /devices/{deviceId}:
@@ -1463,11 +1397,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
         default:
-          description: Errore interno del server.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+          $ref: "#/components/responses/InternalError"
 
     put:
       description: Aggiorna un device specifico.
@@ -1525,11 +1455,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
         default:
-          description: Errore interno del server.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+          $ref: "#/components/responses/InternalError"
 
     delete:
       description: Elimina un device specifico.
@@ -1560,43 +1486,26 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
         default:
-          description: Errore interno del server.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+          $ref: "#/components/responses/InternalError"
 
-  
   /devices/{deviceId}/ddos/:
+    parameters:
+      - name: deviceId
+        in: path
+        description: ID del device che ha ricevuto i DDO
+        required: true
+        schema:
+          type: integer
+          minimum: 0
+          example: 1
     get:
       description: Ritorna i ddo ricevuti dal device specificato
       tags:
         - devices
         - DDOs
       parameters:
-        - name: deviceId
-          in: path
-          description: ID del device che ha ricevuto i DDO
-          required: true
-          schema:
-            type: integer
-        - name: offset
-          in: query
-          description: offset dei DDO ritornati per la paginazione
-          required: false
-          schema:
-            type: integer
-            minimum: 1
-            default: 1
-        - name: limit
-          in: query
-          description: Massimo numero di DDO ritornati nella risposta
-          required: false
-          schema:
-            type: integer
-            minimum: 1
-            maximum: 50
-            default: 10
+        - $ref: '#/components/parameters/offset'
+        - $ref: '#/components/parameters/limit'
       responses:
         '200':
           description: Pagina di DDO e informazioni sulla paginazione
@@ -1612,8 +1521,206 @@ paths:
                   pagination:
                     $ref: "#/components/schemas/PaginationData"
                     
-
-
-
+#region Device Models
   
+  /device_models:
+    get:
+      description: Ritorna una pagina di tutti i modelli di device.
+      tags:
+        - device models
+      parameters:
+        - $ref: '#/components/parameters/offset'
+        - $ref: '#/components/parameters/limit'
 
+      responses:
+        '200':
+          description: Pagina di modelli di device e informazioni sulla paginazione
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/DeviceModelFull"
+                  pagination:
+                    $ref: "#/components/schemas/PaginationData"
+
+        default:
+          $ref: "#/components/responses/InternalError"
+
+    post:
+      description: Crea un nuovo modello di device.
+      tags:
+        - device models
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                device_group_id:
+                  type: integer
+                  description: ID del gruppo del modello
+                description:
+                  type: string
+                  description: Descrizione del modello
+                serial:
+                  type: string
+                  description: Seriale del modello
+                  maxLength: 20
+                link_image:
+                  type: string
+                  description: Collegamento all'immagine del device
+                  maxLength: 45
+                link_datasheet:
+                  type: string
+                  description: Collegamento alla scheda tecnica
+                  maxLength: 45
+                link_userguide:
+                  type: string
+                  description: Collegamento al manuale utente
+                  maxLength: 45                
+              required:
+                - device_group_id
+                - description
+                - serial
+              example:
+                device_group_id: 1
+                description: "Modello di device 1"
+                serial: "1234567890"
+                link_image: "https://placehold.co/600x400"
+                link_datasheet: "https://placehold.co/600x400"
+                link_userguide: "https://placehold.co/600x400"
+      responses:
+        '200':
+          description: Modello di device aggiunto con successo.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeviceModel'
+        '400':
+          description: Errore nei parametri della richiesta.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        default:
+          $ref: "#/components/responses/InternalError"
+
+    
+  /device_models/{deviceModelId}:
+    parameters:
+      - name: deviceModelId
+        in: path
+        description: ID del modello di device
+        required: true
+        schema:
+          type: integer
+
+    get:
+      description: Ritorna un modello di device specifico.
+      tags:
+        - device models
+      responses:
+        '200':
+          description: Modello di device trovato.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeviceModelFull'
+        '404':
+          description: Modello di device non trovato.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        default:
+          $ref: "#/components/responses/InternalError"
+
+    put:
+      description: Aggiorna un modello di device specifico.
+      tags:
+        - device models
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                device_group_id:
+                  type: integer
+                  description: ID del gruppo del modello
+                description:
+                  type: string
+                  description: Descrizione del modello
+                serial:
+                  type: string
+                  description: Seriale del modello
+                  maxLength: 20
+                link_image:
+                  type: string
+                  description: Collegamento all'immagine del device
+                  maxLength: 45
+                link_datasheet:
+                  type: string
+                  description: Collegamento alla scheda tecnica
+                  maxLength: 45
+                link_userguide:
+                  type: string
+                  description: Collegamento al manuale utente
+                  maxLength: 45
+              example:
+                device_group_id: 1
+                description: "Modello di device 1"
+                serial: "1234567890"
+                link_image: "https://placehold.co/300x300"
+      responses:
+        '200':
+          description: Modello di device aggiornato con successo.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Messaggio di successo
+        '400':
+          description: Errore nei parametri della richiesta.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Modello di device non trovato.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        default:
+          $ref: "#/components/responses/InternalError"
+    delete:
+      description: Elimina un modello di device specifico.
+      tags:
+        - device models
+      responses:
+        '200':
+          description: Modello di device eliminato con successo.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Messaggio di successo
+        '404':
+          description: Modello di device non trovato.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        default:
+          $ref: "#/components/responses/InternalError"

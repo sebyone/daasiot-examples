@@ -30,6 +30,9 @@ const DeviceModelGroup = db.DeviceModelGroup;
 
 const DaasService = require('../services/daas.service');
 
+const DEFAULT_PAGE_LIMIT = 20;
+const MAX_PAGE_LIMIT = 50;
+
 router.get('/', function (req, res) {
     res.send({
         name: "DaasIoT API",
@@ -867,6 +870,145 @@ router.get('/devices/:id/ddos', async function (req, res) {
     }
 });
 
+
+//#region Device Models
+
+router.get('/device_models', async function (req, res) {
+    try {
+        const limit = Math.min(parseInt(req.query.limit) || DEFAULT_PAGE_LIMIT, MAX_PAGE_LIMIT);
+        const offset = parseInt(req.query.offset) || 0;
+
+        const rowsAndCount = await DeviceModel.findAndCountAll({ limit, offset, include: ['device_group'] });
+        res.send(toPaginationData(rowsAndCount, limit, offset));          
+    }
+    catch (err) {
+        sendError(res, err);
+    }
+});
+
+router.get('/device_models/:deviceModelId', async function (req, res) {
+    try {
+        const id = parseInt(req.params.deviceModelId);
+        const deviceModel = await DeviceModel.findByPk(id, { include: ['device_group'] });
+
+        if (deviceModel === null) {
+            res.status(404);
+            throw new Error(`DeviceModel con id=${id} non trovato.`);
+        }
+
+        res.send(deviceModel);
+    }
+    catch (err) {
+        sendError(res, err);
+    }
+});
+
+router.post('/device_models', async function (req, res) {
+    try {
+        const deviceModel = req.body;
+
+        for (const field of ['device_group_id', 'description', 'serial']) {
+            if (!deviceModel[field]) {
+                res.status(400);
+                throw new Error(`Il campo ${field} è obbligatorio.`);
+            }
+        }
+
+        if (deviceModel.device_group) {
+            res.status(400);
+            throw new Error("Non è possibile aggiungere il device_group durante la creazione del device_model");
+        }
+
+        const deviceGroup = await DeviceModelGroup.findByPk(parseInt(deviceModel.device_group_id));
+        if (deviceGroup === null) {
+            res.status(404);
+            throw new Error(`DeviceModelGroup con id=${deviceModel.device_group_id} non trovato.`);
+        }
+
+        for (const field of ['link_image', 'link_datasheet', 'link_userguide']) {
+            if (deviceModel[field] && !deviceModel[field].match(/^http(s)?:\/\/.+/)) {
+                res.status(400);
+                throw new Error(`Il campo ${field} deve essere un URL.`);
+            }
+        }
+
+        const newDeviceModel = await DeviceModel.create(deviceModel);
+        res.send(newDeviceModel);
+    }
+    catch (err) {
+        sendError(res, err);
+    }
+});
+
+router.put('/device_models/:deviceModelId', async function (req, res) {
+    try {
+        const id = parseInt(req.params.deviceModelId);
+        const deviceModel = req.body;
+
+        const oldDeviceModel = await DeviceModel.findByPk(id);
+        if (oldDeviceModel === null) {
+            res.status(404);
+            throw new Error(`DeviceModel con id=${id} non trovato.`);
+        }
+
+        if (deviceModel.id && deviceModel.id !== id) {
+            res.status(400);
+            throw new Error(`Non è possibile modificare l'id del device_model.`);
+        }
+
+        if (deviceModel.device_group != undefined) {
+            res.status(400);
+            throw new Error(`Non è possibile modificare il device_group del device_model da questo endpoint.`);
+        }
+
+        if (deviceModel.device_group_id && deviceModel.device_group_id !== oldDeviceModel.device_group_id) {
+            
+            const deviceGroup = await DeviceModelGroup.findByPk(parseInt(deviceModel.device_group_id));
+            
+            if (deviceGroup === null) {
+                res.status(404);
+                throw new Error(`DeviceModelGroup con id=${deviceModel.device_group_id} non trovato.`);
+            }
+        }
+
+        for (const field of ['link_image', 'link_datasheet', 'link_userguide']) {
+            if (deviceModel[field] && !deviceModel[field].match(/^http(s)?:\/\/.+/)) {
+                res.status(400);
+                throw new Error(`Il campo ${field} deve essere un URL.`);
+            }
+        }
+
+        const updatedRows = await DeviceModel.update(deviceModel, { where: { id } });
+
+        if (updatedRows === 0) {
+            res.status(404);
+            throw new Error(`Non è stato possibile aggiornare il device_model con id=${id}.`);
+        }
+
+        res.send({ message: "DeviceModel aggiornato con successo." });
+    }
+    catch (err) {
+        sendError(res, err);
+    }
+});
+
+router.delete('/device_models/:deviceModelId', async function (req, res) {
+    try {
+        const id = parseInt(req.params.deviceModelId);
+        const deletedRows = await DeviceModel.destroy({ where: { id } });
+
+        if (deletedRows === 0) {
+            res.status(404);
+            throw new Error(`DeviceModel con id=${id} non trovato.`);
+        }
+        res.send({ message: "DeviceModel eliminato con successo." });
+    }
+    catch (err) {
+        sendError(res, err);
+    }
+});
+
+
 router.all('*', function (req, res) {
     res.status(404);
     res.send({
@@ -886,6 +1028,18 @@ function sendError(res, error, status) {
         message: error.message,
     })
     console.error(`[daas] ${error.name} code ${res.statusCode}: ${error.message}\n${error.stack}`);
+}
+
+function toPaginationData(countAndRows, limit, offset) {
+    return {
+        data: countAndRows.rows,
+        pagination: {
+            limit,
+            offset,
+            count: countAndRows.rows.length,
+            total: countAndRows.count,
+        }
+    }
 }
 
 module.exports = router;
