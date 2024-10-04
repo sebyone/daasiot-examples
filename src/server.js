@@ -51,6 +51,8 @@ app.use(express.urlencoded({ extended: false }));
 app.use('/', viewRouter);
 app.use('/api', apiRouter);
 
+app.use('/static', express.static(path.join(__dirname, '..', 'static', 'public')));
+
 app.use(swaggerApp);
 
 
