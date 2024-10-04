@@ -255,7 +255,9 @@ export interface Device {
 
 export interface NodoFormProps {
   form: FormInstance;
-  onHideTestComponent: () => void;
+  onFinish: (values: Device) => void;
+  setIsDataSaved: (status: boolean) => void;
+  readOnly: boolean;
 }
 
 export interface BaseCardDispositivoProps {

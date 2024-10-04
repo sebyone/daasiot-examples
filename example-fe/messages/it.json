@@ -40,7 +40,8 @@
     "schedule": "Programma",
     "error": "Qualcosa non ha funzionato",
     "errorGetDevices": "Errore nel caricamento dei dispositivi",
-    "details": "Dettagli"
+    "details": "Dettagli",
+    "addDevice": "Aggiungi dispositivo"
   },
   "NodoForm": {
     "name": "Denominazione",

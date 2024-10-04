@@ -2,10 +2,12 @@
 import { useCustomNotification } from '@/hooks/useNotificationHook';
 import { default as ConfigService, default as configService } from '@/services/configService';
 import { Device } from '@/types';
-import { DeploymentUnitOutlined, PlusOutlined, SearchOutlined } from '@ant-design/icons';
+import { DeploymentUnitOutlined, EditFilled, PlusOutlined, SearchOutlined } from '@ant-design/icons';
 import { Button, Empty, Form, Input, Layout, List, Modal, Table, Tabs, TabsProps } from 'antd';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import dynamic from 'next/dynamic';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import styles from './Dispositivi.module.css';
 
@@ -40,6 +42,7 @@ const CardDispositivoFactory = dynamic(() => import('@/components/CardDispositiv
 ];*/
 
 export default function Dispositivi() {
+  const router = useRouter();
   const t = useTranslations('Dispositivi');
   const [formDaasIoT] = Form.useForm();
   const [searchTerm, setSearchTerm] = useState('');
@@ -65,6 +68,7 @@ export default function Dispositivi() {
   const [selectedRow, setSelectedRow] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
+  const locale = useLocale();
 
   const handleTableChange = (pagination) => {
     //API
@@ -241,10 +245,6 @@ export default function Dispositivi() {
     setShowTestComponent((prevState) => !prevState);
   };
 
-  const hideTestComponent = () => {
-    setShowTestComponent(false);
-  };
-
   useEffect(() => {
     const socket = new WebSocket(`${process.env.NEXT_PUBLIC_API_BASE_URL}`);
 
@@ -311,7 +311,7 @@ export default function Dispositivi() {
       label: t('general'),
       children: (
         <>
-          <NodoForm form={formDaasIoT} onHideTestComponent={hideTestComponent} />
+          <NodoForm form={formDaasIoT} onFinish={() => {}} setIsDataSaved={() => {}} readOnly={true} />
           <Button type="primary" onClick={handleTest} style={{ marginBottom: 20 }}>
             Test
           </Button>
@@ -407,6 +407,15 @@ export default function Dispositivi() {
     },
   ];
 
+  const handleAddDevice = () => {
+    router.push(`/${locale}/admin/dispositivi/newDispositivo`);
+  };
+
+  const handleEditDispositivo = (e: React.MouseEvent, deviceId: number) => {
+    e.stopPropagation();
+    router.push(`/${locale}/admin/dispositivi/editDispositivo/${deviceId}`);
+  };
+
   return (
     <>
       {contextHolder}
@@ -423,9 +432,18 @@ export default function Dispositivi() {
               flexDirection: 'column',
             }}
           >
-            <div style={{ borderBottom: '2px solid #fff' }}>
-              <br />
-              <br />
+            <div style={{ padding: '12px', borderBottom: '1px solid #303030' }}>
+              <Button
+                type="primary"
+                onClick={handleAddDevice}
+                style={{
+                  width: '100%',
+                  backgroundColor: '#1890ff',
+                  borderColor: '#1890ff',
+                }}
+              >
+                {t('addDevice')}
+              </Button>
               <br />
             </div>
             <div style={{ padding: '16px' }}>
@@ -448,7 +466,17 @@ export default function Dispositivi() {
                   }}
                   onClick={() => handleDeviceClick(item)}
                 >
-                  <span style={{ color: 'white' }}>{item.name}</span>
+                  <div
+                    style={{ width: '100%', display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}
+                  >
+                    <span style={{ color: 'white' }}>{item.name}</span>
+                    <EditFilled
+                      style={{ color: '#8c8c8c', fontSize: 16, transition: 'color 0.3s' }}
+                      onMouseEnter={(e) => (e.currentTarget.style.color = '#1890ff')}
+                      onMouseLeave={(e) => (e.currentTarget.style.color = '#8c8c8c')}
+                      onClick={(e) => handleEditDispositivo(e, item.id)}
+                    />
+                  </div>
                 </List.Item>
               )}
               style={{ height: '535px', overflowY: 'auto' }}

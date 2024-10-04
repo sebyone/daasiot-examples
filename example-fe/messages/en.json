@@ -40,7 +40,8 @@
     "schedule": "Schedule",
     "error": "Something didn't work",
     "errorGetDevices": "Error loading devices",
-    "details": "Details"
+    "details": "Details",
+    "addDevice": "Add device"
   },
   "NodoForm": {
     "name": "Name",

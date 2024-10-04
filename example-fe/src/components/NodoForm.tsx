@@ -1,11 +1,12 @@
-import { NodoFormProps } from '@/types';
-import { Checkbox, Col, Form, Input, Row } from 'antd';
+import { Device, NodoFormProps } from '@/types';
+import { Checkbox, Col, Form, Input, Row, Select } from 'antd';
+import { read } from 'fs';
 import { useTranslations } from 'next-intl';
 import React from 'react';
 
-const NodoForm = ({ form, onHideTestComponent }: NodoFormProps) => {
+const NodoForm = ({ form, onFinish, setIsDataSaved, readOnly }: NodoFormProps) => {
   const marginBottom = { marginBottom: -22 };
-  const cursor = { cursor: 'default' };
+  const cursor = readOnly ? { cursor: 'default' } : undefined;
   const t = useTranslations('NodoForm');
   const style = {
     minWidth: '550px',
@@ -14,6 +15,10 @@ const NodoForm = ({ form, onHideTestComponent }: NodoFormProps) => {
     marginTop: -50,
     transform: 'scale(0.9)',
     marginLeft: -30,
+  };
+  const handleFinish = (values: Device) => {
+    onFinish(values);
+    setIsDataSaved(true);
   };
 
   //const [maps, setMaps] = useState<DinDataType[]>([]);
@@ -27,7 +32,7 @@ const NodoForm = ({ form, onHideTestComponent }: NodoFormProps) => {
 
   const handleValuesChange = () => {
     if (form.isFieldsTouched()) {
-      onHideTestComponent();
+      setIsDataSaved(false);
     }
   };
 
@@ -42,19 +47,26 @@ const NodoForm = ({ form, onHideTestComponent }: NodoFormProps) => {
         marginTop: '20px',
       }}
     >
-      <Form form={form} layout="vertical" autoComplete="off" onValuesChange={handleValuesChange} style={style}>
+      <Form
+        form={form}
+        layout="vertical"
+        autoComplete="off"
+        onFinish={handleFinish}
+        onValuesChange={handleValuesChange}
+        style={style}
+      >
         <Form.Item name="id" noStyle>
           <Input type="hidden" />
         </Form.Item>
         <Row gutter={32} style={marginBottom}>
           <Col span={16}>
             <Form.Item name="denominazione" label={t('name')}>
-              <Input name="denominazione" placeholder={t('name')} readOnly style={cursor} />
+              <Input name="denominazione" placeholder={t('name')} readOnly={readOnly} style={cursor} />
             </Form.Item>
           </Col>
           <Col span={8}>
             <Form.Item name="enable" valuePropName="checked">
-              <Checkbox style={{ marginTop: 26 }} disabled>
+              <Checkbox style={{ marginTop: 26 }} disabled={readOnly}>
                 {t('enabled')}
               </Checkbox>
             </Form.Item>
@@ -63,38 +75,42 @@ const NodoForm = ({ form, onHideTestComponent }: NodoFormProps) => {
         <Row gutter={20} style={marginBottom}>
           <Col span={16}>
             <Form.Item name="matricola" label={t('serialNumber')}>
-              <Input name="matricola" placeholder={t('serialNumber')} readOnly style={cursor} />
+              <Input name="matricola" placeholder={t('serialNumber')} readOnly={readOnly} style={cursor} />
             </Form.Item>
           </Col>
         </Row>
         <Row gutter={20} style={marginBottom}>
           <Col span={16}>
             <Form.Item label={t('model')} name="modello">
-              <Input name="modello" placeholder={t('serialNumber')} readOnly style={cursor} />
+              {readOnly ? (
+                <Input name="modello" placeholder={t('model')} readOnly={readOnly} style={cursor} />
+              ) : (
+                <Select />
+              )}
             </Form.Item>
           </Col>
         </Row>
         <Row gutter={16} style={marginBottom}>
           <Col span={8}>
             <Form.Item name="sid" label="SID">
-              <Input name="sid" placeholder="SID" readOnly style={cursor} />
+              <Input name="sid" placeholder="SID" readOnly={readOnly} style={cursor} />
             </Form.Item>
           </Col>
           <Col span={8}>
             <Form.Item name="din" label="DIN">
-              <Input name="din" placeholder="DIN" readOnly style={cursor} />
+              <Input name="din" placeholder="DIN" readOnly={readOnly} style={cursor} />
             </Form.Item>
           </Col>
         </Row>
         <Row gutter={16} style={marginBottom}>
           <Col span={8}>
             <Form.Item name="latitudine" label={t('latitude')}>
-              <Input name="latitudine" placeholder={t('latitude')} readOnly style={cursor} />
+              <Input name="latitudine" placeholder={t('latitude')} readOnly={readOnly} style={cursor} />
             </Form.Item>
           </Col>
           <Col span={8}>
             <Form.Item name="longitudine" label={t('longitude')}>
-              <Input name="longitudine" placeholder={t('longitude')} readOnly style={cursor} />
+              <Input name="longitudine" placeholder={t('longitude')} readOnly={readOnly} style={cursor} />
             </Form.Item>
           </Col>
         </Row>
