@@ -862,8 +862,49 @@ router.delete('/devices/:id', async function (req, res) {
 router.get('/devices/:id/ddos', async function (req, res) {
     try {
         // TODO: IMPLEMENT
-        res.status(501)
-        throw new Error("Not ancora implementato.");
+        const mockedData = {
+            data: [
+                {
+                    id: 1,
+                    din_id_dst: 1,
+                    din_id_src: 2,
+                    timestamp: "2024-07-21T17:32:28Z",
+                    typeset_id: 41,
+                    payload: "eyJtZXNzYWdnaW8iOiAiY2lhbyBNb25kbyJ9"
+                },
+                {
+                    id: 2,
+                    din_id_dst: 1,
+                    din_id_src: 2,
+                    timestamp: "2024-08-13T19:12:20Z",
+                    typeset_id: 41,
+                    payload: "TCdlcmJhIGRlbCB2aWNpbm8g6CBzZW1wcmUgcGn5IHZlcmRl"
+                },
+                {
+                    id: 3,
+                    din_id_dst: 1,
+                    din_id_src: 3,
+                    timestamp: "2024-09-15T10:54:12Z",
+                    typeset_id: 35,
+                    payload: "SSB0b3BpIG5vbiBhdmV2YW5vIG5pcG90aQ=="
+                },
+                {
+                    id: 4,
+                    din_id_dst: 1,
+                    din_id_src: 3,
+                    timestamp: "2024-09-20T11:04:01Z",
+                    typeset_id: 38,
+                    payload: "",
+                }
+            ],
+            pagination: {
+                limit: 20,
+                offset: 0,
+                count: 4,
+                total: 4,
+            }
+        }
+        res.send(mockedData);
     }
     catch (err) {
         sendError(res, err);
