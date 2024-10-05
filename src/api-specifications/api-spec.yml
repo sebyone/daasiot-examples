@@ -38,6 +38,10 @@ tags:
     description: Daas Data Object, messaggi inviati tra i nodi daas
   - name: devices
   - name: device models
+  - name: device model groups
+    description: gruppi di modelli di device, che raggruppano i modelli di device
+  - name: typesets
+    description: gestione dei typesets, che identificano la struttura dei messaggi inviati tra i nodi daas
   - name: programming
     description: API per la programmazione remota dei dispositivi concatenando regole di programmazione
   
@@ -268,14 +272,17 @@ components:
           maxLength: 20
         link_image:
           type: string
+          format: uri
           description: collegamento all'immagine del device
           maxLength: 45
         link_datasheet:
           type: string
+          format: uri
           description: collegamento alla scheda tecnica
           maxLength: 45
         link_userguide:
           type: string
+          format: uri
           description: collegamento al manuale utente
           maxLength: 45
 
@@ -299,14 +306,17 @@ components:
           maxLength: 20
         link_image:
           type: string
+          format: uri
           description: collegamento all'immagine del device
           maxLength: 45
         link_datasheet:
           type: string
+          format: uri
           description: collegamento alla scheda tecnica
           maxLength: 45
         link_userguide:
           type: string
+          format: uri
           description: collegamento al manuale utente
           maxLength: 45
         device_group:
@@ -314,7 +324,7 @@ components:
         resources:
           type: array
           items:
-            $ref: "#/components/schemas/DeviceModelResource"
+            $ref: '#/components/schemas/DeviceModelResource'
 
     DeviceModelGroup:
       type: object
@@ -332,6 +342,7 @@ components:
           description: descrizione del gruppo
         link_image:
           type: string
+          format: uri
           description: collegamento all'immagine del gruppo
           maxLength: 45
           example: "https://placehold.co/600x400"
@@ -440,7 +451,7 @@ paths:
         '200':
           description: configurazione applicata.
         default:
-          $ref: "#/components/responses/InternalError"
+          $ref: '#/components/responses/InternalError'
   
   /stop:
     post:
@@ -526,7 +537,7 @@ paths:
                     type: string
                     description: Messaggio inviato.
         default:
-          $ref: "#/components/responses/InternalError"
+          $ref: '#/components/responses/InternalError'
 
   /status: 
     get:
@@ -569,7 +580,7 @@ paths:
                     type: number
                     description: data encryption level
         default:
-          $ref: "#/components/responses/InternalError"
+          $ref: '#/components/responses/InternalError'
 
   /version:
     get:
@@ -609,6 +620,37 @@ paths:
                     description: versione dell'addon API di Node.js
                     example: "9"
 
+  /dev/db_sync:
+    post:
+      description: >
+        Valido solo in ambiente di sviluppo.
+        
+        
+        Sincronizza il database locale con il modello di dati sequelize
+      tags:
+        - configuration
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                force:
+                  type: boolean
+                  description: Forza la sincronizzazione
+              example:
+                force: true
+      responses:
+        '200':
+          description: Database sincronizzato.
+        '403':
+          description: Non autorizzato.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        default:
+          $ref: '#/components/responses/InternalError'
 #region Receivers
 
   /receivers:
@@ -627,7 +669,7 @@ paths:
                   $ref: '#/components/schemas/DinLocal'
 
         default:
-          $ref: "#/components/responses/InternalError"
+          $ref: '#/components/responses/InternalError'
     
     post:
       description: Crea un nuovo receiver
@@ -664,7 +706,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
         default:
-          $ref: "#/components/responses/InternalError"
+          $ref: '#/components/responses/InternalError'
       
   /receivers/count:
     get:
@@ -683,7 +725,7 @@ paths:
                     type: integer
                     description: Numero di receivers presenti
         default:
-          $ref: "#/components/responses/InternalError"
+          $ref: '#/components/responses/InternalError'
 
   /receivers/{receiverId}:
     get:
@@ -712,7 +754,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
         default:
-          $ref: "#/components/responses/InternalError"
+          $ref: '#/components/responses/InternalError'
 
     put:
       description: Aggiorna un receiver specifico.
@@ -773,7 +815,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
         default:
-          $ref: "#/components/responses/InternalError"
+          $ref: '#/components/responses/InternalError'
         
     delete:
       description: Elimina un receiver specifico.
@@ -804,7 +846,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
         default:
-          $ref: "#/components/responses/InternalError"
+          $ref: '#/components/responses/InternalError'
 
 #region Receivers links
 
@@ -836,7 +878,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
         default:
-          $ref: "#/components/responses/InternalError"
+          $ref: '#/components/responses/InternalError'
 
     post:
       description: Aggiunge un link al receiver.
@@ -888,7 +930,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
         default:
-          $ref: "#/components/responses/InternalError"
+          $ref: '#/components/responses/InternalError'
 
   /receivers/{receiverId}/links/{id}:
     get:
@@ -922,7 +964,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
         default:
-          $ref: "#/components/responses/InternalError"
+          $ref: '#/components/responses/InternalError'
 
     put:
       description: Aggiorna un link specifico associato al receiver.
@@ -986,7 +1028,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
         default:
-          $ref: "#/components/responses/InternalError"
+          $ref: '#/components/responses/InternalError'
       
     delete:
       description: Elimina un link specifico associato al receiver.
@@ -1029,7 +1071,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
         default:
-          $ref: "#/components/responses/InternalError"
+          $ref: '#/components/responses/InternalError'
 
 #region DINs
 
@@ -1049,7 +1091,7 @@ paths:
                 items:
                   $ref: '#/components/schemas/Din'
         default:
-          $ref: "#/components/responses/InternalError"
+          $ref: '#/components/responses/InternalError'
 
   /remotes:
     get:
@@ -1067,7 +1109,7 @@ paths:
                   $ref: '#/components/schemas/Din_with_links'
 
         default:
-          $ref: "#/components/responses/InternalError"
+          $ref: '#/components/responses/InternalError'
 
   /remotes/count:
     get:
@@ -1086,7 +1128,7 @@ paths:
                     type: integer
                     description: Numero di nodi remoti presenti
         default:
-          $ref: "#/components/responses/InternalError"
+          $ref: '#/components/responses/InternalError'
 
 #region Receivers remotes
 
@@ -1120,7 +1162,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
         default:
-          $ref: "#/components/responses/InternalError"
+          $ref: '#/components/responses/InternalError'
 
 
     post:
@@ -1176,7 +1218,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
         default:
-          $ref: "#/components/responses/InternalError"
+          $ref: '#/components/responses/InternalError'
 
 
     delete:
@@ -1215,7 +1257,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
         default:
-          $ref: "#/components/responses/InternalError"
+          $ref: '#/components/responses/InternalError'
 
   /receivers/{receiverId}/remotes/{id}:
     get:
@@ -1250,7 +1292,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
         default:
-          $ref: "#/components/responses/InternalError"
+          $ref: '#/components/responses/InternalError'
 
     delete:
       description: Elimina l'associazione tra il nodo remoto e il receiver, se il nodo remoto non ha altre associazioni, viene cancellato.
@@ -1288,7 +1330,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
         default:
-          $ref: "#/components/responses/InternalError"
+          $ref: '#/components/responses/InternalError'
 
 #region Devices
 
@@ -1308,7 +1350,7 @@ paths:
                 items:
                   $ref: '#/components/schemas/DeviceFull'
         default:
-          $ref: "#/components/responses/InternalError"
+          $ref: '#/components/responses/InternalError'
 
     post:
       description: Crea un nuovo device, con associato un device model e un DIN.
@@ -1368,7 +1410,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
         default:
-          $ref: "#/components/responses/InternalError"
+          $ref: '#/components/responses/InternalError'
 
 
   /devices/{deviceId}:
@@ -1397,7 +1439,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
         default:
-          $ref: "#/components/responses/InternalError"
+          $ref: '#/components/responses/InternalError'
 
     put:
       description: Aggiorna un device specifico.
@@ -1455,7 +1497,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
         default:
-          $ref: "#/components/responses/InternalError"
+          $ref: '#/components/responses/InternalError'
 
     delete:
       description: Elimina un device specifico.
@@ -1486,7 +1528,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
         default:
-          $ref: "#/components/responses/InternalError"
+          $ref: '#/components/responses/InternalError'
 
   /devices/{deviceId}/ddos/:
     parameters:
@@ -1517,9 +1559,9 @@ paths:
                   data:
                     type: array
                     items:
-                      $ref: "#/components/schemas/DDO"
+                      $ref: '#/components/schemas/DDO'
                   pagination:
-                    $ref: "#/components/schemas/PaginationData"
+                    $ref: '#/components/schemas/PaginationData'
                     
 #region Device Models
   
@@ -1543,12 +1585,12 @@ paths:
                   data:
                     type: array
                     items:
-                      $ref: "#/components/schemas/DeviceModelFull"
+                      $ref: '#/components/schemas/DeviceModelFull'
                   pagination:
-                    $ref: "#/components/schemas/PaginationData"
+                    $ref: '#/components/schemas/PaginationData'
 
         default:
-          $ref: "#/components/responses/InternalError"
+          $ref: '#/components/responses/InternalError'
 
     post:
       description: Crea un nuovo modello di device.
@@ -1572,14 +1614,17 @@ paths:
                   maxLength: 20
                 link_image:
                   type: string
+                  format: uri
                   description: Collegamento all'immagine del device
                   maxLength: 45
                 link_datasheet:
                   type: string
+                  format: uri
                   description: Collegamento alla scheda tecnica
                   maxLength: 45
                 link_userguide:
                   type: string
+                  format: uri
                   description: Collegamento al manuale utente
                   maxLength: 45                
               required:
@@ -1607,7 +1652,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
         default:
-          $ref: "#/components/responses/InternalError"
+          $ref: '#/components/responses/InternalError'
 
     
   /device_models/{deviceModelId}:
@@ -1637,7 +1682,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
         default:
-          $ref: "#/components/responses/InternalError"
+          $ref: '#/components/responses/InternalError'
 
     put:
       description: Aggiorna un modello di device specifico.
@@ -1661,14 +1706,17 @@ paths:
                   maxLength: 20
                 link_image:
                   type: string
+                  format: uri
                   description: Collegamento all'immagine del device
                   maxLength: 45
                 link_datasheet:
                   type: string
+                  format: uri
                   description: Collegamento alla scheda tecnica
                   maxLength: 45
                 link_userguide:
                   type: string
+                  format: uri
                   description: Collegamento al manuale utente
                   maxLength: 45
               example:
@@ -1700,7 +1748,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
         default:
-          $ref: "#/components/responses/InternalError"
+          $ref: '#/components/responses/InternalError'
     delete:
       description: Elimina un modello di device specifico.
       tags:
@@ -1723,4 +1771,221 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
         default:
-          $ref: "#/components/responses/InternalError"
+          $ref: '#/components/responses/InternalError'
+
+  /device_models/{deviceModelId}/devices:
+    parameters:
+      - name: deviceModelId
+        in: path
+        description: ID del modello di device
+        required: true
+        schema:
+          type: integer
+    get:
+      description: Ritorna i devices associati al modello di device specificato
+      tags:
+        - device models
+        - devices
+      parameters:
+        - $ref: '#/components/parameters/offset'
+        - $ref: '#/components/parameters/limit'
+      responses:
+        '200':
+          description: Pagina di devices e informazioni sulla paginazione
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Device'
+                  pagination:
+                    $ref: '#/components/schemas/PaginationData'
+        '404':
+          description: Modello di device non trovato.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'        
+        default:
+          $ref: '#/components/responses/InternalError'
+
+
+#region Device Model Groups
+
+  /device_model_groups:
+    get:
+      description: Ritorna una pagina di tutti i gruppi di modelli di device.
+      tags:
+        - device model groups
+      parameters:
+        - $ref: '#/components/parameters/offset'
+        - $ref: '#/components/parameters/limit'
+      responses:
+        '200':
+          description: Pagina di gruppi di modelli di device e informazioni sulla paginazione
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/DeviceModelGroup'
+                  pagination:
+                    $ref: '#/components/schemas/PaginationData'
+        default:
+          $ref: '#/components/responses/InternalError'
+
+    post:
+      description: Crea un nuovo gruppo di modelli di device.
+      tags:
+        - device model groups
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                  description: Nome del gruppo
+                  maxLength: 45
+                description:
+                  type: string
+                  description: Descrizione del gruppo
+                  maxLength: 45
+                link_image:
+                  type: string
+                  format: uri
+                  description: Collegamento all'immagine del gruppo
+                  maxLength: 45
+              required:
+                - name
+              example:
+                name: "Gruppo 1"
+      responses:
+        '200':
+          description: Gruppo di modelli di device aggiunto con successo.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeviceModelGroup'
+        '400':
+          description: Errore nei parametri della richiesta.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        default:
+          $ref: '#/components/responses/InternalError'
+
+
+  /device_model_groups/{deviceModelGroupId}:
+    parameters:
+      - name: deviceModelGroupId
+        in: path
+        description: ID del gruppo di modelli di device
+        required: true
+        schema:
+          type: integer
+    get:
+      description: Ritorna un gruppo di modelli di device specifico.
+      tags:
+        - device model groups      
+      responses:
+        '200':
+          description: Gruppo di modelli di device trovato.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeviceModelGroup'
+        '404':
+          description: Gruppo di modelli di device non trovato.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        default:
+          $ref: '#/components/responses/InternalError'
+    
+    put:
+      description: Aggiorna un gruppo di modelli di device specifico.
+      tags:
+        - device model groups
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                  description: Nome del gruppo
+                  maxLength: 45
+                description:
+                  type: string
+                  description: Descrizione del gruppo
+                  maxLength: 45
+                link_image:
+                  type: string
+                  format: uri
+                  description: Collegamento all'immagine del gruppo
+                  maxLength: 45
+              example:
+                name: "Gruppo 1"
+      responses:
+        '200':
+          description: Gruppo di modelli di device aggiornato con successo.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Messaggio di successo
+        '400':
+          description: Errore nei parametri della richiesta.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Gruppo di modelli di device non trovato.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        default:
+          $ref: '#/components/responses/InternalError'
+
+    delete:
+      description: Elimina un gruppo di modelli di device specifico.
+      tags:
+        - device model groups
+      responses:
+        '200':
+          description: Gruppo di modelli di device eliminato con successo.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Messaggio di successo
+        '404':
+          description: Gruppo di modelli di device non trovato.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        default:
+          $ref: '#/components/responses/InternalError'
+
+
+

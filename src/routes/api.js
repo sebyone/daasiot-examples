@@ -33,6 +33,8 @@ const DaasService = require('../services/daas.service');
 const DEFAULT_PAGE_LIMIT = 20;
 const MAX_PAGE_LIMIT = 50;
 
+//#region Config and Lifecycle
+
 router.get('/', function (req, res) {
     res.send({
         name: "DaasIoT API",
@@ -120,6 +122,27 @@ router.get('/version', function (req, res) {
     res.send(version);
 });
 
+
+router.post('/dev/db_sync', async function (req, res) {
+    try {
+        const force =  req.body.force || false;
+        console.warn(`[API] /dev/db_sync force=${force}`);
+        
+        // only in development env
+        if (process.env.NODE_ENV !== 'development') {
+            res.status(403);
+            throw new Error("Non è possibile sincronizzare il database in un ambiente di produzione.");
+        }
+
+        await db.sequelize.sync({ force: force });
+        res.send({ message: "Database sincronizzato" });
+    } 
+    catch (error) {
+        sendError(res, error);
+    }
+});
+
+//#endregion
 
 //#region Receivers
 
@@ -292,8 +315,7 @@ router.delete('/receivers/:receiverId', async function (req, res) {
 });
 
 
-
-
+//#endregion
 
 //#region Receivers links
 
@@ -439,6 +461,7 @@ router.delete('/receivers/:receiverId/links/:id', async function (req, res) {
     }
 });
 
+//#endregion
 
 //#region DINs
 
@@ -494,6 +517,8 @@ router.get('/remotes/count', async function (req, res) {
         sendError(res, err);
     }
 });
+
+//#endregion
 
 //#region Receivers remotes
 
@@ -735,6 +760,8 @@ router.delete('/receivers/:receiverId/remotes', async function (req, res) {
     sendError(res, new Error("Not yet implemented."), 501);
 });
 
+//#endregion
+
 //#region Devices
 
 router.get('/devices', async function (req, res) {
@@ -856,6 +883,7 @@ router.delete('/devices/:id', async function (req, res) {
     }
 });
 
+//#endregion
 
 //#region DDOs
 
@@ -911,14 +939,13 @@ router.get('/devices/:id/ddos', async function (req, res) {
     }
 });
 
+//#endregion
 
 //#region Device Models
 
 router.get('/device_models', async function (req, res) {
     try {
-        const limit = Math.min(parseInt(req.query.limit) || DEFAULT_PAGE_LIMIT, MAX_PAGE_LIMIT);
-        const offset = parseInt(req.query.offset) || 0;
-
+        const { limit, offset } = getPaginationParams(req);
         const rowsAndCount = await DeviceModel.findAndCountAll({ limit, offset, include: ['device_group'] });
         res.send(toPaginationData(rowsAndCount, limit, offset));          
     }
@@ -1050,6 +1077,125 @@ router.delete('/device_models/:deviceModelId', async function (req, res) {
 });
 
 
+router.get('/device_models/:deviceModelId/devices', async function (req, res) {
+    try {
+        const { limit, offset } = getPaginationParams(req);
+
+        const deviceModelId = parseInt(req.params.deviceModelId);
+        const deviceModel = await DeviceModel.findByPk(deviceModelId);
+        if (deviceModel === null) {
+            res.status(404);
+            throw new Error(`DeviceModel con id=${deviceModelId} non trovato.`);
+        }
+
+        const rowsAndCount = await Device.findAndCountAll({ where: { device_model_id: deviceModelId }, limit, offset });
+        res.send(toPaginationData(rowsAndCount, limit, offset));
+    }
+    catch (err) {
+        sendError(res, err);
+    }
+});
+
+//#endregion
+
+//#region Device Model Groups
+
+router.get('/device_model_groups', async function (req, res) {
+    try {
+        const { limit, offset } = getPaginationParams(req);
+        const rowsAndCount = await DeviceModelGroup.findAndCountAll({ limit, offset });
+        res.send(toPaginationData(rowsAndCount, limit, offset));
+    }
+    catch (err) {
+        sendError(res, err);
+    }
+});
+
+router.get('/device_model_groups/:deviceModelGroupId', async function (req, res) {
+    try {
+        const id = parseInt(req.params.deviceModelGroupId);
+        const deviceModelGroup = await DeviceModelGroup.findByPk(id);
+
+        if (deviceModelGroup === null) {
+            res.status(404);
+            throw new Error(`DeviceModelGroup con id=${id} non trovato.`);
+        }
+
+        res.send(deviceModelGroup);
+    }
+    catch (err) {
+        sendError(res, err);
+    }
+});
+
+
+router.post('/device_model_groups', async function (req, res) {
+    try {
+        const deviceModelGroup = req.body;
+
+        if (!deviceModelGroup.title) {
+            res.status(400);
+            throw new Error("Il campo title è obbligatorio, non può essere vuoto e deve essere diverso da gli altri title già presenti.");
+        }
+
+        const newDeviceModelGroup = await DeviceModelGroup.create(deviceModelGroup);
+        res.send(newDeviceModelGroup);
+    }
+    catch (err) {
+        sendError(res, err);
+    }
+});
+
+
+router.put('/device_model_groups/:deviceModelGroupId', async function (req, res) {
+    try {
+        const id = parseInt(req.params.deviceModelGroupId);
+        const deviceModelGroup = req.body;
+
+        const oldDeviceModelGroup = await DeviceModelGroup.findByPk(id);
+        if (oldDeviceModelGroup === null) {
+            res.status(404);
+            throw new Error(`DeviceModelGroup con id=${id} non trovato.`);
+        }
+
+        if (deviceModelGroup.id && deviceModelGroup.id !== id) {
+            res.status(400);
+            throw new Error(`Non è possibile modificare l'id del device_model_group.`);
+        }
+
+        const updatedRows = await DeviceModelGroup.update(deviceModelGroup, { where: { id } });
+
+        if (updatedRows === 0) {
+            res.status(404);
+            throw new Error(`Non è stato possibile aggiornare il device_model_group con id=${id}.`);
+        }
+
+        res.send({ message: "DeviceModelGroup aggiornato con successo." });
+    }
+    catch (err) {
+        sendError(res, err);
+    }
+});
+
+router.delete('/device_model_groups/:deviceModelGroupId', async function (req, res) {
+    try {
+        const id = parseInt(req.params.deviceModelGroupId);
+        const deletedRows = await DeviceModelGroup.destroy({ where: { id } });
+
+        if (deletedRows === 0) {
+            res.status(404);
+            throw new Error(`DeviceModelGroup con id=${id} non trovato.`);
+        }
+        res.send({ message: "DeviceModelGroup eliminato con successo." });
+    }
+    catch (err) {
+        sendError(res, err);
+    }
+});
+
+
+//#endregion
+
 router.all('*', function (req, res) {
     res.status(404);
     res.send({
@@ -1057,6 +1203,9 @@ router.all('*', function (req, res) {
         message: "Endpoint non trovato."
     });
 });
+
+
+//#region Utility functions
 
 function sendError(res, error, status) {
 
@@ -1071,6 +1220,25 @@ function sendError(res, error, status) {
     console.error(`[daas] ${error.name} code ${res.statusCode}: ${error.message}\n${error.stack}`);
 }
 
+function getPaginationParams(req) {
+    let limit = DEFAULT_PAGE_LIMIT;
+    let offset = 0;
+    if (req.query.limit != undefined) {
+        limit = parseInt(req.query.limit);
+        limit = Math.min(limit, MAX_PAGE_LIMIT);
+        limit = Math.max(limit, 0);
+        // 0 <= limit <= MAX_PAGE_LIMIT
+    }
+
+    if (req.query.offset != undefined) {
+        offset = parseInt(req.query.offset);
+        offset = Math.max(offset, 0);
+        // offset >= 0
+    }
+
+    return { limit, offset };
+}
+
 function toPaginationData(countAndRows, limit, offset) {
     return {
         data: countAndRows.rows,
@@ -1082,5 +1250,6 @@ function toPaginationData(countAndRows, limit, offset) {
         }
     }
 }
+//#endregion
 
 module.exports = router;

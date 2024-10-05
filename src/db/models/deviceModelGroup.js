@@ -12,7 +12,11 @@ module.exports = (sequelize, DataTypes) => {
 		title: {
 			type: DataTypes.STRING,
 			allowNull: false,
+			validate: {
+				notEmpty: true,
+			},
 			maxLength: 45,
+			unique: true,
 		},
 		description: {
 			type: DataTypes.STRING,
@@ -21,9 +25,12 @@ module.exports = (sequelize, DataTypes) => {
 		},
 		link_image: {
 			type: DataTypes.STRING,
+			validate: {
+				isUrl: true,
+			},
 			allowNull: false,
-			maxLength: 45,
 			defaultValue: '',
+			maxLength: 45,
 		},
 	}, {
 		sequelize,
