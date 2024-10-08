@@ -1,12 +1,12 @@
 'use client';
 import { useCustomNotification } from '@/hooks/useNotificationHook';
 import { default as ConfigService, default as configService } from '@/services/configService';
-import { Device } from '@/types';
+import { Device, Event } from '@/types';
 import { DeploymentUnitOutlined, EditFilled, PlusOutlined, SearchOutlined } from '@ant-design/icons';
 import { Button, Empty, Form, Input, Layout, List, Modal, Table, Tabs, TabsProps } from 'antd';
+import 'leaflet/dist/leaflet.css';
 import { useLocale, useTranslations } from 'next-intl';
 import dynamic from 'next/dynamic';
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import styles from './Dispositivi.module.css';
@@ -19,27 +19,6 @@ const Panel = dynamic(() => import('@/components/Panel'), { ssr: false });
 const PanelView = dynamic(() => import('@/components/PanelView'), { ssr: false });
 const PayloadContentViewer = dynamic(() => import('@/components/PayloadContentView'), { ssr: false });
 const CardDispositivoFactory = dynamic(() => import('@/components/CardDispositivoFactory'), { ssr: false });
-
-/*const devices = [
-  {
-    id: 1,
-    name: 'Dispositivo1',
-    latitudine: 39.3017,
-    longitudine: 16.2537,
-  },
-  {
-    id: 2,
-    name: 'Dispositivo2',
-    latitudine: 39.2854,
-    longitudine: 16.2619,
-  },
-  {
-    id: 3,
-    name: 'Dispositivo3',
-    latitudine: 39.3154,
-    longitudine: 16.2426,
-  },
-];*/
 
 export default function Dispositivi() {
   const router = useRouter();
@@ -67,8 +46,15 @@ export default function Dispositivi() {
   const [isModalInfoEventVisible, setIsModalInfoEventVisible] = useState(false);
   const [selectedRow, setSelectedRow] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
+  const [pageSize, setPageSize] = useState(20);
+  const [totalItems, setTotalItems] = useState(0);
   const locale = useLocale();
+  const [activeTabKey, setActiveTabKey] = useState('1');
+
+  const MapComponent = dynamic(() => import('@/components/Map'), {
+    ssr: false,
+    loading: () => <p style={{ marginTop: 30 }}>{t('loading')}</p>,
+  });
 
   const handleTableChange = (pagination) => {
     //API
@@ -140,20 +126,28 @@ export default function Dispositivi() {
     },
   ];
 
-  const eventsData = [
-    {
-      key: '1',
-      timestamp: '2024-09-30 11:00:00',
-      typeset: 'typeset1',
-      payloadSize: '6',
-    },
-    {
-      key: '2',
-      timestamp: '2024-09-30 11:05:00',
-      typeset: 'typeset2',
-      payloadSize: '10',
-    },
-  ];
+  const [ddos, setDdos] = useState<Event[]>([]);
+
+  useEffect(() => {
+    if (selectedDevice) {
+      const fetchDdo = async () => {
+        try {
+          const offset = (currentPage - 1) * pageSize;
+          const response = await ConfigService.getDDOByDeviceId(selectedDevice.id, offset, pageSize);
+          const ddos = response.data.map((ddo) => ({
+            timestamp: ddo.timestamp,
+            typeset: ddo.typeset_id,
+            payloadSize: ddo.payload,
+          }));
+          setDdos(ddos);
+          setTotalItems(response.pagination.total);
+        } catch (error) {
+          notify('error', t('error'), t('errorGetDevices'));
+        }
+      };
+      fetchDdo();
+    }
+  }, [selectedDevice, currentPage, pageSize]);
 
   /*
   const addFunction = async (func) => {
@@ -182,6 +176,7 @@ export default function Dispositivi() {
   const handleDeviceClick = (device: Device) => {
     setSelectedDevice(device);
     setIsDeviceSelected(true);
+    setActiveTabKey('1');
   };
 
   const ActionButtons = () => (
@@ -371,14 +366,18 @@ export default function Dispositivi() {
         <>
           <Table
             columns={columnsEvents}
-            dataSource={eventsData}
+            dataSource={ddos}
             pagination={{
               current: currentPage,
               pageSize: pageSize,
+              total: totalItems,
               showSizeChanger: true,
               pageSizeOptions: ['10', '20', '50', '100'],
+              onChange: (page, pageSize) => {
+                setCurrentPage(page);
+                setPageSize(pageSize);
+              },
             }}
-            onChange={handleTableChange}
           />
           <div style={{ display: 'flex', justifyContent: 'center', marginTop: '20px' }}>
             <Button type="primary">{t('clearLog')}</Button>
@@ -393,16 +392,26 @@ export default function Dispositivi() {
                   <strong>Typeset:</strong> {selectedRow.typeset}
                 </p>
                 <p>
-                  <strong>Payload Size:</strong> {selectedRow.payloadSize}
+                  <strong>Payload Size:</strong>
+                  {selectedRow.payloadSize.length}
                 </p>
                 <p style={{ marginTop: 10, fontSize: '1.1rem' }}>
                   <strong>Payload Content</strong>
-                  <PayloadContentViewer payloadContent={'UHJvdmEgY29udmVyc2lvbmU='} />
+                  <PayloadContentViewer payloadContent={selectedRow.payloadSize} />
                 </p>
               </>
             ) : null}
           </Modal>
         </>
+      ),
+    },
+    {
+      key: '4',
+      label: t('geolocation'),
+      children: (
+        <div style={{ height: '65vh', marginTop: -40 }}>
+          <MapComponent devices={devicesData} />
+        </div>
       ),
     },
   ];
@@ -488,7 +497,13 @@ export default function Dispositivi() {
                 <DataPanel title={selectedDevice?.name} showSemaphore={false} showLinkStatus showAlignmentStatus>
                   <Panel showSaveButtons={false} layoutStyle="devices">
                     <PanelView layoutStyle="devices">
-                      <Tabs type="card" items={items} style={{ marginTop: -70, padding: 10 }} />
+                      <Tabs
+                        type="card"
+                        items={items}
+                        style={{ marginTop: -70, padding: 10 }}
+                        activeKey={activeTabKey}
+                        onChange={(key) => setActiveTabKey(key)}
+                      />
                     </PanelView>
                   </Panel>
                 </DataPanel>

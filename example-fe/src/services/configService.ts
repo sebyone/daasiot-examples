@@ -22,6 +22,7 @@ import {
   DinDataType,
   DinFormData,
   DinLocalDataType,
+  Event,
   LinkDataType,
   LinkFormData,
   MapDataType,
@@ -332,6 +333,26 @@ const ConfigService = {
   getDeviceById: async (id: number): Promise<Device> => {
     try {
       const response = await axiosInstance.get(`/devices/${id}`);
+      return response.data;
+    } catch (error) {
+      console.error('Error:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Restituisce i ddo ricevuto dal dispositivo specificato tramite il suo ID
+   * id - ID del dispositivo
+   * Promise<Event> - Oggetto Event contente i ddo e la paginazione
+   */
+  getDDOByDeviceId: async (id: number, offset: number, limit: number): Promise<Event> => {
+    try {
+      const response = await axiosInstance.get(`/devices/${id}/ddos`, {
+        params: {
+          offset: offset,
+          limit: limit,
+        },
+      });
       return response.data;
     } catch (error) {
       console.error('Error:', error);

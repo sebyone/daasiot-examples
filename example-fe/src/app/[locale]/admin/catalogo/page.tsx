@@ -2,7 +2,8 @@
 import { useCustomNotification } from '@/hooks/useNotificationHook';
 import { UnorderedListOutlined } from '@ant-design/icons';
 import { Button, Card, Col, Empty, Layout, List, Menu, Row, Typography } from 'antd';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
+import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import styles from './Catalogo.module.css';
 const { Content, Sider } = Layout;
@@ -13,6 +14,8 @@ export default function Catalogo() {
   const [selectedGroup, setSelectedGroup] = useState<string | null>(null);
   const [selectedModel, setSelectedModel] = useState<string | null>(null);
   const { notify, contextHolder } = useCustomNotification();
+  const locale = useLocale();
+  const router = useRouter();
   const groups = ['ModelGroup1', 'ModelGroup2'];
   const models = {
     ModelGroup1: ['DispositivoModel1', 'DispositivoModel2'],
@@ -25,6 +28,10 @@ export default function Catalogo() {
   };
   const handleModelSelect = (model: string) => {
     setSelectedModel(model);
+  };
+
+  const handleLoadFW = () => {
+    router.push(`/${locale}/admin/catalogo/ESPtool`);
   };
   return (
     <>
@@ -88,7 +95,9 @@ export default function Catalogo() {
                       <Button type="primary" style={{ marginRight: '8px' }}>
                         {t('order')}
                       </Button>
-                      <Button type="primary">{t('loadFW')}</Button>
+                      <Button type="primary" onClick={handleLoadFW}>
+                        {t('loadFW')}
+                      </Button>
                     </Card>
                   )}
                 </Col>

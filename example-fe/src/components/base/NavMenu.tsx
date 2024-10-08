@@ -17,7 +17,6 @@ type MenuItem = Required<MenuProps>['items'][number] & { roles?: string[] };
 const getPathMap = (locale: string) => ({
   [`/${locale}/admin/configurazione`]: '/admin/configurazione',
   [`/${locale}/admin/dispositivi`]: '/admin/dispositivi',
-  [`/${locale}/admin/mappa`]: '/admin/mappa',
   [`/${locale}/admin/catalogo`]: '/admin/catalogo',
   [`/${locale}/admin`]: '/admin',
 });
@@ -54,11 +53,6 @@ export default function NavMenu({ role }: { role: string }) {
       key: '/admin/dispositivi',
       icon: <DeploymentUnitOutlined />,
       label: <Link href={`/${locale}/admin/dispositivi`}>{t('devices')}</Link>,
-    },
-    {
-      key: '/admin/mappa',
-      icon: <EnvironmentOutlined />,
-      label: <Link href={`/${locale}/admin/mappa`}>{t('geolocation')}</Link>,
     },
     {
       key: '/admin/catalogo',

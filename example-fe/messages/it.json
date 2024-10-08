@@ -10,7 +10,7 @@
     "dashboard": "Dashboard",
     "configuration": "Configurazione",
     "devices": "Dispositivi",
-    "geolocation": "Geolocalizzazione",
+
     "catalog": "Catalogo"
   },
   "FormMenu": {
@@ -41,7 +41,9 @@
     "error": "Qualcosa non ha funzionato",
     "errorGetDevices": "Errore nel caricamento dei dispositivi",
     "details": "Dettagli",
-    "addDevice": "Aggiungi dispositivo"
+    "addDevice": "Aggiungi dispositivo",
+    "geolocation": "Geolocalizzazione",
+    "loading": "Caricamento mappa..."
   },
   "NodoForm": {
     "name": "Denominazione",
@@ -50,11 +52,6 @@
     "latitude": "Latitudine",
     "longitude": "Longitudine",
     "enabled": "Abilitato"
-  },
-  "Mappa": {
-    "loading": "Caricamento mappa...",
-    "error": "Qualcosa non ha funzionato",
-    "errorGetDevices": "Errore nel caricamento dei dispositivi"
   },
   "GenericTable": {
     "search": "Cerca..."

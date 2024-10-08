@@ -298,3 +298,23 @@ export interface UPLDispositivoCardProps extends BaseCardDispositivoProps {
   setValue: (value: number) => void;
   showTestControl: boolean;
 }
+
+export interface DDO {
+  id?: number;
+  din_id_dst?: number;
+  din_id_src?: number;
+  timestamp: string;
+  typeset_id: number;
+  payload: string;
+}
+
+export interface Pagination {
+  count: number;
+  offset: number;
+  limit: number;
+  total: number;
+}
+export interface Event {
+  data: DDO[];
+  pagination: Pagination;
+}

@@ -10,7 +10,6 @@
     "dashboard": "Dashboard",
     "configuration": "Configuration",
     "devices": "Devices",
-    "geolocation": "Geolocation",
     "catalog": "Catalog"
   },
   "FormMenu": {
@@ -41,7 +40,9 @@
     "error": "Something didn't work",
     "errorGetDevices": "Error loading devices",
     "details": "Details",
-    "addDevice": "Add device"
+    "addDevice": "Add device",
+    "geolocation": "Geolocation",
+    "loading": "Loading map..."
   },
   "NodoForm": {
     "name": "Name",
@@ -50,11 +51,6 @@
     "latitude": "Latitude",
     "longitude": "Longitude",
     "enabled": "Enabled"
-  },
-  "Mappa": {
-    "loading": "Loading map...",
-    "error": "Something didn't work",
-    "errorGetDevices": "Error loading devices"
   },
   "GenericTable": {
     "search": "Search..."
