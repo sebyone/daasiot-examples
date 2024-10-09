@@ -1,14 +1,15 @@
 'use client';
 import { GlobalOutlined } from '@ant-design/icons';
-import { Button, Dropdown, Menu } from 'antd';
+import { Button, Dropdown, Space } from 'antd';
 import { usePathname, useRouter } from 'next/navigation';
 
 const LanguageSwitcher = () => {
   const router = useRouter();
   const pathname = usePathname();
 
+  const currentLocale = pathname.split('/')[1];
+
   const changeLanguage = (locale: string) => {
-    const currentLocale = pathname.split('/')[1];
     const newPath = pathname.replace(`/${currentLocale}`, `/${locale}`);
     router.push(newPath);
   };
@@ -26,12 +27,29 @@ const LanguageSwitcher = () => {
     },
   ];
 
+  const getCurrentLanguageLabel = () => {
+    return menuItems.find((item) => item.key === currentLocale)?.label || '';
+  };
+
   return (
     <Dropdown menu={{ items: menuItems }} placement="bottomRight">
       <Button
-        icon={<GlobalOutlined />}
-        style={{ backgroundColor: 'transparent', border: 'none', color: 'white', marginTop: 20, marginRight: 20 }}
-      />
+        style={{
+          backgroundColor: 'transparent',
+          border: 'none',
+          color: 'white',
+          marginTop: 20,
+          marginRight: 20,
+          padding: '4px 8px',
+          display: 'flex',
+          alignItems: 'center',
+        }}
+      >
+        <Space>
+          <GlobalOutlined />
+          <span>{getCurrentLanguageLabel()}</span>
+        </Space>
+      </Button>
     </Dropdown>
   );
 };

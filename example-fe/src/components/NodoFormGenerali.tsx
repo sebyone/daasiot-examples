@@ -3,7 +3,7 @@ import { Checkbox, Col, Form, Input, Row, Select } from 'antd';
 import { useTranslations } from 'next-intl';
 import React from 'react';
 
-const NodoForm = ({ form, onFinish, setIsDataSaved, readOnly }: NodoFormProps) => {
+const NodoFormGenerali = ({ form, onFinish, setIsDataSaved, readOnly }: NodoFormProps) => {
   const marginBottom = { marginBottom: -22 };
   const cursor = readOnly ? { cursor: 'default' } : undefined;
   const t = useTranslations('NodoForm');
@@ -43,7 +43,7 @@ const NodoForm = ({ form, onFinish, setIsDataSaved, readOnly }: NodoFormProps) =
         display: 'flex',
         justifyItems: 'center',
         justifyContent: 'left',
-        marginTop: '20px',
+        marginTop: '25px',
       }}
     >
       <Form
@@ -57,38 +57,6 @@ const NodoForm = ({ form, onFinish, setIsDataSaved, readOnly }: NodoFormProps) =
         <Form.Item name="id" noStyle>
           <Input type="hidden" />
         </Form.Item>
-        <Row gutter={32} style={marginBottom}>
-          <Col span={16}>
-            <Form.Item name="denominazione" label={t('name')}>
-              <Input name="denominazione" placeholder={t('name')} readOnly={readOnly} style={cursor} />
-            </Form.Item>
-          </Col>
-          <Col span={8}>
-            <Form.Item name="enable" valuePropName="checked">
-              <Checkbox style={{ marginTop: 26 }} disabled={readOnly}>
-                {t('enabled')}
-              </Checkbox>
-            </Form.Item>
-          </Col>
-        </Row>
-        <Row gutter={20} style={marginBottom}>
-          <Col span={16}>
-            <Form.Item name="matricola" label={t('serialNumber')}>
-              <Input name="matricola" placeholder={t('serialNumber')} readOnly={readOnly} style={cursor} />
-            </Form.Item>
-          </Col>
-        </Row>
-        <Row gutter={20} style={marginBottom}>
-          <Col span={16}>
-            <Form.Item label={t('model')} name="modello">
-              {readOnly ? (
-                <Input name="modello" placeholder={t('model')} readOnly={readOnly} style={cursor} />
-              ) : (
-                <Select />
-              )}
-            </Form.Item>
-          </Col>
-        </Row>
         <Row gutter={16} style={marginBottom}>
           <Col span={8}>
             <Form.Item name="sid" label="SID">
@@ -113,9 +81,18 @@ const NodoForm = ({ form, onFinish, setIsDataSaved, readOnly }: NodoFormProps) =
             </Form.Item>
           </Col>
         </Row>
+        <Row gutter={8}>
+          <Col span={8}>
+            <Form.Item name="enable" valuePropName="checked">
+              <Checkbox style={{ marginTop: 26 }} disabled={readOnly}>
+                {t('enabled')}
+              </Checkbox>
+            </Form.Item>
+          </Col>
+        </Row>
       </Form>
     </div>
   );
 };
 
-export default NodoForm;
+export default NodoFormGenerali;

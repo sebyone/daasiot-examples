@@ -1,4 +1,6 @@
 'use client';
+import NodoFormGenerali from '@/components/NodoFormGenerali';
+import NodoFormHeader from '@/components/NodoFormHeader';
 import { useCustomNotification } from '@/hooks/useNotificationHook';
 import { default as ConfigService, default as configService } from '@/services/configService';
 import { Device, Event } from '@/types';
@@ -23,7 +25,8 @@ const CardDispositivoFactory = dynamic(() => import('@/components/CardDispositiv
 export default function Dispositivi() {
   const router = useRouter();
   const t = useTranslations('Dispositivi');
-  const [formDaasIoT] = Form.useForm();
+  const [formGenerali] = Form.useForm();
+  const [formHeader] = Form.useForm();
   const [searchTerm, setSearchTerm] = useState('');
   const [devicesData, setDevicesData] = useState<Device[]>([]);
   const { notify, contextHolder } = useCustomNotification();
@@ -222,11 +225,8 @@ export default function Dispositivi() {
   useEffect(() => {
     if (selectedDevice) {
       configService.getDeviceById(selectedDevice.id).then((data) => {
-        formDaasIoT.setFieldsValue({
+        formGenerali.setFieldsValue({
           id: data.id,
-          denominazione: data.name,
-          matricola: data.device_model.serial,
-          modello: data.device_model.description,
           sid: data.din.sid,
           din: data.din.din,
           latitudine: data.latitude,
@@ -234,7 +234,19 @@ export default function Dispositivi() {
         });
       });
     }
-  }, [selectedDevice, formDaasIoT]);
+  }, [selectedDevice, formGenerali]);
+
+  useEffect(() => {
+    if (selectedDevice) {
+      configService.getDeviceById(selectedDevice.id).then((data) => {
+        formHeader.setFieldsValue({
+          id: data.id,
+          modello: data.device_model.description,
+          matricola: data.device_model.serial,
+        });
+      });
+    }
+  }, [selectedDevice, formHeader]);
 
   const handleTest = () => {
     setShowTestComponent((prevState) => !prevState);
@@ -306,7 +318,7 @@ export default function Dispositivi() {
       label: t('general'),
       children: (
         <>
-          <NodoForm form={formDaasIoT} onFinish={() => {}} setIsDataSaved={() => {}} readOnly={true} />
+          <NodoFormGenerali form={formGenerali} onFinish={() => {}} setIsDataSaved={() => {}} readOnly={true} />
           <Button type="primary" onClick={handleTest} style={{ marginBottom: 20 }}>
             Test
           </Button>
@@ -409,7 +421,7 @@ export default function Dispositivi() {
       key: '4',
       label: t('geolocation'),
       children: (
-        <div style={{ height: '65vh', marginTop: -40 }}>
+        <div style={{ height: '55vh', marginTop: -40 }}>
           <MapComponent devices={devicesData} />
         </div>
       ),
@@ -497,10 +509,11 @@ export default function Dispositivi() {
                 <DataPanel title={selectedDevice?.name} showSemaphore={false} showLinkStatus showAlignmentStatus>
                   <Panel showSaveButtons={false} layoutStyle="devices">
                     <PanelView layoutStyle="devices">
+                      <NodoFormHeader form={formHeader} onFinish={() => {}} setIsDataSaved={() => {}} readOnly={true} />
                       <Tabs
                         type="card"
                         items={items}
-                        style={{ marginTop: -70, padding: 10 }}
+                        style={{ padding: 10 }}
                         activeKey={activeTabKey}
                         onChange={(key) => setActiveTabKey(key)}
                       />
