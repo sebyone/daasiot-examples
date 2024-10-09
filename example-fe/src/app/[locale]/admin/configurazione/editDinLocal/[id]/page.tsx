@@ -1,4 +1,6 @@
 'use client';
+import IPAddressIcon from '@/components/IPAddressIcon';
+import LTEIcon from '@/components/LTEIcon';
 import { useCustomNotification } from '@/hooks/useNotificationHook';
 import { default as ConfigService, default as configService } from '@/services/configService';
 import { ConfigFormData, LinkDataType, MapDataType, StatusDataType } from '@/types';
@@ -6,7 +8,7 @@ import { Form, Modal, Tabs, TabsProps } from 'antd';
 import { useLocale, useTranslations } from 'next-intl';
 import dynamic from 'next/dynamic';
 import { useRouter } from 'next/navigation';
-import React, { useEffect, useState } from 'react';
+import React, { ReactNode, useEffect, useState } from 'react';
 
 const DataPanel = dynamic(() => import('@/components/DataPanel'), { ssr: false });
 const DinLocalForm = dynamic(() => import('@/components/DinLocalForm'), { ssr: false });
@@ -54,14 +56,26 @@ const EditDinLocal = () => {
     router.push(`/${locale}/admin/configurazione/editMap/${data.id}`);
   };
 
+  const getIconForLinks = (tipologia: number): ReactNode => {
+    switch (tipologia) {
+      case 2:
+        return <IPAddressIcon />;
+      case 4:
+        return <LTEIcon />;
+    }
+  };
+
   const fetchLinks = async () => {
     try {
       await ConfigService.getLinks().then((data) => {
-        const links = data.map((link) => ({
-          id: link.id,
-          link: link.link,
-          url: link.url,
-        }));
+        const links = data.map((link) => {
+          const icon = getIconForLinks(link.link);
+          return {
+            id: link.id,
+            link: <>{icon}</>,
+            url: link.url,
+          };
+        });
         setLinksData(links);
       });
     } catch {
