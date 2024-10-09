@@ -140,7 +140,8 @@ export default function Dispositivi() {
           const ddos = response.data.map((ddo) => ({
             timestamp: ddo.timestamp,
             typeset: ddo.typeset_id,
-            payloadSize: ddo.payload,
+            payload: ddo.payload,
+            payloadSize: ddo.payload_size,
           }));
           setDdos(ddos);
           setTotalItems(response.pagination.total);
@@ -405,11 +406,11 @@ export default function Dispositivi() {
                 </p>
                 <p>
                   <strong>Payload Size:</strong>
-                  {selectedRow.payloadSize.length}
+                  {selectedRow.payloadSize}
                 </p>
                 <p style={{ marginTop: 10, fontSize: '1.1rem' }}>
                   <strong>Payload Content</strong>
-                  <PayloadContentViewer payloadContent={selectedRow.payloadSize} />
+                  <PayloadContentViewer payloadContent={selectedRow.payload} />
                 </p>
               </>
             ) : null}
@@ -422,7 +423,7 @@ export default function Dispositivi() {
       label: t('geolocation'),
       children: (
         <div style={{ height: '55vh', marginTop: -40 }}>
-          <MapComponent devices={devicesData} />
+          <MapComponent device={selectedDevice} />
         </div>
       ),
     },

@@ -306,6 +306,7 @@ export interface DDO {
   timestamp: string;
   typeset_id: number;
   payload: string;
+  payload_size: number;
 }
 
 export interface Pagination {
