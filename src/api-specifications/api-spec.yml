@@ -397,6 +397,11 @@ components:
           description: Payload contenuto all'interno del DDO, in codifica Base64
           nullable: true
           example: eyJtZXNzYWdnaW8iOiAiY2lhbyBNb25kbyJ9
+        payload_size:
+          type: integer
+          description: Dimensione del payload decodificato in byte, per come è stato ricevuto
+          nullable: true
+          example: 32
 
     PaginationData: 
       description: Meta dati sulla paginazione dei dati

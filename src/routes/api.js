@@ -898,7 +898,8 @@ router.get('/devices/:id/ddos', async function (req, res) {
                     din_id_src: 2,
                     timestamp: "2024-07-21T17:32:28Z",
                     typeset_id: 41,
-                    payload: "eyJtZXNzYWdnaW8iOiAiY2lhbyBNb25kbyJ9"
+                    payload: "eyJtZXNzYWdnaW8iOiAiY2lhbyBNb25kbyJ9",
+                    payload_size: 27
                 },
                 {
                     id: 2,
@@ -906,7 +907,8 @@ router.get('/devices/:id/ddos', async function (req, res) {
                     din_id_src: 2,
                     timestamp: "2024-08-13T19:12:20Z",
                     typeset_id: 41,
-                    payload: "TCdlcmJhIGRlbCB2aWNpbm8g6CBzZW1wcmUgcGn5IHZlcmRl"
+                    payload: "TCdlcmJhIGRlbCB2aWNpbm8g6CBzZW1wcmUgcGn5IHZlcmRl",
+                    payload_size: 36,
                 },
                 {
                     id: 3,
@@ -914,7 +916,8 @@ router.get('/devices/:id/ddos', async function (req, res) {
                     din_id_src: 3,
                     timestamp: "2024-09-15T10:54:12Z",
                     typeset_id: 35,
-                    payload: "SSB0b3BpIG5vbiBhdmV2YW5vIG5pcG90aQ=="
+                    payload: "SSB0b3BpIG5vbiBhdmV2YW5vIG5pcG90aQ==",
+                    payload_size: 25,
                 },
                 {
                     id: 4,
@@ -923,6 +926,7 @@ router.get('/devices/:id/ddos', async function (req, res) {
                     timestamp: "2024-09-20T11:04:01Z",
                     typeset_id: 38,
                     payload: "",
+                    payload_size: 0,
                 }
             ],
             pagination: {
