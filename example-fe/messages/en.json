@@ -127,6 +127,9 @@
     "selectGroupModel": "Select a model group to view devices",
     "mobileMessage": "This content is not available on mobile devices.",
     "order": "Order",
-    "loadFW": "Load FW"
+    "loadFW": "Load FW",
+    "devicesGroup": "Devices group",
+    "modelsGroup": "Models group",
+    "searchDevice": "Search device ..."
   }
 }

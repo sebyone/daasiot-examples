@@ -64,7 +64,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         }}
       >
         <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-          <div style={{ color: '#fff' }}>ver {version}</div>
+          <div style={{ color: '#fff', fontSize: '0.8rem' }}>DaaS-IoT NodeJs ver {version}</div>
           <div></div>
           <div></div>
         </div>

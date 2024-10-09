@@ -128,6 +128,9 @@
     "selectGroupModel": "Seleziona un gruppo di modelli per visualizzare i dispositivi",
     "mobileMessage": "Questo contenuto non è disponibile sui dispositivi mobile.",
     "order": "Ordina",
-    "loadFW": "Carica FW"
+    "loadFW": "Carica FW",
+    "devicesGroup": "Gruppo dispositivi",
+    "modelsGroup": "Gruppo modelli",
+    "searchDevice": "Cerca dispositivo ..."
   }
 }
