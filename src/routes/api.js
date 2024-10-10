@@ -1198,6 +1198,28 @@ router.delete('/device_model_groups/:deviceModelGroupId', async function (req, r
 });
 
 
+router.get('/device_model_groups/:deviceModelGroupId/device_models', async function (req, res) {
+    try {
+        const deviceModelGroupId = parseInt(req.params.deviceModelGroupId);
+        const deviceModelGroup = await DeviceModelGroup.findByPk(deviceModelGroupId);
+
+        if (deviceModelGroup === null) {
+            res.status(404);
+            throw new Error(`DeviceModelGroup con id=${deviceModelGroupId} non trovato.`);
+        }
+
+        const { limit, offset } = getPaginationParams(req);
+        const rowsAndCount = await DeviceModel.findAndCountAll({ where: { device_group_id: deviceModelGroupId }, limit, offset });
+
+        res.send(toPaginationData(rowsAndCount, limit, offset));
+    }
+    catch (err) {
+        sendError(res, err)
+    }
+
+});
+
+
 //#endregion
 
 router.all('*', function (req, res) {

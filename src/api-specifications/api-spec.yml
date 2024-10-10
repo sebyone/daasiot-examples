@@ -1992,5 +1992,34 @@ paths:
         default:
           $ref: '#/components/responses/InternalError'
 
-
-
+  /device_model_groups/{deviceModelGroupId}/device_models:
+    get:
+      description: Ritorna i modelli di device associati al gruppo di modelli di device specificato
+      tags:
+        - device model groups
+        - device models
+      parameters:
+        - $ref: '#/components/parameters/offset'
+        - $ref: '#/components/parameters/limit'
+      responses:
+        '200':
+          description: Pagina di modelli di device e informazioni sulla paginazione
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/DeviceModel'
+                  pagination:
+                    $ref: '#/components/schemas/PaginationData'
+        '404':
+          description: Gruppo di modelli di device non trovato.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'        
+        default:
+          $ref: '#/components/responses/InternalError'
