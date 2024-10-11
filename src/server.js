@@ -30,8 +30,8 @@ const swaggerApp = require('./swagger');
 
 // Database
 const db = require("./db/models");
-
 const DaasService = require('./services/daas.service');
+const { createDDO } = require('./services/ddo.service');
 
 // Node application
 const app = express();
@@ -99,7 +99,7 @@ localNode.onDDOReceived((din) => {
     console.log(getTime(), "🔔 DDO received from DIN:", din);
     localNode.locate(din);
 
-    localNode.pull(din, (origin, timestamp, typeset, data) => {
+    localNode.pull(din, async (origin, timestamp, typeset, data) => {
         // let readableTimestamp = new Date(timestamp * 1000).toISOString().replace(/T/, ' ').replace(/\..+/, '')
 
         const currTimestamp = Math.floor(new Date().getTime() / 1000);
@@ -109,6 +109,10 @@ localNode.onDDOReceived((din) => {
             let decodedData = decode(data);
             console.log(getTime(), `⬇⬇ Pulling data from DIN:`, origin, `| typeset: ${typeset} | ${secondsSinceMessageWasSent}s ago`);
             console.log(decodedData);
+            const ddo = await createDDO(origin, 101, data, timestamp, typeset);
+            if (!ddo) {
+                console.error(getTime(), "Failed to save DDO to db");
+            }
 
             wsSendBroadcast(wss.clients, { event: "ddo", data: { din, typeset, ddo: decodedData } });
         } catch (error) {

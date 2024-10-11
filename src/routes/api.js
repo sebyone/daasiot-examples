@@ -27,8 +27,10 @@ const DinHasDin = db.DinHasDin;
 const Device = db.Device;
 const DeviceModel = db.DeviceModel;
 const DeviceModelGroup = db.DeviceModelGroup;
+const DDO = db.DDO;
 
 const DaasService = require('../services/daas.service');
+const { createDDO } = require('../services/ddo.service');
 
 const DEFAULT_PAGE_LIMIT = 20;
 const MAX_PAGE_LIMIT = 50;
@@ -67,8 +69,8 @@ router.post('/stop', function (req, res) {
         console.log("isStopped", isStopped);
 
         res.send({ message: "Nodo stoppato." });
-    } catch (error) {
-        sendError(res, error);
+    } catch (err) {
+        sendError(res, err);
     }
 });
 
@@ -81,8 +83,8 @@ router.post('/start', async function (req, res) {
 
         daasNode.start();
         res.send({ message: "Nodo locale avviato." });
-    } catch (error) {
-        sendError(res, error);
+    } catch (err) {
+        sendError(res, err);
     }
 });
 
@@ -92,22 +94,29 @@ router.post('/restart', async function (req, res) {
         // TODO: IMPLEMENT
         res.status(501)
         throw new Error("Not ancora implementato.");
-    } catch (error) {
-        sendError(res, error);
+    } catch (err) {
+        sendError(res, err);
     }
 });
 
 router.post('/send', async function (req, res) {
     console.log("[API] /send body:", req.body);
     try {
+        console.log("req.body", req.body);
+
         const din = parseInt(req.body.din);
         const typeset = parseInt(req.body.typeset);
-        const payload = req.body.payload || {};
+        const payload = req.body.payload || '';
+        const b64_payload = Buffer.from(payload).toString('base64');
+        const timestampSeconds = Math.floor(new Date().getTime() / 1000);
 
-        daasNode.send(din, typeset, JSON.stringify(payload));
-        res.send({ message: "Messaggio inviato" });
-    } catch (error) {
-        sendError(res, error);
+        daasNode.send(din, typeset, b64_payload);
+        
+        // TODO: add checks for din not found, etc.
+        const ddo = await createDDO(101, din, payload, timestampSeconds, typeset);
+        res.send(ddo);
+    } catch (err) {
+        sendError(res, err);
     }
 });
 
@@ -137,8 +146,8 @@ router.post('/dev/db_sync', async function (req, res) {
         await db.sequelize.sync({ force: force });
         res.send({ message: "Database sincronizzato" });
     } 
-    catch (error) {
-        sendError(res, error);
+    catch (err) {
+        sendError(res, err);
     }
 });
 
@@ -888,60 +897,51 @@ router.delete('/devices/:id', async function (req, res) {
 //#region DDOs
 
 router.get('/devices/:id/ddos', async function (req, res) {
+    const t = await db.sequelize.transaction();
     try {
-        // TODO: IMPLEMENT
-        const mockedData = {
-            data: [
-                {
-                    id: 1,
-                    din_id_dst: 1,
-                    din_id_src: 2,
-                    timestamp: "2024-07-21T17:32:28Z",
-                    typeset_id: 41,
-                    payload: "eyJtZXNzYWdnaW8iOiAiY2lhbyBNb25kbyJ9",
-                    payload_size: 27
-                },
-                {
-                    id: 2,
-                    din_id_dst: 1,
-                    din_id_src: 2,
-                    timestamp: "2024-08-13T19:12:20Z",
-                    typeset_id: 41,
-                    payload: "TCdlcmJhIGRlbCB2aWNpbm8g6CBzZW1wcmUgcGn5IHZlcmRl",
-                    payload_size: 36,
-                },
-                {
-                    id: 3,
-                    din_id_dst: 1,
-                    din_id_src: 3,
-                    timestamp: "2024-09-15T10:54:12Z",
-                    typeset_id: 35,
-                    payload: "SSB0b3BpIG5vbiBhdmV2YW5vIG5pcG90aQ==",
-                    payload_size: 25,
-                },
-                {
-                    id: 4,
-                    din_id_dst: 1,
-                    din_id_src: 3,
-                    timestamp: "2024-09-20T11:04:01Z",
-                    typeset_id: 38,
-                    payload: "",
-                    payload_size: 0,
-                }
-            ],
-            pagination: {
-                limit: 20,
-                offset: 0,
-                count: 4,
-                total: 4,
-            }
+        const { limit, offset } = getPaginationParams(req);
+        const deviceId = parseInt(req.params.id);
+        const device = await Device.findByPk(deviceId, { transaction: t });
+        if (device === null) {
+            res.status(404);
+            throw new Error(`Dispositivo con id=${deviceId} non trovato.`);
         }
-        res.send(mockedData);
+
+        const ddo = await DDO.findAndCountAll({ where: { din_id_dst: device.din_id }, limit, offset, transaction: t });
+
+        t.commit();
+        
+        res.send(toPaginationData(ddo, limit, offset));
     }
     catch (err) {
+        t.rollback();
         sendError(res, err);
     }
 });
+
+router.get('/devices/:id/ddos/sent', async function (req, res) {
+    const t = await db.sequelize.transaction();
+    try {
+        const { limit, offset } = getPaginationParams(req);
+        const deviceId = parseInt(req.params.id);
+        const device = await Device.findByPk(deviceId, { transaction: t });
+        if (device === null) {
+            res.status(404);
+            throw new Error(`Dispositivo con id=${deviceId} non trovato.`);
+        }
+
+        const ddo = await DDO.findAndCountAll({ where: { din_id_src: device.din_id }, limit, offset, transaction: t });
+
+        t.commit();
+        
+        res.send(toPaginationData(ddo, limit, offset));
+    }
+    catch (err) {
+        t.rollback();
+        sendError(res, err);
+    }
+});
+
 
 //#endregion
 

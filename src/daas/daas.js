@@ -13,6 +13,7 @@
  */
 
 const { DaasIoT } = require("daas-sdk");
+const db = require("../db/models");
 const hver = "nodeJS";
 
 let nodeInstance = new DaasIoT(hver);
@@ -49,7 +50,7 @@ function restart() {
     nodeInstance.restart();
 }
 
-function send(din, typeset, data) {
+async function send(din, typeset, data) {
     const located = nodeInstance.locate(din);
 
     if (!located) throw new Error(`Node ${din} could not be located!`)

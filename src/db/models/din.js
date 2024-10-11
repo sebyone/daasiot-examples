@@ -15,6 +15,8 @@ module.exports = (sequelize, DataTypes) => {
       this.belongsToMany(models.Din, { through: models.DinHasDin, as: 'children', foreignKey: 'cdin_id', onDelete: 'CASCADE'});
       this.hasMany(models.DinLink, { foreignKey: 'din_id', as: 'links', onDelete: 'CASCADE' });
       this.hasOne(models.Device, { foreignKey: 'din_id', onDelete: 'CASCADE' });
+      this.hasMany(models.DDO, { foreignKey: 'din_id_dst', as: 'received_ddos', onDelete: 'CASCADE' });
+      this.hasMany(models.DDO, { foreignKey: 'din_id_src', as: 'sent_ddos', onDelete: 'CASCADE' });
       // define association here
     }
   }
@@ -22,10 +24,12 @@ module.exports = (sequelize, DataTypes) => {
     sid: {
       type: DataTypes.STRING.BINARY,
       allowNull: false,
+      unique: 'unique_din_din_sid',
     },
     din: {
       type: DataTypes.STRING.BINARY,
       allowNull: false,
+      unique: 'unique_din_din_sid',
     },
     p_res: {
       type: DataTypes.STRING.BINARY,
@@ -41,6 +45,13 @@ module.exports = (sequelize, DataTypes) => {
     modelName: 'Din',
     timestamps: true,
     underscored: true,
+    indexes: [
+      {
+        unique: true,
+        fields: ['sid', 'din'],
+        name: 'index_din_sid_din'
+      }
+    ]
   });
 
   
