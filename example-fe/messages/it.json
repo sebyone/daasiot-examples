@@ -51,7 +51,8 @@
     "model": "Modello",
     "latitude": "Latitudine",
     "longitude": "Longitudine",
-    "enabled": "Abilitato"
+    "enabled": "Abilitato",
+    "disabled": "Disabilitato"
   },
   "GenericTable": {
     "search": "Cerca..."
@@ -125,12 +126,17 @@
     "errorGetReceivers": "Errore nel caricamento dei receivers"
   },
   "Catalogo": {
-    "selectGroupModel": "Seleziona un gruppo di modelli per visualizzare i dispositivi",
+    "selectGroupModel": "Seleziona un gruppo di modelli per visualizzare i modelli",
     "mobileMessage": "Questo contenuto non è disponibile sui dispositivi mobile.",
     "order": "Ordina",
     "loadFW": "Carica FW",
-    "devicesGroup": "Gruppo dispositivi",
-    "modelsGroup": "Gruppo modelli",
-    "searchDevice": "Cerca dispositivo ..."
+    "devicesGroup": "Gruppo modelli",
+    "modelsGroup": "Modelli",
+    "searchDevice": "Cerca dispositivo ...",
+    "noGroupsAvailable": "Nessun gruppo disponibile",
+    "noModelsAvailable": "Nessun modello disponibile",
+    "serialNumber": "Matricola:",
+    "ModelGroupID": "ID gruppo modello:",
+    "documents": "Documenti:"
   }
 }

@@ -10,6 +10,19 @@
   height: 89vh;
 }
 
+.ant-pagination-prev .ant-pagination-item-link,
+.ant-pagination-next .ant-pagination-item-link {
+  color: #ffffff;
+}
+.ant-pagination-prev:hover .ant-pagination-item-link,
+.ant-pagination-next:hover .ant-pagination-item-link {
+  color: #d1d1d1;
+}
+.ant-pagination-prev:hover .ant-pagination-item-link,
+.ant-pagination-next:hover .ant-pagination-item-link {
+  background-color: #d1d1d1;
+}
+
 @media (max-width: 600px) {
   .container {
     display: none;

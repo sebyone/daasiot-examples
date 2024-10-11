@@ -319,3 +319,29 @@ export interface Event {
   data: DDO[];
   pagination: Pagination;
 }
+
+export interface DeviceModelGroup {
+  id: number;
+  title: string;
+  description: string;
+  link_image: string;
+}
+export interface DeviceGroup {
+  data: DeviceModelGroup[];
+  pagination: Pagination;
+}
+
+export interface Dev {
+  id: number;
+  device_group_id: number;
+  description: string;
+  serial: string;
+  link_image: string;
+  link_datasheet: string;
+  link_userguide: string;
+}
+
+export interface DeviceModel {
+  data: Dev[];
+  pagination: Pagination;
+}

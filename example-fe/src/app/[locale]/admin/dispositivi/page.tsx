@@ -1,11 +1,19 @@
 'use client';
-import NodoFormGenerali from '@/components/NodoFormGenerali';
-import NodoFormHeader from '@/components/NodoFormHeader';
 import { useCustomNotification } from '@/hooks/useNotificationHook';
 import { default as ConfigService, default as configService } from '@/services/configService';
 import { Device, Event } from '@/types';
-import { DeploymentUnitOutlined, EditFilled, PlusOutlined, SearchOutlined } from '@ant-design/icons';
-import { Button, Empty, Form, Input, Layout, List, Modal, Table, Tabs, TabsProps } from 'antd';
+import {
+  DeploymentUnitOutlined,
+  EditFilled,
+  EnvironmentOutlined,
+  InfoCircleOutlined,
+  PlusCircleOutlined,
+  PlusOutlined,
+  SearchOutlined,
+  SlidersOutlined,
+  UnorderedListOutlined,
+} from '@ant-design/icons';
+import { Button, Empty, Form, Input, Layout, List, Modal, Pagination, Table, Tabs, TabsProps } from 'antd';
 import 'leaflet/dist/leaflet.css';
 import { useLocale, useTranslations } from 'next-intl';
 import dynamic from 'next/dynamic';
@@ -16,7 +24,8 @@ import styles from './Dispositivi.module.css';
 const { Sider, Content } = Layout;
 
 const DataPanel = dynamic(() => import('@/components/DataPanel'), { ssr: false });
-const NodoForm = dynamic(() => import('@/components/NodoForm'), { ssr: false });
+const NodoFormGenerali = dynamic(() => import('@/components/NodoFormGenerali'), { ssr: false });
+const NodoFormHeader = dynamic(() => import('@/components/NodoFormHeader'), { ssr: false });
 const Panel = dynamic(() => import('@/components/Panel'), { ssr: false });
 const PanelView = dynamic(() => import('@/components/PanelView'), { ssr: false });
 const PayloadContentViewer = dynamic(() => import('@/components/PayloadContentView'), { ssr: false });
@@ -58,10 +67,6 @@ export default function Dispositivi() {
     ssr: false,
     loading: () => <p style={{ marginTop: 30 }}>{t('loading')}</p>,
   });
-
-  const handleTableChange = (pagination) => {
-    //API
-  };
 
   const columns = [
     {
@@ -116,7 +121,7 @@ export default function Dispositivi() {
       key: 'typeset',
     },
     {
-      title: 'Payload Size',
+      title: 'Payload Size [Byte]',
       dataIndex: 'payloadSize',
       key: 'payloadSize',
     },
@@ -181,6 +186,20 @@ export default function Dispositivi() {
     setSelectedDevice(device);
     setIsDeviceSelected(true);
     setActiveTabKey('1');
+    configService.getDeviceById(device.id).then((data) => {
+      formGenerali.setFieldsValue({
+        id: data.id,
+        sid: data.din.sid,
+        din: data.din.din,
+        latitudine: data.latitude,
+        longitudine: data.longitude,
+      });
+      formHeader.setFieldsValue({
+        id: data.id,
+        modello: data.device_model.description,
+        matricola: data.device_model.serial,
+      });
+    });
   };
 
   const ActionButtons = () => (
@@ -222,32 +241,6 @@ export default function Dispositivi() {
 
     fetchDevices();
   }, []);
-
-  useEffect(() => {
-    if (selectedDevice) {
-      configService.getDeviceById(selectedDevice.id).then((data) => {
-        formGenerali.setFieldsValue({
-          id: data.id,
-          sid: data.din.sid,
-          din: data.din.din,
-          latitudine: data.latitude,
-          longitudine: data.longitude,
-        });
-      });
-    }
-  }, [selectedDevice, formGenerali]);
-
-  useEffect(() => {
-    if (selectedDevice) {
-      configService.getDeviceById(selectedDevice.id).then((data) => {
-        formHeader.setFieldsValue({
-          id: data.id,
-          modello: data.device_model.description,
-          matricola: data.device_model.serial,
-        });
-      });
-    }
-  }, [selectedDevice, formHeader]);
 
   const handleTest = () => {
     setShowTestComponent((prevState) => !prevState);
@@ -291,16 +284,6 @@ export default function Dispositivi() {
     setStatus(status);
   };
 
-  /*useEffect(() => {
-    configService
-      .getDinOptions()
-      .then(setDinOptions)
-      .catch((error) => {
-        console.error('Errore:', error);
-      });
-
-    */
-
   const onSend = async () => {
     if (selectedDevice) {
       try {
@@ -316,15 +299,19 @@ export default function Dispositivi() {
   const items: TabsProps['items'] = [
     {
       key: '1',
-      label: t('general'),
+      label: (
+        <span style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          {<InfoCircleOutlined style={{ fontSize: '1.1rem' }} />} {t('general')}
+        </span>
+      ),
       children: (
-        <>
-          <NodoFormGenerali form={formGenerali} onFinish={() => {}} setIsDataSaved={() => {}} readOnly={true} />
-          <Button type="primary" onClick={handleTest} style={{ marginBottom: 20 }}>
+        <div>
+          <NodoFormGenerali form={formGenerali} />
+          <Button type="primary" onClick={handleTest} style={{ marginLeft: 20, marginBottom: 20 }}>
             Test
           </Button>
           {showTestComponent && (
-            <div style={{ marginTop: -40, marginLeft: 70 }}>
+            <div style={{ marginTop: -53, marginLeft: 90 }}>
               <CardDispositivoFactory
                 deviceType="UPL"
                 deviceName="UPL Modello XX"
@@ -341,12 +328,16 @@ export default function Dispositivi() {
               />
             </div>
           )}
-        </>
+        </div>
       ),
     },
     {
       key: '2',
-      label: t('parameters'),
+      label: (
+        <span style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          {<SlidersOutlined style={{ fontSize: '1.1rem' }} />} {t('parameters')}
+        </span>
+      ),
       children: (
         <div>
           <Table
@@ -374,7 +365,11 @@ export default function Dispositivi() {
     },
     {
       key: '3',
-      label: t('events'),
+      label: (
+        <span style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          {<UnorderedListOutlined style={{ fontSize: '1.1rem' }} />} {t('events')}
+        </span>
+      ),
       children: (
         <>
           <Table
@@ -420,7 +415,11 @@ export default function Dispositivi() {
     },
     {
       key: '4',
-      label: t('geolocation'),
+      label: (
+        <span style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          {<EnvironmentOutlined style={{ fontSize: '1.1rem' }} />} {t('geolocation')}
+        </span>
+      ),
       children: (
         <div style={{ height: '55vh', marginTop: -40 }}>
           <MapComponent device={selectedDevice} />
@@ -436,6 +435,17 @@ export default function Dispositivi() {
   const handleEditDispositivo = (e: React.MouseEvent, deviceId: number) => {
     e.stopPropagation();
     router.push(`/${locale}/admin/dispositivi/editDispositivo/${deviceId}`);
+  };
+
+  const itemRender = (_, type, originalElement) => {
+    console.log(type, 'a');
+    if (type === 'prev') {
+      return <a style={{ color: 'white' }}>{'<'}</a>;
+    }
+    if (type === 'next') {
+      return <a style={{ color: 'white', cursor: 'pointer' }}>{'>'}</a>;
+    }
+    return originalElement;
   };
 
   return (
@@ -464,7 +474,10 @@ export default function Dispositivi() {
                   borderColor: '#1890ff',
                 }}
               >
-                {t('addDevice')}
+                <span style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+                  <PlusCircleOutlined style={{ fontSize: '1.1rem' }} />
+                  {t('addDevice')}
+                </span>
               </Button>
               <br />
             </div>
@@ -481,7 +494,8 @@ export default function Dispositivi() {
               renderItem={(item) => (
                 <List.Item
                   style={{
-                    borderBottom: '1px solid #303030',
+                    borderRadius: 7,
+                    borderBottom: selectedDevice === item ? '1px solid #303030' : 'none',
                     padding: '8px 16px',
                     cursor: 'pointer',
                     backgroundColor: selectedDevice === item ? '#1677ff' : undefined,
@@ -491,17 +505,29 @@ export default function Dispositivi() {
                   <div
                     style={{ width: '100%', display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}
                   >
-                    <span style={{ color: 'white' }}>{item.name}</span>
+                    <span style={{ color: selectedDevice === item ? 'white' : '#ffffffa6' }}>{item.name}</span>
                     <EditFilled
                       style={{ color: '#8c8c8c', fontSize: 16, transition: 'color 0.3s' }}
                       onMouseEnter={(e) => (e.currentTarget.style.color = '#1890ff')}
-                      onMouseLeave={(e) => (e.currentTarget.style.color = '#8c8c8c')}
+                      onMouseLeave={(e) => (e.currentTarget.style.color = '#ffffffa6')}
                       onClick={(e) => handleEditDispositivo(e, item.id)}
                     />
                   </div>
                 </List.Item>
               )}
-              style={{ height: '535px', overflowY: 'auto' }}
+              style={{ height: 'calc(100% - 120px)', overflowY: 'auto', padding: '8px 16px' }}
+            />
+            <Pagination
+              current={1}
+              pageSize={10}
+              pageSizeOptions={['10', '20', '50', '100']}
+              total={0}
+              onChange={() => {}}
+              showSizeChanger
+              showQuickJumper
+              itemRender={itemRender}
+              className={`${styles['ant-pagination-prev']} ${styles['ant-pagination-next']}`}
+              style={{ marginTop: -50 }}
             />
           </Sider>
           <Layout>
@@ -510,11 +536,11 @@ export default function Dispositivi() {
                 <DataPanel title={selectedDevice?.name} showSemaphore={false} showLinkStatus showAlignmentStatus>
                   <Panel showSaveButtons={false} layoutStyle="devices">
                     <PanelView layoutStyle="devices">
-                      <NodoFormHeader form={formHeader} onFinish={() => {}} setIsDataSaved={() => {}} readOnly={true} />
+                      <NodoFormHeader form={formHeader} />
                       <Tabs
                         type="card"
                         items={items}
-                        style={{ padding: 10 }}
+                        style={{ padding: 10, marginTop: -30 }}
                         activeKey={activeTabKey}
                         onChange={(key) => setActiveTabKey(key)}
                       />

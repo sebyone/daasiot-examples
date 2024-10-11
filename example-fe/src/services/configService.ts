@@ -19,6 +19,9 @@ import {
   ConfigData,
   ConfigFormData,
   Device,
+  DeviceGroup,
+  DeviceModel,
+  DeviceModelGroup,
   DinDataType,
   DinFormData,
   DinLocalDataType,
@@ -348,6 +351,44 @@ const ConfigService = {
   getDDOByDeviceId: async (id: number, offset: number, limit: number): Promise<Event> => {
     try {
       const response = await axiosInstance.get(`/devices/${id}/ddos`, {
+        params: {
+          offset: offset,
+          limit: limit,
+        },
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Error:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Restituisce tutti i modelli di device
+   * Promise<DeviceModel> - Oggetto DeviceModel contenente i modelli
+   */
+  getDeviceModelGroups: async (offset: number, limit: number): Promise<DeviceGroup> => {
+    try {
+      const response = await axiosInstance.get(`/device_model_groups`, {
+        params: {
+          offset: offset,
+          limit: limit,
+        },
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Error:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Restituisce tutti i modelli di device
+   * Promise<DeviceModel> - Oggetto DeviceModel contenente i modelli
+   */
+  getDeviceModelByModelGroupId: async (id: number, offset: number, limit: number): Promise<DeviceModel> => {
+    try {
+      const response = await axiosInstance.get(`/device_model_groups/${id}/device_models`, {
         params: {
           offset: offset,
           limit: limit,

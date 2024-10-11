@@ -50,7 +50,8 @@
     "model": "Model",
     "latitude": "Latitude",
     "longitude": "Longitude",
-    "enabled": "Enabled"
+    "enabled": "Enabled",
+    "disabled": "Disabled"
   },
   "GenericTable": {
     "search": "Search..."
@@ -124,12 +125,17 @@
     "errorGetReceivers": "Error loading receivers"
   },
   "Catalogo": {
-    "selectGroupModel": "Select a model group to view devices",
+    "selectGroupModel": "Select a model group to view models",
     "mobileMessage": "This content is not available on mobile devices.",
     "order": "Order",
     "loadFW": "Load FW",
-    "devicesGroup": "Devices group",
-    "modelsGroup": "Models group",
-    "searchDevice": "Search device ..."
+    "devicesGroup": "Models group",
+    "modelsGroup": "Models",
+    "searchDevice": "Search device ...",
+    "noGroupsAvailable": "No groups available",
+    "noModelsAvailable": "No models available",
+    "serialNumber": "Serial number:",
+    "ModelGroupID": "Model group ID:",
+    "documents": "Documents:"
   }
 }
