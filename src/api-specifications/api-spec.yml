@@ -1,7 +1,7 @@
 openapi: '3.0.3'
 info:
   title: DaaS-NodeJS
-  version: '1.0'
+  version: '1.1'
   
   contact:
     name: API Support
@@ -1342,7 +1342,18 @@ paths:
 
   /devices:
     get:
-      description: mostra di tutti i devices.
+      description: mostra una pagina di tutti i devices o una lista filtrata.
+      parameters:
+        - $ref: '#/components/parameters/limit'
+        - $ref: '#/components/parameters/offset'
+        - name: q
+          in: query
+          description: >
+            Filtro per nome del device.
+          schema:
+            type: string
+          example: "Device 1"
+
       tags:
         - devices
       responses:
@@ -1351,12 +1362,16 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/DeviceFull'
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Device'
+                  pagination:
+                    $ref: '#/components/schemas/PaginationData'
         default:
           $ref: '#/components/responses/InternalError'
-
     post:
       description: Crea un nuovo device, con associato un device model e un DIN.
       tags:
@@ -1592,6 +1607,13 @@ paths:
       parameters:
         - $ref: '#/components/parameters/offset'
         - $ref: '#/components/parameters/limit'
+        - name: q
+          in: query
+          description: >
+            Filtro per nome del modello di device.
+          schema:
+            type: string
+          example: "modello 2"
 
       responses:
         '200':
@@ -1607,6 +1629,10 @@ paths:
                       $ref: '#/components/schemas/DeviceModelFull'
                   pagination:
                     $ref: '#/components/schemas/PaginationData'
+                  q:
+                    type: string
+                    description: Filtro applicato
+                    nullable: true
 
         default:
           $ref: '#/components/responses/InternalError'
@@ -1842,6 +1868,13 @@ paths:
       parameters:
         - $ref: '#/components/parameters/offset'
         - $ref: '#/components/parameters/limit'
+        - name: q
+          in: query
+          description: >
+            Filtro per nome del gruppo di modelli di device.
+          schema:
+            type: string
+          example: "Gruppo 1"
       responses:
         '200':
           description: Pagina di gruppi di modelli di device e informazioni sulla paginazione
@@ -1856,6 +1889,10 @@ paths:
                       $ref: '#/components/schemas/DeviceModelGroup'
                   pagination:
                     $ref: '#/components/schemas/PaginationData'
+                  q:
+                    type: string
+                    description: Filtro applicato
+                    nullable: true
         default:
           $ref: '#/components/responses/InternalError'
 

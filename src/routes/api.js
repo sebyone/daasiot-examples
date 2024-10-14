@@ -775,8 +775,13 @@ router.delete('/receivers/:receiverId/remotes', async function (req, res) {
 
 router.get('/devices', async function (req, res) {
     try {
-        const devices = await Device.findAll({ include: ['device_model', 'din'] });
-        res.send(devices);
+        const { limit, offset } = getPaginationParams(req);
+        const q = getQuery(req);
+        const where = q ? { name: { [Op.like]: `%${q}%` } } : {};
+        const rowsAndCount = await Device.findAndCountAll({ where, limit, offset, include: ['device_model', 'din'] });
+
+        res.send(addQuery(toPaginationData(rowsAndCount, limit, offset), q));
+
     } catch (err) {
         sendError(res, err);
     }
@@ -936,8 +941,11 @@ router.get('/devices/:id/ddos', async function (req, res) {
 router.get('/device_models', async function (req, res) {
     try {
         const { limit, offset } = getPaginationParams(req);
-        const rowsAndCount = await DeviceModel.findAndCountAll({ limit, offset, include: ['device_group'] });
-        res.send(toPaginationData(rowsAndCount, limit, offset));          
+        const q = getQuery(req);
+        const where = q ? { description: { [Op.like]: `%${q}%` } } : {};
+        const rowsAndCount = await DeviceModel.findAndCountAll({ where, limit, offset, include: ['device_group'] });
+        
+        res.send(addQuery(toPaginationData(rowsAndCount, limit, offset), q));
     }
     catch (err) {
         sendError(res, err);
@@ -1093,8 +1101,10 @@ router.get('/device_models/:deviceModelId/devices', async function (req, res) {
 router.get('/device_model_groups', async function (req, res) {
     try {
         const { limit, offset } = getPaginationParams(req);
-        const rowsAndCount = await DeviceModelGroup.findAndCountAll({ limit, offset });
-        res.send(toPaginationData(rowsAndCount, limit, offset));
+        const q = getQuery(req);
+        const where = q ? { title: { [Op.like]: `%${q}%` } } : {};
+        const rowsAndCount = await DeviceModelGroup.findAndCountAll({ where, limit, offset });
+        res.send(addQuery(toPaginationData(rowsAndCount, limit, offset), q));
     }
     catch (err) {
         sendError(res, err);
@@ -1262,6 +1272,23 @@ function toPaginationData(countAndRows, limit, offset) {
         }
     }
 }
+
+function getQuery(req) {
+    let q = req.query.q || '';
+    // if q is an array, take the first element
+    if (Array.isArray(q)) {
+        q = q[0];
+    }
+    return q;
+}
+
+function addQuery(data, q) {
+    if (q) {
+        data.q = q;
+    }
+    return data;
+}
+
 //#endregion
 
 module.exports = router;
