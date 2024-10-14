@@ -900,6 +900,9 @@ router.get('/devices/:id/ddos', async function (req, res) {
     const t = await db.sequelize.transaction();
     try {
         const { limit, offset } = getPaginationParams(req);
+        const sent = req.query.sent === 'true';
+        console.log(`[API] sent=${sent}`);
+
         const deviceId = parseInt(req.params.id);
         const device = await Device.findByPk(deviceId, { transaction: t });
         if (device === null) {
@@ -907,37 +910,20 @@ router.get('/devices/:id/ddos', async function (req, res) {
             throw new Error(`Dispositivo con id=${deviceId} non trovato.`);
         }
 
-        const ddo = await DDO.findAndCountAll({ where: { din_id_dst: device.din_id }, limit, offset, transaction: t });
-
-        t.commit();
-        
-        res.send(toPaginationData(ddo, limit, offset));
-    }
-    catch (err) {
-        t.rollback();
-        sendError(res, err);
-    }
-});
-
-router.get('/devices/:id/ddos/sent', async function (req, res) {
-    const t = await db.sequelize.transaction();
-    try {
-        const { limit, offset } = getPaginationParams(req);
-        const deviceId = parseInt(req.params.id);
-        const device = await Device.findByPk(deviceId, { transaction: t });
-        if (device === null) {
-            res.status(404);
-            throw new Error(`Dispositivo con id=${deviceId} non trovato.`);
+        let where = {};
+        if (sent) {
+            where = { din_id_src: device.din_id };
         }
-
-        const ddo = await DDO.findAndCountAll({ where: { din_id_src: device.din_id }, limit, offset, transaction: t });
-
-        t.commit();
+        else {
+            where = { din_id_dst: device.din_id };
+        }
+        const countAndData = await DDO.findAndCountAll({ where, limit, offset, transaction: t });
+        await t.commit();
         
-        res.send(toPaginationData(ddo, limit, offset));
+        res.send(toPaginationData(countAndData, limit, offset));
     }
     catch (err) {
-        t.rollback();
+        await t.rollback();
         sendError(res, err);
     }
 });

@@ -1546,13 +1546,19 @@ paths:
           minimum: 0
           example: 1
     get:
-      description: Ritorna i ddo ricevuti dal device specificato
+      description: Ritorna i ddo ricevuti o inviati da un device. Di default ritorna i DDO ricevuti.
       tags:
         - devices
         - DDOs
       parameters:
         - $ref: '#/components/parameters/offset'
         - $ref: '#/components/parameters/limit'
+        - name: sent
+          in: query
+          description: Se true ritorna i DDO inviati, altrimenti i DDO ricevuti
+          schema:
+            type: boolean
+          example: true
       responses:
         '200':
           description: Pagina di DDO e informazioni sulla paginazione
@@ -1575,47 +1581,7 @@ paths:
                 $ref: '#/components/schemas/Error'
         default:
           $ref: '#/components/responses/InternalError'
-  
-  /devices/{deviceId}/ddos/sent:
-    parameters:
-      - name: deviceId
-        in: path
-        description: ID del device che ha inviato i DDO
-        required: true
-        schema:
-          type: integer
-          minimum: 0
-          example: 1
-    get:
-      description: Ritorna i ddo inviati dal device specificato
-      tags:
-        - devices
-        - DDOs
-      parameters:
-        - $ref: '#/components/parameters/offset'
-        - $ref: '#/components/parameters/limit'
-      responses:
-        '200':
-          description: Pagina di DDO e informazioni sulla paginazione
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  data:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/DDO'
-                  pagination:
-                    $ref: '#/components/schemas/PaginationData'
-        '404':
-          description: Device non trovato.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        default:
-          $ref: '#/components/responses/InternalError'
+
 #region Device Models
   
   /device_models:
