@@ -1,7 +1,20 @@
-import { LinkDataType, LinkFormData, LinkFormProps } from '@/types';
-import { Button, Form, Input, Select } from 'antd';
+/*
+ * DaaS-nodejs 2024 (@) Sebyone Srl
+ *
+ * File: LinkForm.tsx
+ *
+ * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
+ * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
+ * This Source Code Form is "Incompatible With Secondary Licenses", as defined by the MPL v.2.0.
+ *
+ * Contributors:
+ * francescopantusa98@gmail.com - initial implementation
+ *
+ */
+import { LinkDataType, LinkFormProps } from '@/types';
+import { Form, Input, Select } from 'antd';
 import { useTranslations } from 'next-intl';
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 
 const LinkForm = ({ form, onFinish, setIsDataSaved, networkTech, setNetworkTech }: LinkFormProps) => {
   const t = useTranslations('LinkForm');

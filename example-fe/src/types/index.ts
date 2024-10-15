@@ -1,3 +1,16 @@
+/*
+ * DaaS-nodejs 2024 (@) Sebyone Srl
+ *
+ * File: index.ts
+ *
+ * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
+ * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
+ * This Source Code Form is "Incompatible With Secondary Licenses", as defined by the MPL v.2.0.
+ *
+ * Contributors:
+ * francescopantusa98@gmail.com - initial implementation
+ *
+ */
 import { DeviceComponentsRegistry } from '@/utils/deviceComponentsRegistry';
 import { FormInstance } from 'antd';
 import { AppRouterInstance } from 'next/dist/shared/lib/app-router-context.shared-runtime';
@@ -228,7 +241,7 @@ export interface ModalDispositivoProps {
   onSend: () => void;
 }
 
-export interface Device {
+export interface DataDevice {
   id: number;
   device_model_id: number;
   din_id: number;
@@ -251,6 +264,11 @@ export interface Device {
     p_res: string;
     skey: string;
   };
+}
+
+export interface Device {
+  data: DataDevice[];
+  pagination: Pagination;
 }
 
 export interface NodoFormProps {

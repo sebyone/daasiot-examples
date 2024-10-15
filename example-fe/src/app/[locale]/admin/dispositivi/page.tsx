@@ -1,24 +1,38 @@
+/*
+ * DaaS-nodejs 2024 (@) Sebyone Srl
+ *
+ * File: page.tsx
+ *
+ * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
+ * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
+ * This Source Code Form is "Incompatible With Secondary Licenses", as defined by the MPL v.2.0.
+ *
+ * Contributors:
+ * francescopantusa98@gmail.com - initial implementation
+ *
+ */
 'use client';
 import { useCustomNotification } from '@/hooks/useNotificationHook';
 import { default as ConfigService, default as configService } from '@/services/configService';
-import { Device, Event } from '@/types';
+import { DataDevice, Event } from '@/types';
 import {
   DeploymentUnitOutlined,
   EditFilled,
   EnvironmentOutlined,
   InfoCircleOutlined,
+  LoadingOutlined,
   PlusCircleOutlined,
-  PlusOutlined,
   SearchOutlined,
   SlidersOutlined,
   UnorderedListOutlined,
 } from '@ant-design/icons';
 import { Button, Empty, Form, Input, Layout, List, Modal, Pagination, Table, Tabs, TabsProps } from 'antd';
+import debounce from 'debounce';
 import 'leaflet/dist/leaflet.css';
 import { useLocale, useTranslations } from 'next-intl';
 import dynamic from 'next/dynamic';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import styles from './Dispositivi.module.css';
 
 const { Sider, Content } = Layout;
@@ -30,6 +44,7 @@ const Panel = dynamic(() => import('@/components/Panel'), { ssr: false });
 const PanelView = dynamic(() => import('@/components/PanelView'), { ssr: false });
 const PayloadContentViewer = dynamic(() => import('@/components/PayloadContentView'), { ssr: false });
 const CardDispositivoFactory = dynamic(() => import('@/components/CardDispositivoFactory'), { ssr: false });
+const ParametersTab = dynamic(() => import('@/components/ParametersTab'), { ssr: false });
 
 export default function Dispositivi() {
   const router = useRouter();
@@ -37,10 +52,9 @@ export default function Dispositivi() {
   const [formGenerali] = Form.useForm();
   const [formHeader] = Form.useForm();
   const [searchTerm, setSearchTerm] = useState('');
-  const [devicesData, setDevicesData] = useState<Device[]>([]);
+  const [devicesData, setDevicesData] = useState<DataDevice[]>([]);
   const { notify, contextHolder } = useCustomNotification();
-  const filteredDevices = devicesData.filter((device) => device.name.toLowerCase().includes(searchTerm.toLowerCase()));
-  const [selectedDevice, setSelectedDevice] = useState<Device | null>(null);
+  const [selectedDevice, setSelectedDevice] = useState<DataDevice | null>(null);
   const [showTestComponent, setShowTestComponent] = useState(false);
   const [status, setStatus] = useState<boolean>(false);
   const [value, setValue] = useState<number>(0);
@@ -48,12 +62,6 @@ export default function Dispositivi() {
   const [dinOptions, setDinOptions] = useState<number[]>([]);
   const [selectedDin, setSelectedDin] = useState<number | null>(null);
   const [showTestControl, setShowTestControl] = useState<boolean>(false);
-  const [functions, setFunctions] = useState([]);
-  const [availableFunctions, setAvailableFunctions] = useState([
-    { id: 1, name: 'funzione1' },
-    { id: 2, name: 'funzione2' },
-  ]);
-  const [isModalVisible, setIsModalVisible] = useState(false);
   const [isDeviceSelected, setIsDeviceSelected] = useState(false);
   const [isModalInfoEventVisible, setIsModalInfoEventVisible] = useState(false);
   const [selectedRow, setSelectedRow] = useState(null);
@@ -62,42 +70,18 @@ export default function Dispositivi() {
   const [totalItems, setTotalItems] = useState(0);
   const locale = useLocale();
   const [activeTabKey, setActiveTabKey] = useState('1');
+  const [ddos, setDdos] = useState<Event[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
 
   const MapComponent = dynamic(() => import('@/components/Map'), {
     ssr: false,
     loading: () => <p style={{ marginTop: 30 }}>{t('loading')}</p>,
   });
 
-  const columns = [
-    {
-      title: t('function'),
-      dataIndex: 'name',
-      key: 'name',
-      render: (text, record, index) => {
-        if (record.id === 'add') {
-          return availableFunctions.length > 0 ? (
-            <Button type="link" icon={<PlusOutlined />} onClick={() => setIsModalVisible(true)}>
-              {t('addFunction')}
-            </Button>
-          ) : null;
-        }
-        return text;
-        {
-          /*(
-          <Select style={{ width: '100%' }} value={text} onChange={(value) => handleFunctionChange(value, index)}>
-            {availableFunctions.map((func) => (
-              <Select.Option key={func.id} value={func.name}>
-                {func.name}
-              </Select.Option>
-            ))}
-          </Select>*/
-        }
-      },
-    },
-    { title: t('parameters'), dataIndex: 'parametri', key: 'parametri' },
-    { title: t('input'), dataIndex: 'ingressi', key: 'ingressi' },
-    { title: t('output'), dataIndex: 'uscite', key: 'uscite' },
-  ];
+  const handlePageChange = (page: number, pageSize: number) => {
+    setCurrentPage(page);
+    setPageSize(pageSize);
+  };
 
   const handleViewClick = (record) => {
     setSelectedRow(record);
@@ -134,14 +118,13 @@ export default function Dispositivi() {
     },
   ];
 
-  const [ddos, setDdos] = useState<Event[]>([]);
-
   useEffect(() => {
     if (selectedDevice) {
       const fetchDdo = async () => {
         try {
           const offset = (currentPage - 1) * pageSize;
-          const response = await ConfigService.getDDOByDeviceId(selectedDevice.id, offset, pageSize);
+          console.log(selectedDevice.id);
+          const response = await ConfigService.getDDOByDeviceId(selectedDevice.id, offset, pageSize, false);
           const ddos = response.data.map((ddo) => ({
             timestamp: ddo.timestamp,
             typeset: ddo.typeset_id,
@@ -151,38 +134,14 @@ export default function Dispositivi() {
           setDdos(ddos);
           setTotalItems(response.pagination.total);
         } catch (error) {
-          notify('error', t('error'), t('errorGetDevices'));
+          notify('error', t('error'), 'Errore ddo');
         }
       };
       fetchDdo();
     }
   }, [selectedDevice, currentPage, pageSize]);
 
-  /*
-  const addFunction = async (func) => {
-    try {
-      const functionDetails = await ConfigService.getFunctionDetails(func.id);
-      setFunctions([...functions, {
-        id: Date.now(),
-        name: func.name,
-        parameters: functionDetails.parameters,
-        inputs: functionDetails.inputs,
-        outputs: functionDetails.outputs
-      }]);
-      setIsModalVisible(false);
-    } catch (error) {
-    } 
-  };
-
-  */
-
-  const addFunction = (func) => {
-    setFunctions([...functions, { id: Date.now(), name: func.name }]);
-    setAvailableFunctions(availableFunctions.filter((f) => f.id !== func.id));
-    setIsModalVisible(false);
-  };
-
-  const handleDeviceClick = (device: Device) => {
+  const handleDeviceClick = (device: DataDevice) => {
     setSelectedDevice(device);
     setIsDeviceSelected(true);
     setActiveTabKey('1');
@@ -202,45 +161,31 @@ export default function Dispositivi() {
     });
   };
 
-  const ActionButtons = () => (
-    <div style={{ marginTop: 16 }}>
-      <Button style={{ marginRight: 8 }} type="primary">
-        Recall
-      </Button>
-      <Button type="primary">{t('edit')}</Button>
-    </div>
-  );
-
-  const ProgramButton = () => (
-    <Button
-      type="primary"
-      onClick={() => {
-        // SendProgram
-      }}
-      style={{ float: 'right', marginTop: 16 }}
-    >
-      {t('schedule')}
-    </Button>
-  );
+  const fetchDevices = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const offset = 0;
+      const response = await ConfigService.getDevices(offset, pageSize, searchTerm);
+      setDevicesData(response.data);
+      setTotalItems(response.pagination.total);
+    } catch (error) {
+      notify('error', t('error'), t('errorGetDevices'));
+    } finally {
+      setIsLoading(false);
+    }
+  }, [searchTerm]);
 
   useEffect(() => {
-    const fetchDevices = async () => {
-      try {
-        const data = await ConfigService.getDevices();
-        const devices = data.map((device) => ({
-          id: device.id,
-          name: device.name,
-          latitudine: device.latitude,
-          longitudine: device.longitude,
-        }));
-        setDevicesData(devices);
-      } catch (error) {
-        notify('error', t('error'), t('errorGetDevices'));
-      }
-    };
-
     fetchDevices();
-  }, []);
+  }, [fetchDevices]);
+
+  const debouncedSearch = useCallback(
+    debounce((value: string) => {
+      setSearchTerm(value);
+      setCurrentPage(1);
+    }, 300),
+    []
+  );
 
   const handleTest = () => {
     setShowTestComponent((prevState) => !prevState);
@@ -338,30 +283,7 @@ export default function Dispositivi() {
           {<SlidersOutlined style={{ fontSize: '1.1rem' }} />} {t('parameters')}
         </span>
       ),
-      children: (
-        <div>
-          <Table
-            columns={columns}
-            size="small"
-            rowKey="id"
-            dataSource={[...functions, ...(availableFunctions.length > 0 ? [{ id: 'add', name: 'add' }] : [])]}
-            pagination={false}
-          />
-          <ActionButtons />
-          <ProgramButton />
-
-          <Modal title={t('addFunction')} open={isModalVisible} onCancel={() => setIsModalVisible(false)} footer={null}>
-            <List
-              dataSource={availableFunctions}
-              renderItem={(item) => (
-                <List.Item key={item.id} onClick={() => addFunction(item)} style={{ cursor: 'pointer' }}>
-                  {item.name}
-                </List.Item>
-              )}
-            />
-          </Modal>
-        </div>
-      ),
+      children: <ParametersTab />,
     },
     {
       key: '3',
@@ -437,7 +359,7 @@ export default function Dispositivi() {
     router.push(`/${locale}/admin/dispositivi/editDispositivo/${deviceId}`);
   };
 
-  const itemRender = (_, type, originalElement) => {
+  /*const itemRender = (_, type, originalElement) => {
     console.log(type, 'a');
     if (type === 'prev') {
       return <a style={{ color: 'white' }}>{'<'}</a>;
@@ -446,7 +368,7 @@ export default function Dispositivi() {
       return <a style={{ color: 'white', cursor: 'pointer' }}>{'>'}</a>;
     }
     return originalElement;
-  };
+  };*/
 
   return (
     <>
@@ -484,13 +406,14 @@ export default function Dispositivi() {
             <div style={{ padding: '16px' }}>
               <Input
                 placeholder={t('search')}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                suffix={<SearchOutlined />}
+                onChange={(e) => debouncedSearch(e.target.value)}
+                suffix={isLoading ? <LoadingOutlined /> : <SearchOutlined />}
                 style={{ height: 25 }}
               />
             </div>
             <List
-              dataSource={filteredDevices}
+              loading={isLoading}
+              dataSource={devicesData}
               renderItem={(item) => (
                 <List.Item
                   style={{
@@ -517,18 +440,18 @@ export default function Dispositivi() {
               )}
               style={{ height: 'calc(100% - 120px)', overflowY: 'auto', padding: '8px 16px' }}
             />
-            <Pagination
+            {/*<Pagination
               current={1}
-              pageSize={10}
+              pageSize={pageSize}
               pageSizeOptions={['10', '20', '50', '100']}
-              total={0}
+              total={1}
               onChange={() => {}}
               showSizeChanger
               showQuickJumper
               itemRender={itemRender}
               className={`${styles['ant-pagination-prev']} ${styles['ant-pagination-next']}`}
               style={{ marginTop: -50 }}
-            />
+            />*/}
           </Sider>
           <Layout>
             <Content style={{ padding: 0, background: '#fff', maxHeight: '100%' }}>

@@ -1,23 +1,20 @@
-/**
-  * Daas-NodeJS 2023 (@) Sebyone Srl
+/*
+ * DaaS-nodejs 2024 (@) Sebyone Srl
  *
  * File: configService.ts
- * 
- * Servizio per la configurazione del sottosistema IoT
- * Configurare la rete sezione di configurazione Daas-IoT
  *
  * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
  * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
  * This Source Code Form is "Incompatible With Secondary Licenses", as defined by the MPL v.2.0.
  *
  * Contributors:
- * francescopantusa98@gmail.com - initial implementation and documentation
- *
-
+ * francescopantusa98@gmail.com - initial implementation
+ *
  */
 import {
   ConfigData,
   ConfigFormData,
+  DataDevice,
   Device,
   DeviceGroup,
   DeviceModel,
@@ -318,9 +315,15 @@ const ConfigService = {
    * Recupera l'elenco di tutti i dispositivi
    * Promise<Device[]> - Array di oggetti Device
    */
-  getDevices: async (): Promise<Device[]> => {
+  getDevices: async (offset: number, limit: number, q: string = ''): Promise<Device> => {
     try {
-      const response = await axiosInstance.get('/devices');
+      const response = await axiosInstance.get('/devices', {
+        params: {
+          offset: offset,
+          limit: limit,
+          q: q,
+        },
+      });
       return response.data;
     } catch (error) {
       console.error('Error:', error);
@@ -333,7 +336,7 @@ const ConfigService = {
    * id - ID del dispositivo da recuperare
    * Promise<Device> - Oggetto Device del dispositivo richiesto
    */
-  getDeviceById: async (id: number): Promise<Device> => {
+  getDeviceById: async (id: number): Promise<DataDevice> => {
     try {
       const response = await axiosInstance.get(`/devices/${id}`);
       return response.data;
@@ -348,12 +351,13 @@ const ConfigService = {
    * id - ID del dispositivo
    * Promise<Event> - Oggetto Event contente i ddo e la paginazione
    */
-  getDDOByDeviceId: async (id: number, offset: number, limit: number): Promise<Event> => {
+  getDDOByDeviceId: async (id: number, offset: number, limit: number, sent: boolean): Promise<Event> => {
     try {
       const response = await axiosInstance.get(`/devices/${id}/ddos`, {
         params: {
           offset: offset,
           limit: limit,
+          sent: sent,
         },
       });
       return response.data;
@@ -364,15 +368,16 @@ const ConfigService = {
   },
 
   /**
-   * Restituisce tutti i modelli di device
-   * Promise<DeviceModel> - Oggetto DeviceModel contenente i modelli
+   * Restituisce tutti i gruppi di modelli di device
+   * Promise<DeviceModel> - Oggetto DeviceModel contenente i gruppi di modelli
    */
-  getDeviceModelGroups: async (offset: number, limit: number): Promise<DeviceGroup> => {
+  getDeviceModelGroups: async (offset: number, limit: number, q: string = ''): Promise<DeviceGroup> => {
     try {
       const response = await axiosInstance.get(`/device_model_groups`, {
         params: {
           offset: offset,
           limit: limit,
+          q: q,
         },
       });
       return response.data;
@@ -386,14 +391,29 @@ const ConfigService = {
    * Restituisce tutti i modelli di device
    * Promise<DeviceModel> - Oggetto DeviceModel contenente i modelli
    */
-  getDeviceModelByModelGroupId: async (id: number, offset: number, limit: number): Promise<DeviceModel> => {
+  getDeviceModel: async (offset: number, limit: number, q: string = ''): Promise<DeviceModel> => {
     try {
-      const response = await axiosInstance.get(`/device_model_groups/${id}/device_models`, {
+      const response = await axiosInstance.get(`/device_model`, {
         params: {
           offset: offset,
           limit: limit,
+          q: q,
         },
       });
+      return response.data;
+    } catch (error) {
+      console.error('Error:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Restituisce tutti i modelli di device di un gruppo
+   * Promise<DeviceModel> - Oggetto DeviceModel contenente i modelli di un gruppo
+   */
+  getDeviceModelByModelGroupId: async (id: number): Promise<DeviceModel> => {
+    try {
+      const response = await axiosInstance.get(`/device_model_groups/${id}/device_models`);
       return response.data;
     } catch (error) {
       console.error('Error:', error);

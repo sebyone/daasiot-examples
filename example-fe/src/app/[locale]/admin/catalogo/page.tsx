@@ -1,3 +1,16 @@
+/*
+ * DaaS-nodejs 2024 (@) Sebyone Srl
+ *
+ * File: page.tsx
+ *
+ * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
+ * If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
+ * This Source Code Form is "Incompatible With Secondary Licenses", as defined by the MPL v.2.0.
+ *
+ * Contributors:
+ * francescopantusa98@gmail.com - initial implementation
+ *
+ */
 'use client';
 import { useCustomNotification } from '@/hooks/useNotificationHook';
 import ConfigService from '@/services/configService';
@@ -54,7 +67,7 @@ export default function Catalogo() {
   const fetchDeviceModels = async (groupId: number, page: number, pageSize: number) => {
     try {
       const offset = (page - 1) * pageSize;
-      const response = await ConfigService.getDeviceModelByModelGroupId(groupId, offset, pageSize);
+      const response = await ConfigService.getDeviceModelByModelGroupId(groupId);
       setDeviceModels(response);
       setModelsPagination((prev) => ({ ...prev, total: response.pagination.total }));
     } catch (error) {
