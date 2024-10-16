@@ -69,7 +69,7 @@ components:
         type: integer
         minimum: 0
         default: 0
-      example: 40
+      example: 0
   
   responses:  
     InternalError:
@@ -78,7 +78,7 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/Error'
-    
+
   schemas:
     DinLocal:
       type: object
@@ -425,6 +425,14 @@ components:
           type: integer
           minimum: 0
           example: 67
+        has_next:
+          type: boolean
+          description: flag che indica se ci sono altri oggetti da visualizzare
+          example: true
+        has_prev:
+          type: boolean
+          description: flag che indica se ci sono oggetti precedenti da visualizzare
+          example: false
 
 
 
@@ -1554,7 +1562,7 @@ paths:
     parameters:
       - name: deviceId
         in: path
-        description: ID del device che ha ricevuto i DDO
+        description: ID del device che ha ricevuto o inviato i DDO
         required: true
         schema:
           type: integer
@@ -1834,6 +1842,13 @@ paths:
       parameters:
         - $ref: '#/components/parameters/offset'
         - $ref: '#/components/parameters/limit'
+        - name: q
+          in: query
+          description: >
+            Filtro per nome del device.
+          schema:
+            type: string
+          example: "Device 1"
       responses:
         '200':
           description: Pagina di devices e informazioni sulla paginazione
@@ -1848,6 +1863,10 @@ paths:
                       $ref: '#/components/schemas/Device'
                   pagination:
                     $ref: '#/components/schemas/PaginationData'
+                  q:
+                    type: string
+                    description: Filtro applicato
+                    nullable: true
         '404':
           description: Modello di device non trovato.
           content:
@@ -2052,6 +2071,13 @@ paths:
       parameters:
         - $ref: '#/components/parameters/offset'
         - $ref: '#/components/parameters/limit'
+        - name: q
+          in: query
+          description: >
+            Filtro per nome del modello di device.
+          schema:
+            type: string
+          example: "Modello 2"
       responses:
         '200':
           description: Pagina di modelli di device e informazioni sulla paginazione
@@ -2066,6 +2092,10 @@ paths:
                       $ref: '#/components/schemas/DeviceModel'
                   pagination:
                     $ref: '#/components/schemas/PaginationData'
+                  q:
+                    type: string
+                    description: Filtro applicato
+                    nullable: true
         '404':
           description: Gruppo di modelli di device non trovato.
           content:

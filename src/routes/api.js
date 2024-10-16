@@ -1085,9 +1085,12 @@ router.get('/device_models/:deviceModelId/devices', async function (req, res) {
             res.status(404);
             throw new Error(`DeviceModel con id=${deviceModelId} non trovato.`);
         }
+        const q = getQuery(req);
+        const where = q ? { name: { [Op.like]: `%${q}%` } } : {};
+        where.device_model_id = deviceModelId;
 
-        const rowsAndCount = await Device.findAndCountAll({ where: { device_model_id: deviceModelId }, limit, offset });
-        res.send(toPaginationData(rowsAndCount, limit, offset));
+        const rowsAndCount = await Device.findAndCountAll({ where, limit, offset });
+        res.send(addQuery(toPaginationData(rowsAndCount, limit, offset), q));
     }
     catch (err) {
         sendError(res, err);
@@ -1197,17 +1200,21 @@ router.delete('/device_model_groups/:deviceModelGroupId', async function (req, r
 router.get('/device_model_groups/:deviceModelGroupId/device_models', async function (req, res) {
     try {
         const deviceModelGroupId = parseInt(req.params.deviceModelGroupId);
+        const { limit, offset } = getPaginationParams(req);
+        const q = getQuery(req);
+        
+        
         const deviceModelGroup = await DeviceModelGroup.findByPk(deviceModelGroupId);
-
         if (deviceModelGroup === null) {
             res.status(404);
             throw new Error(`DeviceModelGroup con id=${deviceModelGroupId} non trovato.`);
         }
+        const where = q ? { description: { [Op.like]: `%${q}%` } } : {};
+        where.device_group_id = deviceModelGroupId;
+        
+        const rowsAndCount = await DeviceModel.findAndCountAll({ where, limit, offset });
 
-        const { limit, offset } = getPaginationParams(req);
-        const rowsAndCount = await DeviceModel.findAndCountAll({ where: { device_group_id: deviceModelGroupId }, limit, offset });
-
-        res.send(toPaginationData(rowsAndCount, limit, offset));
+        res.send(addQuery(toPaginationData(rowsAndCount, limit, offset), q));
     }
     catch (err) {
         sendError(res, err)
@@ -1269,6 +1276,8 @@ function toPaginationData(countAndRows, limit, offset) {
             offset,
             count: countAndRows.rows.length,
             total: countAndRows.count,
+            has_next: countAndRows.count > offset + limit,
+            has_prev: offset > 0,
         }
     }
 }
