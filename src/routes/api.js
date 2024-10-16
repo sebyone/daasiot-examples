@@ -854,9 +854,33 @@ router.put('/devices/:id', async function (req, res) {
             throw new Error(`Non è possibile modificare l'id del dispositivo.`);
         }
 
+        // we're modifying the din
         if (device.din != undefined) {
-            res.status(400);
-            throw new Error(`Non è possibile modificare il din del dispositivo da questo endpoint.`);
+            // we can't modify the din_id at the same time
+            if (device.din_id && device.din_id !== oldDevice.din_id) {
+                res.status(400);
+                throw new Error(`Non è possibile modificare il din_id del dispositivo.`);
+            }
+
+            const din = device.din;
+            const oldDin = await Din.findByPk(oldDevice.din_id, { transaction: t });
+            
+            if (oldDin === null) {
+                res.status(404);
+                throw new Error(`Din con id=${oldDevice.din_id} non trovato.`);
+            }
+
+            if (din.id && din.id !== oldDin.id) {
+                res.status(400);
+                throw new Error(`Non è possibile modificare l'id del din.`);
+            }
+            
+            const updatedRowsDin = await Din.update(din, { where: { id: oldDin.id }, transaction: t });
+            if (updatedRowsDin === 0) {
+                res.status(404);
+                throw new Error(`Non è stato possibile aggiornare il din con id=${oldDin.id}.`);
+            }
+            console.log(`[API] Updated din with id=${oldDin.id}`);
         }
 
         if (device.device_model != undefined) {

@@ -1470,7 +1470,7 @@ paths:
           $ref: '#/components/responses/InternalError'
 
     put:
-      description: Aggiorna un device specifico.
+      description: Aggiorna un device specifico e il DIN associato.
       tags:
         - devices
       parameters:
@@ -1488,18 +1488,28 @@ paths:
               properties:
                 device_model:
                   $ref: '#/components/schemas/DeviceModel'
-                serial:
+                device_model_id:
+                  type: integer
+                  description: ID del modello del device
+                din_id:
+                  type: integer
+                  description: ID del DIN associato al device
+                name:
                   type: string
-                  description: Seriale del device
+                  description: Nome del device
+                  maxLength: 45
+                latitude:
+                  type: number
+                  description: latitudine
+                  example: 39.3015
+                longitude:
+                  type: number
+                  description: longitudine
+                  example: 16.2536                
                 din:
                   $ref: '#/components/schemas/Din'
-              required:
-                - device_model
-                - serial
-                - din
               example:
-                device_model: { "device_group_id": 1, "productcode": "123400001234", "datasheet": "datasheet", "userguide": "userguide" }
-                serial: "1234567890"
+                name: "device 2024"
                 din: { "sid": "100", "din": "87" }
       responses:
         '200':
