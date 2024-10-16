@@ -11,14 +11,14 @@
  * francescopantusa98@gmail.com - initial implementation
  *
  */
-import { Device, NodoFormProps } from '@/types';
+import { DataDevice, Device, NodoFormProps } from '@/types';
 import { Checkbox, Col, Form, Input, Row, Select } from 'antd';
 import { useTranslations } from 'next-intl';
 import React from 'react';
 
-const NodoForm = ({ form, onFinish, setIsDataSaved, readOnly }: NodoFormProps) => {
+const NodoForm = ({ form, onFinish, setIsDataSaved }: NodoFormProps) => {
   const marginBottom = { marginBottom: -22 };
-  const cursor = readOnly ? { cursor: 'default' } : undefined;
+
   const t = useTranslations('NodoForm');
   const style = {
     minWidth: '550px',
@@ -28,7 +28,7 @@ const NodoForm = ({ form, onFinish, setIsDataSaved, readOnly }: NodoFormProps) =
     transform: 'scale(0.9)',
     marginLeft: -30,
   };
-  const handleFinish = (values: Device) => {
+  const handleFinish = (values: DataDevice) => {
     onFinish(values);
     setIsDataSaved(true);
   };
@@ -73,56 +73,50 @@ const NodoForm = ({ form, onFinish, setIsDataSaved, readOnly }: NodoFormProps) =
         <Row gutter={32} style={marginBottom}>
           <Col span={16}>
             <Form.Item name="denominazione" label={t('name')}>
-              <Input name="denominazione" placeholder={t('name')} readOnly={readOnly} style={cursor} />
+              <Input name="denominazione" placeholder={t('name')} />
             </Form.Item>
           </Col>
           <Col span={8}>
             <Form.Item name="enable" valuePropName="checked">
-              <Checkbox style={{ marginTop: 26 }} disabled={readOnly}>
-                {t('enabled')}
-              </Checkbox>
+              <Checkbox style={{ marginTop: 26 }}>{t('enabled')}</Checkbox>
             </Form.Item>
           </Col>
         </Row>
         <Row gutter={20} style={marginBottom}>
           <Col span={16}>
             <Form.Item name="matricola" label={t('serialNumber')}>
-              <Input name="matricola" placeholder={t('serialNumber')} readOnly={readOnly} style={cursor} />
+              <Input name="matricola" placeholder={t('serialNumber')} />
             </Form.Item>
           </Col>
         </Row>
         <Row gutter={20} style={marginBottom}>
           <Col span={16}>
             <Form.Item label={t('model')} name="modello">
-              {readOnly ? (
-                <Input name="modello" placeholder={t('model')} readOnly={readOnly} style={cursor} />
-              ) : (
-                <Select />
-              )}
+              <Select />
             </Form.Item>
           </Col>
         </Row>
         <Row gutter={16} style={marginBottom}>
           <Col span={8}>
             <Form.Item name="sid" label="SID">
-              <Input name="sid" placeholder="SID" readOnly={readOnly} style={cursor} />
+              <Input name="sid" placeholder="SID" />
             </Form.Item>
           </Col>
           <Col span={8}>
             <Form.Item name="din" label="DIN">
-              <Input name="din" placeholder="DIN" readOnly={readOnly} style={cursor} />
+              <Input name="din" placeholder="DIN" />
             </Form.Item>
           </Col>
         </Row>
         <Row gutter={16} style={marginBottom}>
           <Col span={8}>
             <Form.Item name="latitudine" label={t('latitude')}>
-              <Input name="latitudine" placeholder={t('latitude')} readOnly={readOnly} style={cursor} />
+              <Input name="latitudine" placeholder={t('latitude')} />
             </Form.Item>
           </Col>
           <Col span={8}>
             <Form.Item name="longitudine" label={t('longitude')}>
-              <Input name="longitudine" placeholder={t('longitude')} readOnly={readOnly} style={cursor} />
+              <Input name="longitudine" placeholder={t('longitude')} />
             </Form.Item>
           </Col>
         </Row>

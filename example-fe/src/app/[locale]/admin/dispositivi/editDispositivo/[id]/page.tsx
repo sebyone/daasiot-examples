@@ -14,7 +14,7 @@
 'use client';
 import { useCustomNotification } from '@/hooks/useNotificationHook';
 import ConfigService from '@/services/configService';
-import { Device } from '@/types';
+import { DataDevice, Device, FormDataDevice } from '@/types';
 import { Form, Modal } from 'antd';
 import { useLocale, useTranslations } from 'next-intl';
 import dynamic from 'next/dynamic';
@@ -52,9 +52,25 @@ const EditDispositivo = () => {
       });
       setDevice(data.name);
     });
-  });
+  }, []);
 
-  const onFinish = async (values: Device) => {};
+  const onFinish = async (values: any) => {
+    try {
+      const deviceData: FormDataDevice = {
+        name: values.denominazione,
+        din: {
+          sid: values.sid,
+          din: values.din,
+        },
+        latitude: values.latitudine,
+        longitude: values.longitudine,
+      };
+      await ConfigService.updateDevice(id, deviceData);
+      notify('success', t('success'), t('successSave'));
+    } catch {
+      notify('error', t('error'), t('errorUpdateMap'));
+    }
+  };
 
   const handleGoBack = () => {
     if (!isDataSaved) {
@@ -83,7 +99,7 @@ const EditDispositivo = () => {
       <DataPanel title={device} isEditing={isDataSaved} showSemaphore={true}>
         <Panel handleGoBack={handleGoBack} handleSave={handleSave} showSaveButtons={true} layoutStyle="singleTable">
           <PanelView layoutStyle="singleTable">
-            <NodoForm form={form} onFinish={onFinish} setIsDataSaved={setIsDataSaved} readOnly={false} />
+            <NodoForm form={form} onFinish={onFinish} setIsDataSaved={setIsDataSaved} />
           </PanelView>
         </Panel>
       </DataPanel>

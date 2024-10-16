@@ -241,6 +241,16 @@ export interface ModalDispositivoProps {
   onSend: () => void;
 }
 
+export interface FormDataDevice {
+  name: string;
+  din: {
+    sid: string;
+    din: string;
+  };
+  latitude: number;
+  longitude: number;
+}
+
 export interface DataDevice {
   id: number;
   device_model_id: number;
@@ -273,9 +283,8 @@ export interface Device {
 
 export interface NodoFormProps {
   form: FormInstance;
-  onFinish: (values: Device) => void;
+  onFinish: (values: DataDevice) => void;
   setIsDataSaved: (status: boolean) => void;
-  readOnly: boolean;
 }
 
 export interface BaseCardDispositivoProps {

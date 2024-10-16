@@ -76,7 +76,7 @@ export default function NavMenu({ role }: { role: string }) {
     {
       key: '/admin/carica-firmware',
       icon: <SyncOutlined />,
-      label: <Link href={`/${locale}/admin/carica-firmware`}>Updater Esp32</Link>,
+      label: <Link href="https://test.daasiot.net/flashtool/">Updater Esp32</Link>,
     },
   ];
 
