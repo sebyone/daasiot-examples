@@ -126,17 +126,26 @@
     "errorGetReceivers": "Errore nel caricamento dei receivers"
   },
   "Catalogo": {
-    "selectGroupModel": "Seleziona un gruppo di modelli per visualizzare i modelli",
+    "selectGroupModel": "Seleziona un gruppo di modelli per visualizzare i modelli o cerca nella barra",
     "mobileMessage": "Questo contenuto non è disponibile sui dispositivi mobile.",
     "order": "Ordina",
     "loadFW": "Carica FW",
+    "deselectGroup": "Deseleziona gruppo",
     "devicesGroup": "Gruppo modelli",
     "modelsGroup": "Modelli",
-    "searchDevice": "Cerca dispositivo ...",
+    "searchDevice": "Cerca modello ...",
     "noGroupsAvailable": "Nessun gruppo disponibile",
     "noModelsAvailable": "Nessun modello disponibile",
     "serialNumber": "Matricola:",
     "ModelGroupID": "ID gruppo modello:",
     "documents": "Documenti:"
+  },
+  "CaricaFirmware": {
+    "uploadFirmware": "Carica Firmware",
+    "infoFirmware": "Informazioni Firmware",
+    "currentVersion": "Versione Attuale:",
+    "lastUpdateDate": "Data ultimo aggiornamento:",
+    "importantNotes": "Note importanti",
+    "note": "Assicurati che il dispositivo sia collegato correttamente durante l'aggiornamento. Non interrompere il processo di aggiornamento per evitare danni al dispositivo."
   }
 }

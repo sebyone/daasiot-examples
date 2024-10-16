@@ -16,7 +16,8 @@ import { useCustomNotification } from '@/hooks/useNotificationHook';
 import ConfigService from '@/services/configService';
 import { Dev, DeviceGroup, DeviceModel, DeviceModelGroup } from '@/types';
 import { SearchOutlined, UnorderedListOutlined } from '@ant-design/icons';
-import { Button, Card, Col, Divider, Empty, Input, Layout, List, Menu, Pagination, Row, Typography } from 'antd';
+import { Button, Card, Col, Divider, Empty, Input, Layout, List, Menu, Pagination, Row, Spin, Typography } from 'antd';
+import debounce from 'debounce';
 import { useLocale, useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
@@ -38,19 +39,17 @@ export default function Catalogo() {
   const { notify, contextHolder } = useCustomNotification();
   const locale = useLocale();
   const router = useRouter();
+  const [isSearchActive, setIsSearchActive] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const [groups, setGroups] = useState<DeviceGroup | null>(null);
   const [deviceModels, setDeviceModels] = useState<DeviceModel | null>(null);
   const [groupsPagination, setGroupsPagination] = useState({ current: 1, pageSize: 10, total: 0 });
   const [modelsPagination, setModelsPagination] = useState({ current: 1, pageSize: 10, total: 0 });
-  useEffect(() => {
-    fetchDeviceModelGroups(groupsPagination.current, groupsPagination.pageSize);
-  }, [groupsPagination.current, groupsPagination.pageSize]);
-
-  const fetchDeviceModelGroups = async (page: number, pageSize: number) => {
+  const fetchDeviceModelGroups = async (page: number, pageSize: number, search: string = '') => {
     try {
       const offset = (page - 1) * pageSize;
-      const response = await ConfigService.getDeviceModelGroups(offset, pageSize);
+      const response = await ConfigService.getDeviceModelGroups(offset, pageSize, search);
       setGroups(response);
       setGroupsPagination((prev) => ({ ...prev, total: response.pagination.total }));
     } catch (error) {
@@ -58,31 +57,53 @@ export default function Catalogo() {
     }
   };
 
-  const handleGroupSelect = async (groupId: number, groupTitle: string) => {
-    setSelectedGroup({ id: groupId, title: groupTitle });
-    setSelectedModel(null);
-    fetchDeviceModels(groupId, modelsPagination.current, modelsPagination.pageSize);
-  };
+  useEffect(() => {
+    fetchDeviceModelGroups(groupsPagination.current, groupsPagination.pageSize);
+  }, [groupsPagination.current, groupsPagination.pageSize]);
 
-  const fetchDeviceModels = async (groupId: number, page: number, pageSize: number) => {
+  const fetchDeviceModels = async (groupId: number | null, page: number, pageSize: number, search: string = '') => {
+    setIsLoading(true);
     try {
       const offset = (page - 1) * pageSize;
-      const response = await ConfigService.getDeviceModelByModelGroupId(groupId);
+      let response;
+      if (groupId) {
+        response = await ConfigService.getDeviceModelByModelGroupId(groupId, offset, pageSize, search);
+      } else {
+        response = await ConfigService.getDeviceModel(offset, pageSize, search);
+      }
       setDeviceModels(response);
       setModelsPagination((prev) => ({ ...prev, total: response.pagination.total }));
     } catch (error) {
       notify('error', t('error'), t('errorGetModels'));
+    } finally {
+      setIsLoading(false);
     }
+  };
+  const debouncedSearch = debounce((searchTerm: string) => {
+    setIsSearchActive(searchTerm.length > 0);
+    fetchDeviceModels(selectedGroup?.id || null, 1, modelsPagination.pageSize, searchTerm);
+  }, 300);
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const searchTerm = e.target.value;
+    setSearchTerm(searchTerm);
+    debouncedSearch(searchTerm);
+  };
+  const handleGroupSelect = (groupId: number | null, groupTitle: string | null) => {
+    if (groupId === null) {
+      setSelectedGroup(null);
+    } else {
+      setSelectedGroup({ id: groupId, title: groupTitle });
+    }
+    setSelectedModel(null);
+    fetchDeviceModels(groupId, 1, modelsPagination.pageSize, searchTerm);
+  };
+  const handleModelsPaginationChange = (page: number, pageSize?: number) => {
+    setModelsPagination((prev) => ({ ...prev, current: page, pageSize: pageSize || prev.pageSize }));
+    fetchDeviceModels(selectedGroup?.id || null, page, pageSize || modelsPagination.pageSize, searchTerm);
   };
 
   const handleGroupsPaginationChange = (page: number, pageSize?: number) => {
     setGroupsPagination((prev) => ({ ...prev, current: page, pageSize: pageSize || prev.pageSize }));
-  };
-  const handleModelsPaginationChange = (page: number, pageSize?: number) => {
-    setModelsPagination((prev) => ({ ...prev, current: page, pageSize: pageSize || prev.pageSize }));
-    if (selectedGroup) {
-      fetchDeviceModels(selectedGroup.id, page, pageSize || modelsPagination.pageSize);
-    }
   };
 
   const handleModelSelect = (model: Dev) => {
@@ -104,13 +125,24 @@ export default function Catalogo() {
                 <Input
                   placeholder={t('searchDevice')}
                   prefix={<SearchOutlined />}
-                  onChange={(e) => setSearchTerm(e.target.value)}
+                  onChange={handleSearchChange}
+                  value={searchTerm}
                 />
               </Col>
             </Row>
             <Row gutter={24}>
               <Col span={8}>
-                <Card title={t('devicesGroup')} style={{ marginBottom: '20px' }}>
+                <Card
+                  title={t('devicesGroup')}
+                  style={{ marginBottom: '20px' }}
+                  extra={
+                    selectedGroup && (
+                      <Button type="link" onClick={() => handleGroupSelect(null, null)}>
+                        {t('deselectGroup')}
+                      </Button>
+                    )
+                  }
+                >
                   {groups?.data ? (
                     <Menu
                       mode="vertical"
@@ -125,75 +157,80 @@ export default function Catalogo() {
                       {groups.data.map((group) => (
                         <Menu.Item key={group.title}>{group.title}</Menu.Item>
                       ))}
-                      <Pagination
-                        current={groupsPagination.current}
-                        pageSize={groupsPagination.pageSize}
-                        pageSizeOptions={['10', '20', '50', '100']}
-                        total={groupsPagination.total}
-                        onChange={handleGroupsPaginationChange}
-                        showSizeChanger
-                        showQuickJumper
-                      />
                     </Menu>
                   ) : (
                     <Empty description={t('noGroupsAvailable')} />
                   )}
-                </Card>
-              </Col>
-              <Col span={8}>
-                <Card title={selectedGroup?.title || t('modelsGroup')} style={{ height: '100%' }}>
-                  {selectedGroup ? (
-                    deviceModels?.data ? (
-                      <List
-                        dataSource={deviceModels.data}
-                        renderItem={(model) => (
-                          <List.Item
-                            onClick={() => handleModelSelect(model)}
-                            style={{
-                              cursor: 'pointer',
-                            }}
-                          >
-                            <Card
-                              hoverable
-                              style={{
-                                width: '100%',
-                                backgroundColor: selectedModel?.id === model.id ? '#e6f7ff' : undefined,
-                                color: selectedModel?.id === model.id ? '#1890ff' : undefined,
-                              }}
-                            >
-                              <div style={{ display: 'flex', alignItems: 'center', gap: 50 }}>
-                                {model.link_image && (
-                                  // eslint-disable-next-line @next/next/no-img-element
-                                  <img
-                                    src={model.link_image}
-                                    alt={model.description}
-                                    style={{ width: '20%', height: '20%' }}
-                                  />
-                                )}
-                                <span>{model.description}</span>
-                              </div>
-                            </Card>
-                          </List.Item>
-                        )}
-                      />
-                    ) : (
-                      <Empty description={t('noModelsAvailable')} />
-                    )
-                  ) : (
-                    <Empty
-                      image={<UnorderedListOutlined style={{ fontSize: 60, color: '#1890ff' }} />}
-                      description={t('selectGroupModel')}
-                    />
-                  )}
                   <Pagination
-                    current={modelsPagination.current}
-                    pageSize={modelsPagination.pageSize}
+                    current={groupsPagination.current}
+                    pageSize={groupsPagination.pageSize}
                     pageSizeOptions={['10', '20', '50', '100']}
-                    total={modelsPagination.total}
-                    onChange={handleModelsPaginationChange}
+                    total={groupsPagination.total}
+                    onChange={handleGroupsPaginationChange}
                     showSizeChanger
                     showQuickJumper
                   />
+                </Card>
+              </Col>
+              <Col span={8}>
+                <Card
+                  title={isSearchActive ? searchTerm : selectedGroup?.title || t('modelsGroup')}
+                  style={{ height: '100%' }}
+                >
+                  {isLoading ? (
+                    <div style={{ textAlign: 'center', padding: '20px' }}>
+                      <Spin size="large" />
+                    </div>
+                  ) : deviceModels?.data ? (
+                    <List
+                      dataSource={deviceModels.data}
+                      renderItem={(model) => (
+                        <List.Item
+                          onClick={() => handleModelSelect(model)}
+                          style={{
+                            cursor: 'pointer',
+                          }}
+                        >
+                          <Card
+                            hoverable
+                            style={{
+                              width: '100%',
+                              backgroundColor: selectedModel?.id === model.id ? '#e6f7ff' : undefined,
+                              color: selectedModel?.id === model.id ? '#1890ff' : undefined,
+                            }}
+                          >
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 50 }}>
+                              {model.link_image && (
+                                // eslint-disable-next-line @next/next/no-img-element
+                                <img
+                                  src={model.link_image}
+                                  alt={model.description}
+                                  style={{ width: '20%', height: '20%' }}
+                                />
+                              )}
+                              <span>{model.description}</span>
+                            </div>
+                          </Card>
+                        </List.Item>
+                      )}
+                    />
+                  ) : (
+                    <Empty
+                      image={<UnorderedListOutlined style={{ fontSize: 60, color: '#1890ff' }} />}
+                      description={isSearchActive ? t('noModelsAvailable') : t('selectGroupModel')}
+                    />
+                  )}
+                  {deviceModels?.data && (
+                    <Pagination
+                      current={modelsPagination.current}
+                      pageSize={modelsPagination.pageSize}
+                      pageSizeOptions={['10', '20', '50', '100']}
+                      total={modelsPagination.total}
+                      onChange={handleModelsPaginationChange}
+                      showSizeChanger
+                      showQuickJumper
+                    />
+                  )}
                 </Card>
               </Col>
               <Col span={8}>

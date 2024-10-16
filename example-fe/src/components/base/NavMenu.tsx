@@ -12,7 +12,13 @@
  *
  */
 'use client';
-import { DeploymentUnitOutlined, DesktopOutlined, SettingOutlined, ShoppingOutlined } from '@ant-design/icons';
+import {
+  DeploymentUnitOutlined,
+  DesktopOutlined,
+  SettingOutlined,
+  ShoppingOutlined,
+  SyncOutlined,
+} from '@ant-design/icons';
 import { Menu, MenuProps } from 'antd';
 import { useLocale, useTranslations } from 'next-intl';
 import Link from 'next/link';
@@ -25,6 +31,7 @@ const getPathMap = (locale: string) => ({
   [`/${locale}/admin/configurazione`]: '/admin/configurazione',
   [`/${locale}/admin/dispositivi`]: '/admin/dispositivi',
   [`/${locale}/admin/catalogo`]: '/admin/catalogo',
+  [`/${locale}/admin/carica-firmware`]: '/admin/carica-firmware',
   [`/${locale}/admin`]: '/admin',
 });
 
@@ -65,6 +72,11 @@ export default function NavMenu({ role }: { role: string }) {
       key: '/admin/catalogo',
       icon: <ShoppingOutlined />,
       label: <Link href={`/${locale}/admin/catalogo`}>{t('catalog')}</Link>,
+    },
+    {
+      key: '/admin/carica-firmware',
+      icon: <SyncOutlined />,
+      label: <Link href={`/${locale}/admin/carica-firmware`}>Updater Esp32</Link>,
     },
   ];
 

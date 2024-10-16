@@ -125,17 +125,27 @@
     "errorGetReceivers": "Error loading receivers"
   },
   "Catalogo": {
-    "selectGroupModel": "Select a model group to view models",
+    "selectGroupModel": "Select a model group to view models or search the bar",
     "mobileMessage": "This content is not available on mobile devices.",
     "order": "Order",
     "loadFW": "Load FW",
+    "deselectGroup": "Deselect group",
     "devicesGroup": "Models group",
     "modelsGroup": "Models",
-    "searchDevice": "Search device ...",
+    "searchDevice": "Search model ...",
     "noGroupsAvailable": "No groups available",
     "noModelsAvailable": "No models available",
     "serialNumber": "Serial number:",
     "ModelGroupID": "Model group ID:",
     "documents": "Documents:"
+  },
+  "CaricaFirmware": {
+    "uploadFirmware": "Upload Firmware",
+    "infoFirmware": "Firmware Information",
+    "currentVersion": "Current Version:",
+
+    "lastUpdateDate": "Last update date:",
+    "importantNotes": "Important notes",
+    "note": "Make sure your device is connected correctly during the update. Do not interrupt the update process to avoid damage to your device."
   }
 }

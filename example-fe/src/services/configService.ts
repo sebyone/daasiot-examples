@@ -393,7 +393,7 @@ const ConfigService = {
    */
   getDeviceModel: async (offset: number, limit: number, q: string = ''): Promise<DeviceModel> => {
     try {
-      const response = await axiosInstance.get(`/device_model`, {
+      const response = await axiosInstance.get(`/device_models`, {
         params: {
           offset: offset,
           limit: limit,
@@ -411,9 +411,20 @@ const ConfigService = {
    * Restituisce tutti i modelli di device di un gruppo
    * Promise<DeviceModel> - Oggetto DeviceModel contenente i modelli di un gruppo
    */
-  getDeviceModelByModelGroupId: async (id: number): Promise<DeviceModel> => {
+  getDeviceModelByModelGroupId: async (
+    id: number,
+    offset: number,
+    limit: number,
+    q: string = ''
+  ): Promise<DeviceModel> => {
     try {
-      const response = await axiosInstance.get(`/device_model_groups/${id}/device_models`);
+      const response = await axiosInstance.get(`/device_model_groups/${id}/device_models`, {
+        params: {
+          offset: offset,
+          limit: limit,
+          q: q,
+        },
+      });
       return response.data;
     } catch (error) {
       console.error('Error:', error);
