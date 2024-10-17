@@ -12,28 +12,84 @@
  *
  */
 'use client';
-import { UploadOutlined, UsbOutlined } from '@ant-design/icons';
-import { Button, Progress, Typography, Upload, message } from 'antd';
+import { InfoCircleOutlined, SyncOutlined, UploadOutlined, UsbOutlined } from '@ant-design/icons';
+import { Alert, Button, Descriptions, Divider, Progress, Select, Space, Typography, Upload, message } from 'antd';
 import CryptoJS from 'crypto-js';
 import { ESPLoader, Transport } from 'esptool-js';
 import dynamic from 'next/dynamic';
 import React, { useEffect, useRef, useState } from 'react';
-import { XTerm } from 'react-xtermjs';
+//import { ITerminalOptions, Terminal } from 'xterm';
+import Terminal from 'react-console-emulator';
 
 const { Title } = Typography;
 
-/*const Terminal = dynamic(() => import('react-xtermjs').then((mod) => mod.XTerm), {
-  ssr: false,
-  loading: () => <p>Caricamento terminale...</p>,
-});*/
+/*interface XTermProps {
+  options?: ITerminalOptions;
+  style?: React.CSSProperties;
+}*/
 
 const DaaSUpdater = () => {
+  const XTerm = dynamic(() => import('react-xtermjs').then((mod) => mod.XTerm), {
+    ssr: false,
+    loading: () => <p>Caricamento terminale...</p>,
+  });
   const [device, setDevice] = useState(null);
   const [transport, setTransport] = useState(null);
   const [chip, setChip] = useState(null);
   const [isConnected, setIsConnected] = useState(false);
   const [progress, setProgress] = useState(0);
-  const terminalRef = useRef(null);
+  const [selectedFirmware, setSelectedFirmware] = useState('');
+  const [updateComplete, setUpdateComplete] = useState(false);
+  const [portInfo, setPortInfo] = useState('');
+  const [terminalLineData, setTerminalLineData] = useState([
+    { type: 'input', value: 'Device Firmware Updater Terminal' },
+  ]);
+
+  const FakeTerminal = () => (
+    <div
+      style={{
+        width: '50%',
+        height: '300px',
+        backgroundColor: '#000',
+        color: '#00ff00',
+        fontFamily: 'monospace',
+        padding: '10px',
+        overflowY: 'auto',
+        marginBottom: '20px',
+      }}
+    ></div>
+  );
+  //const [terminal, setTerminal] = useState<Terminal | null>(null);
+  //const xtermRef = useRef<{ terminal: Terminal } | null>(null);
+
+  /*useEffect(() => {
+    if (xtermRef.current && xtermRef.current.terminal) {
+      setTerminal(xtermRef.current.terminal);
+      return () => {
+        if (xtermRef.current && xtermRef.current.terminal) {
+          xtermRef.current.terminal.dispose();
+        }
+      };
+    }
+  }, []);
+
+  const espLoaderTerminal = {
+    clean() {
+      if (terminal) {
+        terminal.clear();
+      }
+    },
+    writeLine(data: string) {
+      if (terminal) {
+        terminal.writeln(data);
+      }
+    },
+    write(data: string) {
+      if (terminal) {
+        terminal.write(data);
+      }
+    },
+  };*/
 
   useEffect(() => {
     const loadPolyfill = async () => {
@@ -45,24 +101,6 @@ const DaaSUpdater = () => {
     loadPolyfill();
   }, []);
 
-  const espLoaderTerminal = {
-    clean() {
-      if (terminalRef.current?.terminal) {
-        terminalRef.current.terminal.clear();
-      }
-    },
-    writeLine(data) {
-      if (terminalRef.current?.terminal) {
-        terminalRef.current.terminal.writeln(data);
-      }
-    },
-    write(data) {
-      if (terminalRef.current?.terminal) {
-        terminalRef.current.terminal.write(data);
-      }
-    },
-  };
-
   const connectDevice = async () => {
     try {
       const port = await navigator.serial.requestPort({});
@@ -70,15 +108,18 @@ const DaaSUpdater = () => {
       setDevice(port);
       setTransport(newTransport);
 
+      setPortInfo(port.getInfo().usbProductId ? `USB (Product ID: ${port.getInfo().usbProductId})` : 'Serial Port');
+
       const flashOptions = {
         transport: newTransport,
         baudrate: 115200,
-        terminal: espLoaderTerminal,
+        //terminal: espLoaderTerminal,
       };
       const esploader = new ESPLoader(flashOptions);
       const detectedChip = await esploader.main();
       setChip(detectedChip);
       setIsConnected(true);
+      //espLoaderTerminal.writeLine(`Connected to device: ${detectedChip}`);
       message.success(`Connected to device: ${detectedChip}`);
     } catch (e) {
       console.error(e);
@@ -94,19 +135,23 @@ const DaaSUpdater = () => {
     setTransport(null);
     setChip(null);
     setIsConnected(false);
-    espLoaderTerminal.clean();
+    //espLoaderTerminal.clean();
     message.info('Disconnected from device');
   };
 
-  const uploadFirmware = async (info) => {
-    const { file } = info;
-    if (!file || !isConnected) {
-      message.warning('No file selected or device not connected');
+  const uploadFirmware = async () => {
+    if (!isConnected || !selectedFirmware) {
+      //espLoaderTerminal.writeLine('Please select firmware');
+      message.warning('Please select firmware');
       return;
     }
-
     try {
-      const arrayBuffer = await file.arrayBuffer();
+      const firmwareData = null; //await fetchFirmwareData(selectedFirmware);
+      if (!firmwareData) {
+        throw new Error('Failed to fetch firmware data');
+      }
+
+      const arrayBuffer = await firmwareData.arrayBuffer();
       const fileArray = untar(arrayBuffer);
 
       const flashOptions = {
@@ -117,6 +162,7 @@ const DaaSUpdater = () => {
         reportProgress: (fileIndex, written, total) => {
           const newProgress = fileIndex * 25 + (written / total) * 25;
           setProgress(newProgress);
+          //espLoaderTerminal.writeLine(`Update progress: ${Math.round(newProgress)}%`);
         },
         calculateMD5Hash: (image) => CryptoJS.MD5(CryptoJS.enc.Latin1.parse(image)),
       };
@@ -124,14 +170,18 @@ const DaaSUpdater = () => {
       const esploader = new ESPLoader({
         transport,
         baudrate: 115200,
-        terminal: espLoaderTerminal,
+        //terminal: espLoaderTerminal,
       });
 
+      //espLoaderTerminal.writeLine('Starting firmware update...');
       await esploader.writeFlash(flashOptions);
+      setUpdateComplete(true);
+      //espLoaderTerminal.writeLine('Firmware update completed successfully!');
       message.success('Firmware uploaded successfully');
     } catch (e) {
       console.error(e);
-      message.error(`Error: ${e.message}`);
+      //espLoaderTerminal.writeLine(`Error: ${e.message}`);
+      message.error(`Update failed: ${e.message}`);
     } finally {
       setProgress(0);
     }
@@ -176,33 +226,99 @@ const DaaSUpdater = () => {
   }
 
   return (
-    <div style={{ padding: '20px' }}>
-      <Title level={2}>DaaS Updater for ESP32</Title>
-      <Button
-        icon={<UsbOutlined />}
-        onClick={isConnected ? disconnectDevice : connectDevice}
-        type="primary"
-        style={{ marginBottom: '20px' }}
-      >
-        {isConnected ? 'Disconnetti dispositivo' : 'Connetti dispositivo'}
-      </Button>
-      <XTerm
-        ref={terminalRef}
-        options={{ cursorBlink: true }}
-        style={{ width: '100%', height: '300px', marginBottom: '20px' }}
-      />
+    <>
+      <div style={{ display: 'flex', justifyContent: 'center' }}>
+        <Title level={2}>Devices Firmware Updater (Esp32)</Title>
+      </div>
+      <div style={{ padding: '20px' }}>
+        <div style={{ width: '20%', display: 'flex', flexDirection: 'column', justifyContent: 'left' }}>
+          <span>
+            <strong>Firmware</strong>
+          </span>
+          <Select
+            style={{ marginBottom: 20, width: '50%' }}
+            placeholder="Select Firmware"
+            onChange={(value) => setSelectedFirmware(value)}
+            value={selectedFirmware}
+          >
+            <Select.Option value="firmware1">Firmware 1</Select.Option>
+            <Select.Option value="firmware2">Firmware 2</Select.Option>
+          </Select>
+          <Button
+            icon={<UsbOutlined />}
+            onClick={isConnected ? disconnectDevice : connectDevice}
+            type="primary"
+            style={{ marginBottom: '20px', width: '50%' }}
+          >
+            {isConnected ? 'Disconnetti dispositivo' : 'Connetti dispositivo'}
+          </Button>
+          {isConnected && (
+            <Space direction="vertical" style={{ width: '100%' }}>
+              <Descriptions column={1} size="small" bordered>
+                <Descriptions.Item
+                  label={
+                    <>
+                      <UsbOutlined /> Port
+                    </>
+                  }
+                  labelStyle={{ fontWeight: 'bold' }}
+                >
+                  {portInfo}
+                </Descriptions.Item>
+                <Descriptions.Item
+                  label={
+                    <>
+                      <InfoCircleOutlined /> Device
+                    </>
+                  }
+                  labelStyle={{ fontWeight: 'bold' }}
+                >
+                  {chip || 'Unknown'}
+                </Descriptions.Item>
+              </Descriptions>
+              <Button
+                onClick={uploadFirmware}
+                type="primary"
+                icon={<SyncOutlined />}
+                style={{ width: '50%', marginTop: 20 }}
+              >
+                Start Update
+              </Button>
+            </Space>
+          )}
+        </div>
+      </div>
+      <div style={{ width: '65%' }}>
+        {!updateComplete && (
+          <Terminal
+            commands={{}}
+            promptLabel={''}
+            style={{
+              height: '300px',
+              width: '50%',
+              marginBottom: '20px',
+              backgroundColor: '#000',
+              color: '#00ff00',
+              fontFamily: 'monospace',
+              fontSize: '14px',
+              overflow: 'auto',
+            }}
+            noEchoBack
+            readOnly
+          />
+        )}
 
-      {isConnected && (
-        <>
-          <Upload accept=".bin,.tar,.dsfw" beforeUpload={() => false} onChange={uploadFirmware}>
-            <Button type="primary" icon={<UploadOutlined />}>
-              Seleziona firmware
-            </Button>
-          </Upload>
-          <Progress percent={progress} style={{ marginTop: '20px' }} />
-        </>
-      )}
-    </div>
+        {progress > 0 && <Progress percent={progress} />}
+        {updateComplete && (
+          <Alert
+            message="Aggiornamento completato!"
+            description="Scollegare il dispositivo e riavviarlo!"
+            type="success"
+            showIcon
+          />
+        )}
+      </div>
+    </>
   );
 };
 

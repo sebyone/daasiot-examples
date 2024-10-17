@@ -49,6 +49,7 @@ const ParametersTab = dynamic(() => import('@/components/ParametersTab'), { ssr:
 export default function Dispositivi() {
   const router = useRouter();
   const t = useTranslations('Dispositivi');
+  const [title, setTitle] = useState('');
   const [formGenerali] = Form.useForm();
   const [formHeader] = Form.useForm();
   const [searchTerm, setSearchTerm] = useState('');
@@ -118,7 +119,7 @@ export default function Dispositivi() {
     },
   ];
 
-  useEffect(() => {
+  /*useEffect(() => {
     if (selectedDevice) {
       const fetchDdo = async () => {
         try {
@@ -139,7 +140,28 @@ export default function Dispositivi() {
       };
       fetchDdo();
     }
-  }, [selectedDevice, currentPage, pageSize]);
+  }, [selectedDevice, currentPage, pageSize]);*/
+
+  const fetchDdo = async () => {
+    if (!selectedDevice) return;
+    setIsLoading(true);
+    try {
+      const offset = (currentPage - 1) * pageSize;
+      const response = await ConfigService.getDDOByDeviceId(selectedDevice.id, offset, pageSize, false);
+      const ddos = response.data.map((ddo) => ({
+        timestamp: ddo.timestamp,
+        typeset: ddo.typeset_id,
+        payload: ddo.payload,
+        payloadSize: ddo.payload_size,
+      }));
+      setDdos(ddos);
+      setTotalItems(response.pagination.total);
+    } catch (error) {
+      notify('error', t('error'), 'Errore ddo');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleDeviceClick = (device: DataDevice) => {
     setSelectedDevice(device);
@@ -370,6 +392,14 @@ export default function Dispositivi() {
     return originalElement;
   };*/
 
+  const handleTabChange = (key: string) => {
+    setActiveTabKey(key);
+    if (key === '3') {
+      fetchDdo();
+    }
+    // Qui puoi aggiungere altre condizioni per altre tab se necessario
+  };
+
   return (
     <>
       {contextHolder}
@@ -465,7 +495,7 @@ export default function Dispositivi() {
                         items={items}
                         style={{ padding: 10, marginTop: -30 }}
                         activeKey={activeTabKey}
-                        onChange={(key) => setActiveTabKey(key)}
+                        onChange={handleTabChange}
                       />
                     </PanelView>
                   </Panel>
