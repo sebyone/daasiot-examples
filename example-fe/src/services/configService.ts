@@ -24,6 +24,7 @@ import {
   DinLocalDataType,
   Event,
   FormDataDevice,
+  Function,
   LinkDataType,
   LinkFormData,
   MapDataType,
@@ -223,6 +224,26 @@ const ConfigService = {
   getMapById: async (id: number): Promise<MapDataType> => {
     try {
       const response = await axiosInstance.get(`/receivers/1/remotes/${id}`);
+      return response.data;
+    } catch (error) {
+      console.error('Error:', error);
+      throw error;
+    }
+  },
+
+  getFunctionsByDeviceId: async (id: number): Promise<Function> => {
+    try {
+      const response = await axiosInstance.get(`device_models/1/functions/1`);
+      return response.data;
+    } catch (error) {
+      console.error('Error:', error);
+      throw error;
+    }
+  },
+
+  getDeviceFunctions: async (id: number): Promise<Function> => {
+    try {
+      const response = await axiosInstance.get(`devices/1/functions/1`);
       return response.data;
     } catch (error) {
       console.error('Error:', error);

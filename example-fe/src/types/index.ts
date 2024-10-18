@@ -372,3 +372,41 @@ export interface DeviceModel {
   data: Dev[];
   pagination: Pagination;
 }
+
+export interface DeviceFunction {
+  id: number;
+  device_id: number;
+  device_model_function_id: number;
+  enabled: boolean;
+  function: Function;
+  parameters: DeviceFunctionParameter[];
+  inputs: any[];
+  outputs: any[];
+  notifications: any[];
+}
+
+export interface Function {
+  id: number;
+  name: string;
+  device_model_id: number;
+  parameters: FunctionParameter[];
+  inputs: any[];
+  outputs: any[];
+  notifications: any[];
+}
+
+export interface FunctionParameter {
+  id: number;
+  param_type: number;
+  name: string;
+  function_id: number;
+  data_type: number;
+}
+
+export interface DeviceFunctionParameter {
+  id: number;
+  param_id: number;
+  device_function_id: number;
+  value: any;
+  parameter_template: FunctionParameter;
+}

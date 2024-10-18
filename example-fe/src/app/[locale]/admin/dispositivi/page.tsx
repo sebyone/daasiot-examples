@@ -22,8 +22,8 @@ import {
   InfoCircleOutlined,
   LoadingOutlined,
   PlusCircleOutlined,
+  ScheduleOutlined,
   SearchOutlined,
-  SlidersOutlined,
   UnorderedListOutlined,
 } from '@ant-design/icons';
 import { Button, Empty, Form, Input, Layout, List, Modal, Pagination, Table, Tabs, TabsProps } from 'antd';
@@ -302,7 +302,7 @@ export default function Dispositivi() {
       key: '2',
       label: (
         <span style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          {<SlidersOutlined style={{ fontSize: '1.1rem' }} />} {t('parameters')}
+          {<ScheduleOutlined style={{ fontSize: '1.1rem' }} />} {t('program')}
         </span>
       ),
       children: <ParametersTab />,
@@ -397,7 +397,6 @@ export default function Dispositivi() {
     if (key === '3') {
       fetchDdo();
     }
-    // Qui puoi aggiungere altre condizioni per altre tab se necessario
   };
 
   return (
