@@ -44,6 +44,8 @@ tags:
     description: gestione dei typesets, che identificano la struttura dei messaggi inviati tra i nodi daas
   - name: programming
     description: API per la programmazione remota dei dispositivi concatenando regole di programmazione
+  - name: device model functions
+  - name: device functions
   
 
 #region Components
@@ -78,6 +80,14 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/Error'
+
+    PlaceHolder:
+      description: Placeholder
+      content:
+        application/json:
+          schema:
+            type: string
+            example: "Work in progess API endpoint"
 
   schemas:
     DinLocal:
@@ -2114,3 +2124,97 @@ paths:
                 $ref: '#/components/schemas/Error'        
         default:
           $ref: '#/components/responses/InternalError'
+
+#endregion Device Model Groups
+
+#region Programming
+  /device_models/{dm_device_model_id}/functions:
+    get:
+      tags:
+        - device models
+        - programming
+        - device model functions
+      responses:
+        default:
+          $ref: '#/components/responses/PlaceHolder'
+
+    post:
+      tags:
+        - device models
+        - programming
+        - device model functions
+      responses:
+        default:
+          $ref: '#/components/responses/PlaceHolder'
+    # template di tutte le funzionzi disponibili per un certo modello di device
+  /device_models/{device_model_id}/functions/{dm_function_id}:
+    get:
+      tags:
+        - device models
+        - programming
+        - device model functions
+      responses:
+        default:
+          $ref: '#/components/responses/PlaceHolder'
+    put:
+      tags:
+        - device models
+        - programming
+        - device model functions
+      responses:
+        default:
+          $ref: '#/components/responses/PlaceHolder'
+    delete:
+      tags:
+        - device models
+        - programming
+        - device model functions
+      responses:
+        default:
+          $ref: '#/components/responses/PlaceHolder'
+
+
+  /devices/{device_id}/functions:
+    get:
+      tags:
+        - devices
+        - programming
+        - device functions
+      responses:
+        default:
+          $ref: '#/components/responses/PlaceHolder'
+    post:
+      tags:
+        - devices
+        - programming
+        - device functions
+      responses:
+        default:
+          $ref: '#/components/responses/PlaceHolder'
+  /devices/{device_id}/functions/{d_function_id}:
+    get:
+      tags:
+        - devices
+        - programming
+        - device functions
+      responses:
+        default:
+          $ref: '#/components/responses/PlaceHolder'
+    put:
+      tags:
+        - devices
+        - programming
+        - device functions
+      responses:
+        default:
+          $ref: '#/components/responses/PlaceHolder'
+    delete:
+      tags:
+        - devices
+        - programming
+        - device functions
+      responses:
+        default:
+          $ref: '#/components/responses/PlaceHolder'
+  
+#endregion Programming

@@ -1249,6 +1249,100 @@ router.get('/device_model_groups/:deviceModelGroupId/device_models', async funct
 
 //#endregion
 
+//#region Programming
+
+const fake_device_model_function = {
+    id: 1,
+    name: 'switch',
+    device_model_id: 1,
+    parameters: [
+      {
+        id: 1,
+        param_type: 1, // # 1 => parameter, 2 => input, 3 => output, 4 => notification
+        name: 'mode',
+        function_id: 1,
+        data_type: 1,
+        // # data_type: 
+        // # 1 => i32
+        // # 2 => i16
+        // # 3 => f32
+        // # ...
+      },
+      {
+        id: 2,
+        param_type: 1,
+        function_id: 1,
+        name: 'delay',
+        data_type: 3,
+      }
+    ],
+    inputs: [],
+    outputs: [],
+    notifications: []
+  }
+
+  const fake_device_function = {
+    id: 4,
+    device_id: 1,
+    device_model_function_id: 1,
+    enabled: true,
+    function: fake_device_model_function,
+    parameters: [
+      {
+        id: 123,
+        param_id: 1,
+        device_function_id: 4,
+        value: 2,
+        parameter_template: {
+          id: 1,
+          param_type: 1,
+          name: 'mode',
+          function_id: 1,
+          data_type: 1,
+        }
+      },
+    ],
+    inputs: [],
+    outputs: [],
+    notifications: []
+  }
+
+router.get('/device_models/:deviceModelId/functions/', async function (req, res) {   
+    res.send([fake_device_model_function]);
+});
+
+router.get('/device_models/:deviceModelId/functions/:dmFuntionId', async function (req, res) {   
+    res.send(fake_device_model_function);
+});
+
+router.post('/device_models/:deviceModelId/functions/', async function (req, res) {
+    sendError(res, new Error("Not yet implemented."), 501);
+});
+
+router.all('/device_models/:deviceModelId/functions/:dmFuntionId', function (req, res) {
+    sendError(res, new Error("Not yet implemented."), 501);
+});
+
+router.get('/devices/:deviceId/functions/', async function (req, res) {
+    res.send([fake_device_function]);
+});
+
+router.get('/devices/:deviceId/functions/:dFuntionId', async function (req, res) {   
+    res.send(fake_device_function);
+});
+
+router.post('/devices/:deviceId/functions/', async function (req, res) {
+    sendError(res, new Error("Not yet implemented."), 501);
+});
+
+router.all('/devices/:deviceId/functions/:dFuntionId', function (req, res) {
+    sendError(res, new Error("Not yet implemented."), 501);
+});
+
+
+//#endregion
+
+
 router.all('*', function (req, res) {
     res.status(404);
     res.send({
