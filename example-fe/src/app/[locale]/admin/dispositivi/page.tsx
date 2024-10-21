@@ -305,7 +305,7 @@ export default function Dispositivi() {
           {<ScheduleOutlined style={{ fontSize: '1.1rem' }} />} {t('program')}
         </span>
       ),
-      children: <ParametersTab />,
+      children: <ParametersTab key={selectedDevice?.id} device={selectedDevice} />,
     },
     {
       key: '3',

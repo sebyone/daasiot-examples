@@ -16,6 +16,7 @@ import {
   ConfigFormData,
   DataDevice,
   Device,
+  DeviceFunction,
   DeviceGroup,
   DeviceModel,
   DeviceModelGroup,
@@ -231,7 +232,12 @@ const ConfigService = {
     }
   },
 
-  getFunctionsByDeviceId: async (id: number): Promise<Function> => {
+  /**
+   * Recupera tutte le funzioni di un determinato modello tramite il suo ID
+   * id - ID device_model
+   * Promise<Function> - Oggetto Function in cui è presente l'id del modello
+   */
+  getFunctions: async (id: number): Promise<Function> => {
     try {
       const response = await axiosInstance.get(`device_models/1/functions/1`);
       return response.data;
@@ -241,9 +247,14 @@ const ConfigService = {
     }
   },
 
-  getDeviceFunctions: async (id: number): Promise<Function> => {
+  /**
+   * Restituisce l'insieme di funzioni di un determinato dispositivo aggiunte in fase di configurazione tramite il suo ID
+   * id - ID device
+   * Promise<DeviceFunction> - Oggetto Function in cui è presente l'id del dispositivo
+   */
+  getProgram: async (id: number): Promise<DeviceFunction> => {
     try {
-      const response = await axiosInstance.get(`devices/1/functions/1`);
+      const response = await axiosInstance.get(`devices/1/functions/1`); //??
       return response.data;
     } catch (error) {
       console.error('Error:', error);

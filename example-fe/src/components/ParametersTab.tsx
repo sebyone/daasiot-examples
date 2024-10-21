@@ -1,80 +1,93 @@
 import ConfigService from '@/services/configService';
-import { Function } from '@/types';
+import { DataDevice, DeviceFunction, Function, Input as InputType, Parameter } from '@/types';
 import { BellOutlined, ExportOutlined, ImportOutlined, SettingOutlined, SlidersOutlined } from '@ant-design/icons';
-import { Button, Checkbox, Descriptions, Input, List, message, Modal, Select, Space, Table } from 'antd';
+import { Button, Checkbox, Descriptions, List, message, Modal, Select, Space, Table } from 'antd';
 import React, { useCallback, useEffect, useState } from 'react';
 
-/*const mockFunctions = [
-  { id: 1, name: 'funzione1' },
-  { id: 2, name: 'funzione2' },
-  { id: 3, name: 'funzione3' },
-  { id: 4, name: 'funzione4' },
-  { id: 5, name: 'funzione5' },
-];*/
-
-const mockParameters = [
-  { id: 1, title: 'Parametro1', options: ['Opzione1', 'Opzione2', 'Opzione3'] },
-  { id: 2, title: 'Parametro2', options: ['Opzione4', 'Opzione5', 'Opzione6'] },
-];
-
-const mockInputs = [
+const mockInputs: InputType[] = [
   { id: 1, title: 'Temperatura', options1: ['Option1', 'Option2'], options2: ['>', '>=', '<', '<=', '=='] },
   { id: 2, title: 'Comando ON/OFF', options1: ['Option1', 'Option2'], options2: ['true', 'false'] },
 ];
 
-const ParametersTab = () => {
+type SelectedItems = {
+  [key: number]: {
+    parametro?: { [key: number]: string };
+    ingresso?: { [key: number]: { options1?: string; options2?: string } };
+  };
+};
+
+export default function Component({ device }: { device: DataDevice | null }) {
   const [functions, setFunctions] = useState<Function[]>([]);
-  const [selectedFunctions, setSelectedFunctions] = useState<Array<{ id: number; name: string }>>([]);
+  const [selectedFunctions, setSelectedFunctions] = useState<DeviceFunction[]>([]);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [isAddModalVisible, setIsAddModalVisible] = useState(false);
   const [currentAction, setCurrentAction] = useState<string | null>(null);
-  const [currentFunction, setCurrentFunction] = useState<number | null>(null);
-  const [selectedItems, setSelectedItems] = useState<{
-    [key: number]: { [key: string]: any };
-  }>({});
+  const [currentFunction, setCurrentFunction] = useState<DeviceFunction | null>(null);
+  const [selectedItems, setSelectedItems] = useState<SelectedItems>({});
   const [checkedFunctions, setCheckedFunctions] = useState<number[]>([]);
 
-  const fetchFunctions = async () => {
+  const fetchFunctions = useCallback(async () => {
+    if (!device?.id) return;
     try {
-      const response = await ConfigService.getFunctionsByDeviceId(1);
-      console.log(response);
+      const response = await ConfigService.getFunctions(device.id);
       setFunctions([response]);
     } catch (error) {
-      console.log('Errore');
+      console.error('Error fetching functions:', error);
     }
-  };
+  }, [device?.id]);
 
   useEffect(() => {
     fetchFunctions();
-  }, []);
+  }, [fetchFunctions]);
 
-  const handleSelectFunction = (functionId: number) => {
+  const fetchProgram = useCallback(async () => {
+    if (!device?.id) return;
+
+    try {
+      const response = await ConfigService.getProgram(device.id);
+      setSelectedFunctions([response]);
+    } catch (error) {
+      console.error('Error fetching functions:', error);
+    }
+  }, [device?.id]);
+
+  useEffect(() => {
+    fetchProgram();
+  }, [fetchProgram]);
+
+  const handleSelectFunction = useCallback((functionId: number) => {
     setCheckedFunctions((prev) =>
       prev.includes(functionId) ? prev.filter((id) => id !== functionId) : [...prev, functionId]
     );
-  };
+  }, []);
 
-  const handleIconClick = (functionId: number, actionType: string) => {
-    setCurrentFunction(functionId);
+  const handleIconClick = useCallback((func: DeviceFunction, actionType: string) => {
+    setCurrentFunction(func);
     setCurrentAction(actionType);
     setIsModalVisible(true);
-  };
+  }, []);
 
-  const handleModalOk = () => {
-    setIsModalVisible(false);
-  };
+  const handleAddFunction = useCallback(async (functionToAdd: Function) => {
+    try {
+      const response = await ConfigService.getFunctions(functionToAdd.id);
 
-  const handleAddFunction = (functionToAdd: { id: number; name: string }) => {
-    if (!selectedFunctions.some((f) => f.id === functionToAdd.id)) {
-      setSelectedFunctions((prev) => [...prev, functionToAdd]);
+      const newDeviceFunction: DeviceFunction = {
+        id: response.id,
+        function: response,
+      };
+
+      setSelectedFunctions((prev) => {
+        const newFunctions = [...prev, newDeviceFunction];
+        return newFunctions;
+      });
       setIsAddModalVisible(false);
-      message.success(`Funzione "${functionToAdd.name}" aggiunta con successo`);
-    } else {
-      message.warning('Questa funzione è già stata aggiunta');
+      message.success(`Funzione "${response.name}" aggiunta con successo`);
+    } catch (error) {
+      message.error("Errore nell'aggiunta della funzione");
     }
-  };
+  }, []);
 
-  const handleDeleteFunctions = () => {
+  const handleDeleteFunctions = useCallback(() => {
     if (checkedFunctions.length === 0) {
       message.warning('Seleziona almeno una funzione da eliminare');
       return;
@@ -82,215 +95,240 @@ const ParametersTab = () => {
     setSelectedFunctions((prev) => prev.filter((f) => !checkedFunctions.includes(f.id)));
     setCheckedFunctions([]);
     message.success('Funzioni eliminate con successo');
-  };
+  }, [checkedFunctions]);
 
-  const handleParameterChange = (parameterId: number, value: string) => {
-    if (currentFunction) {
-      setSelectedItems((prev) => ({
-        ...prev,
-        [currentFunction]: {
-          ...prev[currentFunction],
-          parametro: {
-            ...(prev[currentFunction]?.parametro || {}),
-            [parameterId]: value,
-          },
-        },
-      }));
-    }
-  };
+  const handleParameterChange = useCallback(
+    (value: string) => {
+      if (currentFunction) {
+        setSelectedFunctions((prev) =>
+          prev.map((func) =>
+            func.id === currentFunction.id
+              ? {
+                  ...func,
+                  function: {
+                    ...func.function,
+                    parameters: func.function.parameters.map((param, index) =>
+                      index === 0 ? { ...param, value } : param
+                    ),
+                  },
+                }
+              : func
+          )
+        );
+        setCurrentFunction((prev) =>
+          prev
+            ? {
+                ...prev,
+                function: {
+                  ...prev.function,
+                  parameters: prev.function.parameters.map((param, index) =>
+                    index === 0 ? { ...param, value } : param
+                  ),
+                },
+              }
+            : null
+        );
+      }
+    },
+    [currentFunction]
+  );
 
-  const handleInputChange = (inputId: number, field: 'options1' | 'options2', value: string) => {
-    if (currentFunction) {
-      setSelectedItems((prev) => ({
-        ...prev,
-        [currentFunction]: {
-          ...prev[currentFunction],
-          ingresso: {
-            ...(prev[currentFunction]?.ingresso || {}),
-            [inputId]: {
-              ...(prev[currentFunction]?.ingresso?.[inputId] || {}),
-              [field]: value,
+  const handleInputChange = useCallback(
+    (inputId: number, field: 'options1' | 'options2', value: string) => {
+      if (currentFunction) {
+        setSelectedItems((prev) => ({
+          ...prev,
+          [currentFunction.id]: {
+            ...prev[currentFunction.id],
+            ingresso: {
+              ...(prev[currentFunction.id]?.ingresso || {}),
+              [inputId]: {
+                ...(prev[currentFunction.id]?.ingresso?.[inputId] || {}),
+                [field]: value,
+              },
             },
           },
-        },
-      }));
-    }
-  };
-
-  const handleSendProgram = () => {
-    console.log(selectedItems);
-  };
+        }));
+      }
+    },
+    [currentFunction]
+  );
 
   const columns = [
     {
       title: '',
       dataIndex: 'select',
-      render: (_, record) => (
+      render: (_: any, record: DeviceFunction) => (
         <Checkbox checked={checkedFunctions.includes(record.id)} onChange={() => handleSelectFunction(record.id)} />
       ),
     },
+    { title: 'Funzione', dataIndex: ['function', 'name'], key: 'name' },
     {
-      title: 'Funzione',
-      dataIndex: 'name',
-      key: 'name',
-    },
-    {
-      title: <span style={{ display: 'flex', alignItems: 'center', gap: 10 }}>{<SlidersOutlined />} Parametri</span>,
+      title: (
+        <Space>
+          <SlidersOutlined /> Parametri
+        </Space>
+      ),
       key: 'parameters',
-      render: (_, record) =>
-        selectedItems[record.id]?.parametro ? (
-          Object.keys(selectedItems[record.id].parametro)
-            .map((key) => mockParameters.find((p) => p.id.toString() === key)?.title)
-            .join(', ')
-        ) : (
-          <span style={{ display: 'flex', justifyContent: 'center' }}>
+      render: (_: any, record: DeviceFunction) =>
+        record?.function?.parameters.length > 0 ? (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
+            {record.function.parameters[0].value || record.function.parameters[0].name}
             <SettingOutlined
-              onClick={() => handleIconClick(record.id, 'parametro')}
+              onClick={() => handleIconClick(record, 'parametro')}
               style={{ fontSize: '1rem', color: '#1890ff', cursor: 'pointer' }}
             />
-          </span>
+          </div>
+        ) : (
+          <SettingOutlined disabled style={{ fontSize: '1rem', color: '#1890ff', cursor: 'not-allowed' }} />
         ),
     },
     {
-      title: <span style={{ display: 'flex', alignItems: 'center', gap: 10 }}>{<ImportOutlined />} Ingressi</span>,
+      title: (
+        <Space>
+          <ImportOutlined /> Ingressi
+        </Space>
+      ),
       key: 'inputs',
-      render: (_, record) =>
-        selectedItems[record.id]?.ingresso ? (
-          Object.keys(selectedItems[record.id].ingresso)
-            .map((key) => mockInputs.find((i) => i.id.toString() === key)?.title)
-            .join(', ')
-        ) : (
-          <span style={{ display: 'flex', justifyContent: 'center' }}>
+      render: (_: any, record: DeviceFunction) =>
+        record?.function?.inputs.length > 0 ? (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
+            {record.function.inputs.map((input) => input.name).join(', ')}
             <SettingOutlined
-              onClick={() => handleIconClick(record.id, 'ingresso')}
+              onClick={() => handleIconClick(record, 'ingresso')}
               style={{ fontSize: '1rem', color: '#1890ff', cursor: 'pointer' }}
             />
-          </span>
+          </div>
+        ) : (
+          <Button
+            icon={<SettingOutlined style={{ fontSize: '1rem', color: '#1890ff', cursor: 'pointer' }} />}
+            disabled
+            style={{ border: 'none', outline: 'none', backgroundColor: 'transparent' }}
+          />
         ),
     },
     {
-      title: <span style={{ display: 'flex', alignItems: 'center', gap: 10 }}>{<ExportOutlined />} Uscite</span>,
-      key: 'outputs',
-      render: (_, record) => (
-        <span style={{ display: 'flex', justifyContent: 'center' }}>
-          <SettingOutlined
-            onClick={() => handleIconClick(record.id, 'uscita')}
-            style={{ fontSize: '1rem', color: '#1890ff', cursor: 'pointer' }}
-          />
-        </span>
+      title: (
+        <Space>
+          <ExportOutlined /> Uscite
+        </Space>
       ),
+      key: 'outputs',
+      render: (_: any, record: DeviceFunction) =>
+        record?.function?.outputs.length > 0 ? (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
+            {record.function.outputs.map((output) => output.name).join(', ')}
+          </div>
+        ) : (
+          <Button
+            icon={<SettingOutlined style={{ fontSize: '1rem', color: '#1890ff', cursor: 'pointer' }} />}
+            disabled
+            style={{ border: 'none', outline: 'none', backgroundColor: 'transparent' }}
+          />
+        ),
     },
     {
-      title: <span style={{ display: 'flex', alignItems: 'center', gap: 10 }}>{<BellOutlined />} Notifiche</span>,
-      key: 'notifications',
-      render: (_, record) => (
-        <span style={{ display: 'flex', justifyContent: 'center' }}>
-          <SettingOutlined
-            onClick={() => handleIconClick(record.id, 'notifica')}
-            style={{ fontSize: '1rem', color: '#1890ff', cursor: 'pointer' }}
-          />
-        </span>
+      title: (
+        <Space>
+          <BellOutlined /> Notifiche
+        </Space>
       ),
+      key: 'notifications',
+      render: (_: any, record: DeviceFunction) =>
+        record?.function?.notifications.length > 0 ? (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
+            {record.function.notifications.map((notification) => notification.name).join(', ')}
+          </div>
+        ) : (
+          <Button
+            icon={<SettingOutlined style={{ fontSize: '1rem', color: '#1890ff', cursor: 'pointer' }} />}
+            disabled
+            style={{ border: 'none', outline: 'none', backgroundColor: 'transparent' }}
+          />
+        ),
     },
   ];
 
   const renderModalContent = () => {
     if (currentAction === 'parametro') {
+      const selectedParam = currentFunction?.function.parameters[0];
       return (
-        <div>
-          {mockParameters.map((param) => (
-            <div key={param.id} style={{ marginBottom: '10px' }}>
-              <Space direction="vertical" style={{ width: '100%' }}>
-                <Descriptions column={1} size="small" bordered>
-                  <Descriptions.Item label={<>{param.title}</>} labelStyle={{ fontWeight: 'bold' }}>
-                    <Select
-                      style={{ width: '100%' }}
-                      placeholder="Seleziona"
-                      onChange={(value) => handleParameterChange(param.id, value)}
-                      value={selectedItems[currentFunction!]?.parametro?.[param.id] || undefined}
-                    >
-                      {param.options.map((option) => (
-                        <Select.Option key={option} value={option}>
-                          {option}
-                        </Select.Option>
-                      ))}
-                    </Select>
-                  </Descriptions.Item>
-                </Descriptions>
-              </Space>
-            </div>
+        <Select
+          style={{ width: '100%' }}
+          placeholder="Seleziona un parametro"
+          onChange={handleParameterChange}
+          value={selectedParam?.value}
+        >
+          {currentFunction?.function.parameters.map((param) => (
+            <Select.Option key={param.id} value={param.name}>
+              {param.name}
+            </Select.Option>
           ))}
-        </div>
+        </Select>
       );
     } else if (currentAction === 'ingresso') {
       return (
-        <div>
+        <Space direction="vertical" style={{ width: '100%' }}>
           {mockInputs.map((input) => (
-            <div key={input.id} style={{ marginBottom: '10px' }}>
-              <Space direction="vertical" style={{ width: '100%' }}>
-                <Descriptions column={1} size="small" bordered>
-                  <Descriptions.Item label={<>{input.title}</>} labelStyle={{ fontWeight: 'bold' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', gap: 5 }}>
-                      <Select
-                        style={{ width: '50%' }}
-                        placeholder="Seleziona"
-                        onChange={(value) => handleInputChange(input.id, 'options1', value)}
-                        value={selectedItems[currentFunction!]?.ingresso?.[input.id]?.options1 || undefined}
-                      >
-                        {input.options1.map((option) => (
-                          <Select.Option key={option} value={option}>
-                            {option}
-                          </Select.Option>
-                        ))}
-                      </Select>
-                      <Select
-                        style={{ width: '50%' }}
-                        placeholder="Seleziona"
-                        onChange={(value) => handleInputChange(input.id, 'options2', value)}
-                        value={selectedItems[currentFunction!]?.ingresso?.[input.id]?.options2 || undefined}
-                      >
-                        {input.options2.map((option) => (
-                          <Select.Option key={option} value={option}>
-                            {option}
-                          </Select.Option>
-                        ))}
-                      </Select>
-                    </div>
-                  </Descriptions.Item>
-                </Descriptions>
-              </Space>
-            </div>
+            <Descriptions key={input.id} column={1} bordered>
+              <Descriptions.Item label={input.title} labelStyle={{ fontWeight: 'bold' }}>
+                <Space style={{ width: '100%' }}>
+                  <Select
+                    style={{ width: '50%' }}
+                    placeholder="Seleziona"
+                    onChange={(value) => handleInputChange(input.id, 'options1', value)}
+                    value={selectedItems[currentFunction?.id]?.ingresso?.[input.id]?.options1}
+                  >
+                    {input.options1.map((option) => (
+                      <Select.Option key={option} value={option}>
+                        {option}
+                      </Select.Option>
+                    ))}
+                  </Select>
+                  <Select
+                    style={{ width: '50%' }}
+                    placeholder="Seleziona"
+                    onChange={(value) => handleInputChange(input.id, 'options2', value)}
+                    value={selectedItems[currentFunction?.id]?.ingresso?.[input.id]?.options2}
+                  >
+                    {input.options2.map((option) => (
+                      <Select.Option key={option} value={option}>
+                        {option}
+                      </Select.Option>
+                    ))}
+                  </Select>
+                </Space>
+              </Descriptions.Item>
+            </Descriptions>
           ))}
-        </div>
+        </Space>
       );
     }
     return null;
   };
 
   return (
-    <div>
+    <Space direction="vertical" style={{ width: '100%' }}>
       <Table columns={columns} dataSource={selectedFunctions} rowKey="id" pagination={false} />
-      <div style={{ marginTop: 16, display: 'flex', justifyContent: 'space-between' }}>
-        <div>
-          <Button onClick={() => setIsAddModalVisible(true)} style={{ marginRight: 8 }} type="primary">
+      <Space style={{ width: '100%', justifyContent: 'space-between' }}>
+        <Space>
+          <Button onClick={() => setIsAddModalVisible(true)} type="primary">
             Aggiungi
           </Button>
           <Button onClick={handleDeleteFunctions} type="primary">
             Elimina
           </Button>
-        </div>
-        <div>
-          <Button style={{ marginRight: 8 }} type="primary">
-            Recall
-          </Button>
+        </Space>
+        <Space>
+          <Button type="primary">Recall</Button>
           <Button type="primary">Programma</Button>
-        </div>
-      </div>
+        </Space>
+      </Space>
       <Modal
         title={`Seleziona ${currentAction}`}
         open={isModalVisible}
         onCancel={() => setIsModalVisible(false)}
-        onOk={handleModalOk}
+        onOk={() => setIsModalVisible(false)}
         width={600}
       >
         {renderModalContent()}
@@ -311,8 +349,6 @@ const ParametersTab = () => {
           )}
         />
       </Modal>
-    </div>
+    </Space>
   );
-};
-
-export default ParametersTab;
+}
