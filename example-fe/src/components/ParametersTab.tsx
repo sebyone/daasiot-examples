@@ -1,13 +1,8 @@
 import ConfigService from '@/services/configService';
-import { DataDevice, DeviceFunction, Function, Input as InputType, Parameter } from '@/types';
+import { DataDevice, DeviceFunction, DeviceFunctionParameter, Function, FunctionParameter } from '@/types';
 import { BellOutlined, ExportOutlined, ImportOutlined, SettingOutlined, SlidersOutlined } from '@ant-design/icons';
-import { Button, Checkbox, Descriptions, List, message, Modal, Select, Space, Table } from 'antd';
+import { Button, Checkbox, Descriptions, Input, List, message, Modal, Select, Space, Table } from 'antd';
 import React, { useCallback, useEffect, useState } from 'react';
-
-const mockInputs: InputType[] = [
-  { id: 1, title: 'Temperatura', options1: ['Option1', 'Option2'], options2: ['>', '>=', '<', '<=', '=='] },
-  { id: 2, title: 'Comando ON/OFF', options1: ['Option1', 'Option2'], options2: ['true', 'false'] },
-];
 
 type SelectedItems = {
   [key: number]: {
@@ -25,12 +20,14 @@ export default function Component({ device }: { device: DataDevice | null }) {
   const [currentFunction, setCurrentFunction] = useState<DeviceFunction | null>(null);
   const [selectedItems, setSelectedItems] = useState<SelectedItems>({});
   const [checkedFunctions, setCheckedFunctions] = useState<number[]>([]);
+  const [tempParameters, setTempParameters] = useState<{ [key: number]: any }>({});
+  const [tempInputs, setTempInputs] = useState<{ [key: number]: any }>({});
 
   const fetchFunctions = useCallback(async () => {
     if (!device?.id) return;
     try {
       const response = await ConfigService.getFunctions(device.id);
-      setFunctions([response]);
+      setFunctions(response);
     } catch (error) {
       console.error('Error fetching functions:', error);
     }
@@ -42,12 +39,11 @@ export default function Component({ device }: { device: DataDevice | null }) {
 
   const fetchProgram = useCallback(async () => {
     if (!device?.id) return;
-
     try {
       const response = await ConfigService.getProgram(device.id);
-      setSelectedFunctions([response]);
+      setSelectedFunctions(Array.isArray(response) ? response : [response]);
     } catch (error) {
-      console.error('Error fetching functions:', error);
+      console.error('Error fetching program:', error);
     }
   }, [device?.id]);
 
@@ -71,17 +67,16 @@ export default function Component({ device }: { device: DataDevice | null }) {
     try {
       const response = await ConfigService.getFunctions(functionToAdd.id);
 
-      const newDeviceFunction: DeviceFunction = {
-        id: response.id,
-        function: response,
-      };
+      const newDeviceFunctions: DeviceFunction[] = Array.isArray(response)
+        ? response.map((func) => ({ id: func.id, function: func, parameters: [], inputs: [] }))
+        : [{ id: response.id, function: response, parameters: [], inputs: [] }];
 
       setSelectedFunctions((prev) => {
-        const newFunctions = [...prev, newDeviceFunction];
+        const newFunctions = [...prev, ...newDeviceFunctions];
         return newFunctions;
       });
       setIsAddModalVisible(false);
-      message.success(`Funzione "${response.name}" aggiunta con successo`);
+      message.success('Funzione aggiunta con successo');
     } catch (error) {
       message.error("Errore nell'aggiunta della funzione");
     }
@@ -97,62 +92,95 @@ export default function Component({ device }: { device: DataDevice | null }) {
     message.success('Funzioni eliminate con successo');
   }, [checkedFunctions]);
 
-  const handleParameterChange = useCallback(
-    (value: string) => {
-      if (currentFunction) {
-        setSelectedFunctions((prev) =>
-          prev.map((func) =>
-            func.id === currentFunction.id
-              ? {
-                  ...func,
-                  function: {
-                    ...func.function,
-                    parameters: func.function.parameters.map((param, index) =>
-                      index === 0 ? { ...param, value } : param
-                    ),
-                  },
-                }
-              : func
-          )
-        );
-        setCurrentFunction((prev) =>
-          prev
-            ? {
-                ...prev,
-                function: {
-                  ...prev.function,
-                  parameters: prev.function.parameters.map((param, index) =>
-                    index === 0 ? { ...param, value } : param
-                  ),
-                },
-              }
-            : null
-        );
-      }
-    },
-    [currentFunction]
-  );
+  const handleParameterChange = useCallback((paramId: number, value: any) => {
+    setTempParameters((prev) => ({ ...prev, [paramId]: value }));
+  }, []);
 
-  const handleInputChange = useCallback(
-    (inputId: number, field: 'options1' | 'options2', value: string) => {
-      if (currentFunction) {
-        setSelectedItems((prev) => ({
-          ...prev,
-          [currentFunction.id]: {
-            ...prev[currentFunction.id],
-            ingresso: {
-              ...(prev[currentFunction.id]?.ingresso || {}),
-              [inputId]: {
-                ...(prev[currentFunction.id]?.ingresso?.[inputId] || {}),
-                [field]: value,
-              },
-            },
-          },
-        }));
+  const handleInputChange = useCallback((inputId: number, value: any) => {
+    setTempInputs((prev) => ({ ...prev, [inputId]: value }));
+  }, []);
+
+  const handleModalOk = useCallback(async () => {
+    if (currentFunction && device?.id) {
+      try {
+        if (currentAction === 'parametro') {
+          for (const [paramId, value] of Object.entries(tempParameters)) {
+            const updateData = {
+              param_id: Number(paramId),
+              function_id: currentFunction.function.id,
+              value: value,
+            };
+
+            setSelectedFunctions((prev) =>
+              prev.map((func) =>
+                func.id === currentFunction.id
+                  ? {
+                      ...func,
+                      parameters: func.parameters.some((p) => p.param_id === Number(paramId))
+                        ? func.parameters.map((param) =>
+                            param.param_id === Number(paramId) ? { ...param, value } : param
+                          )
+                        : [
+                            ...func.parameters,
+                            {
+                              id: Date.now(),
+                              param_id: Number(paramId),
+                              device_function_id: func.id,
+                              value,
+                              parameter_template: currentFunction.function.parameters.find(
+                                (p) => p.id === Number(paramId)
+                              )!,
+                            },
+                          ],
+                    }
+                  : func
+              )
+            );
+          }
+          setTempParameters({});
+        } else if (currentAction === 'ingresso') {
+          for (const [inputId, value] of Object.entries(tempInputs)) {
+            const updateData = {
+              param_id: Number(inputId),
+              function_id: currentFunction.function.id,
+              value: value,
+            };
+
+            setSelectedFunctions((prev) =>
+              prev.map((func) =>
+                func.id === currentFunction.id
+                  ? {
+                      ...func,
+                      inputs: func.inputs.some((i) => i.param_id === Number(inputId))
+                        ? func.inputs.map((input) => (input.param_id === Number(inputId) ? { ...input, value } : input))
+                        : [
+                            ...func.inputs,
+                            {
+                              id: Date.now(),
+                              param_id: Number(inputId),
+                              device_function_id: func.id,
+                              value,
+                              parameter_template: currentFunction.function.inputs.find(
+                                (i) => i.id === Number(inputId)
+                              )!,
+                            },
+                          ],
+                    }
+                  : func
+              )
+            );
+          }
+          setTempInputs({});
+        }
+
+        setIsModalVisible(false);
+        message.success(`${currentAction === 'parametro' ? 'Parametri' : 'Ingressi'} aggiornati correttamente`);
+      } catch (error) {
+        console.error(`Error updating ${currentAction === 'parametro' ? 'parameters' : 'inputs'}:`, error);
+        message.error(`Errore nell'aggiornamento dei ${currentAction === 'parametro' ? 'parametri' : 'ingressi'}`);
       }
-    },
-    [currentFunction]
-  );
+    }
+  }, [currentFunction, device?.id, tempParameters, tempInputs, currentAction]);
 
   const columns = [
     {
@@ -171,9 +199,16 @@ export default function Component({ device }: { device: DataDevice | null }) {
       ),
       key: 'parameters',
       render: (_: any, record: DeviceFunction) =>
-        record?.function?.parameters.length > 0 ? (
+        record.function.parameters.length > 0 ? (
           <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
-            {record.function.parameters[0].value || record.function.parameters[0].name}
+            {record.function.parameters
+              .map((param) => {
+                const deviceParam = record.parameters.find((p) => p.param_id === param.id);
+
+                return `${param.name}: ${deviceParam ? deviceParam.value : 'Not set'}`;
+              })
+              .filter(Boolean)
+              .join(', ')}
             <SettingOutlined
               onClick={() => handleIconClick(record, 'parametro')}
               style={{ fontSize: '1rem', color: '#1890ff', cursor: 'pointer' }}
@@ -250,57 +285,42 @@ export default function Component({ device }: { device: DataDevice | null }) {
   ];
 
   const renderModalContent = () => {
-    if (currentAction === 'parametro') {
-      const selectedParam = currentFunction?.function.parameters[0];
-      return (
-        <Select
-          style={{ width: '100%' }}
-          placeholder="Seleziona un parametro"
-          onChange={handleParameterChange}
-          value={selectedParam?.value}
-        >
-          {currentFunction?.function.parameters.map((param) => (
-            <Select.Option key={param.id} value={param.name}>
-              {param.name}
-            </Select.Option>
-          ))}
-        </Select>
-      );
-    } else if (currentAction === 'ingresso') {
+    if (currentAction === 'parametro' && currentFunction) {
       return (
         <Space direction="vertical" style={{ width: '100%' }}>
-          {mockInputs.map((input) => (
-            <Descriptions key={input.id} column={1} bordered>
-              <Descriptions.Item label={input.title} labelStyle={{ fontWeight: 'bold' }}>
-                <Space style={{ width: '100%' }}>
-                  <Select
-                    style={{ width: '50%' }}
-                    placeholder="Seleziona"
-                    onChange={(value) => handleInputChange(input.id, 'options1', value)}
-                    value={selectedItems[currentFunction?.id]?.ingresso?.[input.id]?.options1}
-                  >
-                    {input.options1.map((option) => (
-                      <Select.Option key={option} value={option}>
-                        {option}
-                      </Select.Option>
-                    ))}
-                  </Select>
-                  <Select
-                    style={{ width: '50%' }}
-                    placeholder="Seleziona"
-                    onChange={(value) => handleInputChange(input.id, 'options2', value)}
-                    value={selectedItems[currentFunction?.id]?.ingresso?.[input.id]?.options2}
-                  >
-                    {input.options2.map((option) => (
-                      <Select.Option key={option} value={option}>
-                        {option}
-                      </Select.Option>
-                    ))}
-                  </Select>
-                </Space>
-              </Descriptions.Item>
-            </Descriptions>
-          ))}
+          {currentFunction.function.parameters.map((param: FunctionParameter) => {
+            const deviceParam = currentFunction.parameters.find((p) => p.param_id === param.id);
+            return (
+              <Descriptions key={param.id} column={1} bordered>
+                <Descriptions.Item label={param.name} labelStyle={{ fontWeight: 'bold' }}>
+                  <Input
+                    value={tempParameters[param.id] ?? (deviceParam ? deviceParam.value : '')}
+                    onChange={(e) => handleParameterChange(param.id, e.target.value)}
+                    placeholder={`Enter ${param.name}`}
+                  />
+                </Descriptions.Item>
+              </Descriptions>
+            );
+          })}
+        </Space>
+      );
+    } else if (currentAction === 'ingresso' && currentFunction) {
+      return (
+        <Space direction="vertical" style={{ width: '100%' }}>
+          {currentFunction.function.inputs.map((input) => {
+            const deviceInput = currentFunction.inputs.find((i) => i.param_id === input.id);
+            return (
+              <Descriptions key={input.id} column={1} bordered>
+                <Descriptions.Item label={input.name} labelStyle={{ fontWeight: 'bold' }}>
+                  <Input
+                    value={tempInputs[input.id] ?? (deviceInput ? deviceInput.value : '')}
+                    onChange={(e) => handleInputChange(input.id, e.target.value)}
+                    placeholder={`Inserisci ${input.name}`}
+                  />
+                </Descriptions.Item>
+              </Descriptions>
+            );
+          })}
         </Space>
       );
     }
@@ -312,11 +332,11 @@ export default function Component({ device }: { device: DataDevice | null }) {
       <Table columns={columns} dataSource={selectedFunctions} rowKey="id" pagination={false} />
       <Space style={{ width: '100%', justifyContent: 'space-between' }}>
         <Space>
-          <Button onClick={() => setIsAddModalVisible(true)} type="primary">
-            Aggiungi
-          </Button>
           <Button onClick={handleDeleteFunctions} type="primary">
             Elimina
+          </Button>
+          <Button onClick={() => setIsAddModalVisible(true)} type="primary">
+            Aggiungi
           </Button>
         </Space>
         <Space>
@@ -325,10 +345,10 @@ export default function Component({ device }: { device: DataDevice | null }) {
         </Space>
       </Space>
       <Modal
-        title={`Seleziona ${currentAction}`}
+        title={`Modifica ${currentAction}`}
         open={isModalVisible}
         onCancel={() => setIsModalVisible(false)}
-        onOk={() => setIsModalVisible(false)}
+        onOk={handleModalOk}
         width={600}
       >
         {renderModalContent()}

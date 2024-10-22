@@ -237,9 +237,9 @@ const ConfigService = {
    * id - ID device_model
    * Promise<Function> - Oggetto Function in cui è presente l'id del modello
    */
-  getFunctions: async (id: number): Promise<Function> => {
+  getFunctions: async (id: number): Promise<Function[]> => {
     try {
-      const response = await axiosInstance.get(`device_models/1/functions/1`);
+      const response = await axiosInstance.get(`device_models/1/functions`);
       return response.data;
     } catch (error) {
       console.error('Error:', error);
@@ -254,7 +254,7 @@ const ConfigService = {
    */
   getProgram: async (id: number): Promise<DeviceFunction> => {
     try {
-      const response = await axiosInstance.get(`devices/1/functions/1`); //??
+      const response = await axiosInstance.get(`devices/1/functions`); //??
       return response.data;
     } catch (error) {
       console.error('Error:', error);
