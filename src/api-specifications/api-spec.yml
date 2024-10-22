@@ -372,6 +372,167 @@ components:
           description: ID del modello di device al quale si riferisce questa risorsa
           nullable: false
 
+    DeviceModelFunctionProperty:
+      description: >
+        Parametro (param, input, output, notification) di una DeviceModelFunction
+        Interpretabile come definizione per i parametri di una DeviceFunction che fanno da istanza di questo parametro
+      type: object
+      properties:
+        id:
+          type: integer
+          description: ID del parametro
+          nullable: false
+        property_type:
+          type: integer
+          enum:
+            - 1
+            - 2
+            - 3
+            - 4
+          description: >
+            Tipo di parametro
+            1: parameter
+            2: input
+            3: output
+            4: notification
+          nullable: false
+        name:
+          type: string
+          description: nome del parametro
+          maxLength: 45
+        function_id:
+          type: integer
+          description: ID della DeviceModelFunction a cui si riferisce questo parametro
+          nullable: false
+        data_type:
+          type: integer
+          description: >
+            tipo di dato
+            1: i32
+            2: i16
+            3: f32
+          nullable: false
+        default_value:
+          type: string
+          description: valore di default del parametro
+          maxLength: 45
+        safe_value:
+          type: string
+          description: valore sicuro del parametro, usato in caso di errore
+          maxLength: 45
+        
+
+    DeviceModelFunction:
+      type: object
+      description: >
+        Funzione di un modello di device
+        Interpretabile come definizione per le funzioni di un device che sono istanze di questa funzione
+      properties:
+        id:
+          type: integer
+          description: ID della funzione
+          nullable: false
+        name:
+          type: string
+          description: nome della funzione
+          maxLength: 45
+        device_model_id:
+          type: integer
+          description: ID del modello di device a cui si riferisce questa funzione
+          nullable: false
+        parameters:
+          type: array
+          items:
+            $ref: '#/components/schemas/DeviceModelFunctionProperty'
+          description: lista dei parametri della funzione
+        inputs:
+          type: array
+          items:
+            $ref: '#/components/schemas/DeviceModelFunctionProperty'
+          description: lista degli input della funzione
+        outputs:
+          type: array
+          items:
+            $ref: '#/components/schemas/DeviceModelFunctionProperty'
+          description: lista degli output della funzione
+        notifications:
+          type: array
+          items:
+            $ref: '#/components/schemas/DeviceModelFunctionProperty'
+          description: lista delle notifiche della funzione
+
+    DeviceFunctionProperty:
+      type: object
+      description: >
+        Parametro (param, input, output, notification) di una DeviceFunction
+        Interpretabile come istanza di un parametro di una DeviceModelFunction
+      properties:
+        id:
+          type: integer
+          description: ID del parametro
+          nullable: false
+        param_id:
+          type: integer
+          description: ID del parametro del modello di device
+          nullable: false
+        device_function_id:
+          type: integer
+          description: ID della DeviceFunction a cui si riferisce questo parametro
+          nullable: false
+        value:
+          type: string
+          description: valore del parametro in formato stringa
+          maxLength: 45
+        parameter_template:
+          $ref: '#/components/schemas/DeviceModelFunctionProperty'
+          nullable: true
+
+    DeviceFunction:
+      type: object
+      description: >
+        Funzione di un device
+        Interpretabile come istanza di una DeviceModelFunction
+      properties:
+        id:
+          type: integer
+          description: ID della funzione
+          nullable: false
+        device_id:
+          type: integer
+          description: ID del device a cui è associata questa funzione
+          nullable: false
+        device_model_function_id:
+          type: integer
+          description: ID della DeviceModelFunction a cui si riferisce questa funzione
+          nullable: false
+        enabled:
+          type: boolean
+          description: flag per abilitare/disabilitare la funzione
+          nullable: false
+        function:
+          $ref: '#/components/schemas/DeviceModelFunction'
+          description: definizione della funzione
+        parameters:
+          type: array
+          items:
+            $ref: '#/components/schemas/DeviceFunctionProperty'
+          description: lista dei parametri della funzione
+        inputs:
+          type: array
+          items:
+            $ref: '#/components/schemas/DeviceFunctionProperty'
+          description: lista degli input della funzione
+        outputs:
+          type: array
+          items:
+            $ref: '#/components/schemas/DeviceFunctionProperty'
+          description: lista degli output della funzione
+        notifications:
+          type: array
+          items:
+            $ref: '#/components/schemas/DeviceFunctionProperty'
+          description: lista delle notifiche della funzione
+
     DDO:
       description: Daas Data Object
       type: object
@@ -2130,6 +2291,7 @@ paths:
 #region Programming
   /device_models/{dm_device_model_id}/functions:
     get:
+      description: Ritorna un elenco di tutte le funzioni disponibili per un certo modello di device.
       tags:
         - device models
         - programming
@@ -2184,10 +2346,23 @@ paths:
         default:
           $ref: '#/components/responses/PlaceHolder'
     post:
+      description: Associa una device model funzione 
       tags:
         - devices
         - programming
         - device functions
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                device_model_function_id:
+                  type: integer
+                  description: ID della funzione del modello di device
+                enabled:
+                  type: boolean
+                  description: Se la funzione è abilitata
       responses:
         default:
           $ref: '#/components/responses/PlaceHolder'
@@ -2201,6 +2376,9 @@ paths:
         default:
           $ref: '#/components/responses/PlaceHolder'
     put:
+      description: >
+        Salva tutti i valori associati alla funzione del device.
+
       tags:
         - devices
         - programming

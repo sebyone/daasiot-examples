@@ -1,7 +1,5 @@
 # daas-nodejs
 
-[documentazione REST API](REST-API.md) oppure, una volta avviato il server, visitare la pagina `http://localhost:3000/api-docs` per visualizzare la documentazione interattiva.
-
 ## Setup
 
 ### Installazione su macchina locale linux (x64)
@@ -52,31 +50,19 @@ more information about the Project are available on:
 * [www.daasiot.com](https://daasiot.sebyone.it) official project's site
 * [www.daasiot.net](https://daasiot.net) cloud _services_ for IoT platforms (PaaS)
 
-## Repositories 
+## Repositories
 
-* 👉 **daasiot-nodejs**   _nodejs sources and documentation_
-* **daasiot-examples**  [_solutions examples and documentation_](https://github.com/sebyone/daasiot-examples)
-
-> **Note**: “daasiot-nodejs” is also avalable at [NPM Repo](https://www.npmjs.com/package/daas-sdk)
-
+**Note**: “daasiot-nodejs” is also avalable at [NPM Repo](https://www.npmjs.com/package/daas-sdk)
 
 ## Documentation
 
-[REST API documentation](REST-API.md)
+### API
 
-All project documentation is located at [daasiot.com](https://daasiot.com). 
-
-File|Content
----|---
-daasiot-overview | [Concepts and Technology Overview](https://daasiot.sebyone.it/?page_id=1604)
-daasiot-setup | [First use guide](https://daasiot.sebyone.it/?page_id=1604)
-daas-sdk-nodejs-xxx | [Developer Quick Start Guide (NodeJS)](https://drive.google.com/file/d/1V7UGeJkDImIEjFY3pIuC5otPOvUQuQWs/view?usp=drive_link)
-daas-sdk-esp-xxx | Developer Quick Start Guide (Esp32)
+Una volta avviato il server, visitare la pagina `http://localhost:3000/api-docs` per visualizzare la documentazione interattiva.
 
 ## Running & Debugging
 
 ## Communicating with the Team
 
 If you would like to ask a question please reach out to us via email: [developers@sebyone.it](developers@sebyone.it)
-
 
