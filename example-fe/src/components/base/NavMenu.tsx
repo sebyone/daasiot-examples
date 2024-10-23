@@ -30,9 +30,8 @@ type MenuItem = Required<MenuProps>['items'][number] & { roles?: string[] };
 const getPathMap = (locale: string) => ({
   [`/${locale}/admin/configurazione`]: '/admin/configurazione',
   [`/${locale}/admin/dispositivi`]: '/admin/dispositivi',
-
   [`/${locale}/admin/updater-Esp32`]: '/admin/updater-Esp32',
-  [`/${locale}/admin/carica-firmware`]: '/admin/carica-firmware',
+  [`/${locale}/admin/catalogo`]: '/admin/catalogo',
   [`/${locale}/admin`]: '/admin',
 });
 

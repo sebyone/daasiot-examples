@@ -1,17 +1,10 @@
 import ConfigService from '@/services/configService';
-import {
-  DataDevice,
-  DeviceFunction,
-  DeviceFunctionParameter,
-  Function,
-  FunctionParameter,
-  Input as InputType,
-} from '@/types';
+import { DataDevice, DeviceFunction, DeviceFunctionParameter, Function, FunctionParameter } from '@/types';
 import { BellOutlined, ExportOutlined, ImportOutlined, SettingOutlined, SlidersOutlined } from '@ant-design/icons';
 import { Button, Checkbox, Descriptions, Input, List, message, Modal, Select, Space, Table } from 'antd';
 import React, { useCallback, useEffect, useState } from 'react';
 
-const mockInputs: InputType[] = [];
+//const mockInputs: InputType[] = [];
 
 type SelectedItems = {
   [key: number]: {
@@ -20,7 +13,7 @@ type SelectedItems = {
   };
 };
 
-export default function Component({ device }: { device: DataDevice | null }) {
+export default function ParametersTab({ device }: { device: DataDevice | null }) {
   const [functions, setFunctions] = useState<Function[]>([]);
   const [selectedFunctions, setSelectedFunctions] = useState<DeviceFunction[]>([]);
   const [isModalVisible, setIsModalVisible] = useState(false);
@@ -158,10 +151,8 @@ export default function Component({ device }: { device: DataDevice | null }) {
             const updateData = {
               param_id: Number(inputId),
               function_id: currentFunction.function.id,
-              value: inputData.options1, // You may want to combine options1 and options2 as needed
+              value: inputData.options1,
             };
-
-            await simulateApiCall(updateData);
 
             setSelectedFunctions((prev) =>
               prev.map((func) =>
@@ -193,10 +184,11 @@ export default function Component({ device }: { device: DataDevice | null }) {
         }
 
         setIsModalVisible(false);
-        message.success(`${currentAction === 'parametro' ? 'Parametri' : 'Ingressi'} aggiornati correttamente`);
+
+        //message.success(`${currentAction === 'parametro' ? 'Parametri' : 'Ingressi'} aggiornati correttamente`);
       } catch (error) {
         console.error(`Error updating ${currentAction === 'parametro' ? 'parameters' : 'inputs'}:`, error);
-        message.error(`Errore nell'aggiornamento dei ${currentAction === 'parametro' ? 'parametri' : 'ingressi'}`);
+        //message.error(`Errore nell'aggiornamento dei ${currentAction === 'parametro' ? 'parametri' : 'ingressi'}`);
       }
     }
   }, [currentFunction, device?.id, tempParameters, tempInputs, currentAction]);
@@ -303,7 +295,7 @@ export default function Component({ device }: { device: DataDevice | null }) {
         ) : (
           <Button
             icon={<SettingOutlined style={{ fontSize: '1rem', color: '#1890ff', cursor: 'pointer' }} />}
-            disabled
+            onClick={() => handleIconClick(record, 'notifica')}
             style={{ border: 'none', outline: 'none', backgroundColor: 'transparent' }}
           />
         ),
@@ -318,7 +310,16 @@ export default function Component({ device }: { device: DataDevice | null }) {
             const deviceInput = currentFunction.inputs.find((i) => i.param_id === input.id);
             return (
               <Descriptions key={input.id} column={1} bordered>
-                <Descriptions.Item label={input.name} labelStyle={{ fontWeight: 'bold' }}>
+                <Descriptions.Item label={'Nome'} labelStyle={{ fontWeight: 'bold' }}>
+                  <Input />
+                </Descriptions.Item>
+                <Descriptions.Item label={'Tipo'} labelStyle={{ fontWeight: 'bold' }}>
+                  <Input />
+                </Descriptions.Item>
+                <Descriptions.Item label={'Valore'} labelStyle={{ fontWeight: 'bold' }}>
+                  <Input />
+                </Descriptions.Item>
+                {/*<Descriptions.Item label={input.name} labelStyle={{ fontWeight: 'bold' }}>
                   <Space style={{ width: '100%' }}>
                     <Input
                       value={tempInputs[input.id]?.options1 ?? (deviceInput ? deviceInput.value : '')}
@@ -331,7 +332,7 @@ export default function Component({ device }: { device: DataDevice | null }) {
                       placeholder={`Inserisci ${input.name} (2)`}
                     />
                   </Space>
-                </Descriptions.Item>
+                </Descriptions.Item>*/}
               </Descriptions>
             );
           })}
@@ -369,6 +370,38 @@ export default function Component({ device }: { device: DataDevice | null }) {
           })}
         </Space>
       );
+    } else if (currentAction === 'uscita' && currentFunction) {
+      return (
+        <Space direction="vertical" style={{ width: '100%' }}>
+          <Descriptions key={6} column={1} bordered>
+            <Descriptions.Item label={'Nome'} labelStyle={{ fontWeight: 'bold' }}>
+              <Input />
+            </Descriptions.Item>
+            <Descriptions.Item label={'Tipo'} labelStyle={{ fontWeight: 'bold' }}>
+              <Input />
+            </Descriptions.Item>
+            <Descriptions.Item label={'Valore'} labelStyle={{ fontWeight: 'bold' }}>
+              <Input />
+            </Descriptions.Item>
+          </Descriptions>
+        </Space>
+      );
+    } else if (currentAction === 'notifica' && currentFunction) {
+      return (
+        <Space direction="vertical" style={{ width: '100%' }}>
+          <Descriptions key={6} column={1} bordered>
+            <Descriptions.Item label={'Nome'} labelStyle={{ fontWeight: 'bold' }}>
+              <Input />
+            </Descriptions.Item>
+            <Descriptions.Item label={'Tipo'} labelStyle={{ fontWeight: 'bold' }}>
+              <Input />
+            </Descriptions.Item>
+            <Descriptions.Item label={'Valore'} labelStyle={{ fontWeight: 'bold' }}>
+              <Input />
+            </Descriptions.Item>
+          </Descriptions>
+        </Space>
+      );
     }
     return null;
   };
@@ -391,7 +424,7 @@ export default function Component({ device }: { device: DataDevice | null }) {
         </Space>
       </Space>
       <Modal
-        title={`Seleziona ${currentAction}`}
+        title={`Modifica ${currentAction}`}
         open={isModalVisible}
         onCancel={() => setIsModalVisible(false)}
         onOk={handleModalOk}
