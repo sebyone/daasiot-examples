@@ -1,8 +1,17 @@
 import ConfigService from '@/services/configService';
-import { DataDevice, DeviceFunction, DeviceFunctionParameter, Function, FunctionParameter } from '@/types';
+import {
+  DataDevice,
+  DeviceFunction,
+  DeviceFunctionParameter,
+  Function,
+  FunctionParameter,
+  Input as InputType,
+} from '@/types';
 import { BellOutlined, ExportOutlined, ImportOutlined, SettingOutlined, SlidersOutlined } from '@ant-design/icons';
 import { Button, Checkbox, Descriptions, Input, List, message, Modal, Select, Space, Table } from 'antd';
 import React, { useCallback, useEffect, useState } from 'react';
+
+const mockInputs: InputType[] = [];
 
 type SelectedItems = {
   [key: number]: {
@@ -96,8 +105,14 @@ export default function Component({ device }: { device: DataDevice | null }) {
     setTempParameters((prev) => ({ ...prev, [paramId]: value }));
   }, []);
 
-  const handleInputChange = useCallback((inputId: number, value: any) => {
-    setTempInputs((prev) => ({ ...prev, [inputId]: value }));
+  const handleInputChange = useCallback((inputId: number, field: 'options1' | 'options2', value: string) => {
+    setTempInputs((prev) => ({
+      ...prev,
+      [inputId]: {
+        ...prev[inputId],
+        [field]: value,
+      },
+    }));
   }, []);
 
   const handleModalOk = useCallback(async () => {
@@ -139,12 +154,14 @@ export default function Component({ device }: { device: DataDevice | null }) {
           }
           setTempParameters({});
         } else if (currentAction === 'ingresso') {
-          for (const [inputId, value] of Object.entries(tempInputs)) {
+          for (const [inputId, inputData] of Object.entries(tempInputs)) {
             const updateData = {
               param_id: Number(inputId),
               function_id: currentFunction.function.id,
-              value: value,
+              value: inputData.options1, // You may want to combine options1 and options2 as needed
             };
+
+            await simulateApiCall(updateData);
 
             setSelectedFunctions((prev) =>
               prev.map((func) =>
@@ -152,14 +169,16 @@ export default function Component({ device }: { device: DataDevice | null }) {
                   ? {
                       ...func,
                       inputs: func.inputs.some((i) => i.param_id === Number(inputId))
-                        ? func.inputs.map((input) => (input.param_id === Number(inputId) ? { ...input, value } : input))
+                        ? func.inputs.map((input) =>
+                            input.param_id === Number(inputId) ? { ...input, value: inputData.options1 } : input
+                          )
                         : [
                             ...func.inputs,
                             {
                               id: Date.now(),
                               param_id: Number(inputId),
                               device_function_id: func.id,
-                              value,
+                              value: inputData.options1,
                               parameter_template: currentFunction.function.inputs.find(
                                 (i) => i.id === Number(inputId)
                               )!,
@@ -204,7 +223,9 @@ export default function Component({ device }: { device: DataDevice | null }) {
             {record.function.parameters
               .map((param) => {
                 const deviceParam = record.parameters.find((p) => p.param_id === param.id);
-
+                if (param.name === 'delay' && (!deviceParam || !deviceParam.value)) {
+                  return null;
+                }
                 return `${param.name}: ${deviceParam ? deviceParam.value : 'Not set'}`;
               })
               .filter(Boolean)
@@ -228,7 +249,12 @@ export default function Component({ device }: { device: DataDevice | null }) {
       render: (_: any, record: DeviceFunction) =>
         record?.function?.inputs.length > 0 ? (
           <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
-            {record.function.inputs.map((input) => input.name).join(', ')}
+            {record.function.inputs
+              .map((input) => {
+                const deviceInput = record.inputs.find((i) => i.param_id === input.id);
+                return `${input.name}: ${deviceInput ? deviceInput.value : 'Not set'}`;
+              })
+              .join(', ')}
             <SettingOutlined
               onClick={() => handleIconClick(record, 'ingresso')}
               style={{ fontSize: '1rem', color: '#1890ff', cursor: 'pointer' }}
@@ -237,7 +263,7 @@ export default function Component({ device }: { device: DataDevice | null }) {
         ) : (
           <Button
             icon={<SettingOutlined style={{ fontSize: '1rem', color: '#1890ff', cursor: 'pointer' }} />}
-            disabled
+            onClick={() => handleIconClick(record, 'ingresso')}
             style={{ border: 'none', outline: 'none', backgroundColor: 'transparent' }}
           />
         ),
@@ -257,7 +283,7 @@ export default function Component({ device }: { device: DataDevice | null }) {
         ) : (
           <Button
             icon={<SettingOutlined style={{ fontSize: '1rem', color: '#1890ff', cursor: 'pointer' }} />}
-            disabled
+            onClick={() => handleIconClick(record, 'uscita')}
             style={{ border: 'none', outline: 'none', backgroundColor: 'transparent' }}
           />
         ),
@@ -285,26 +311,7 @@ export default function Component({ device }: { device: DataDevice | null }) {
   ];
 
   const renderModalContent = () => {
-    if (currentAction === 'parametro' && currentFunction) {
-      return (
-        <Space direction="vertical" style={{ width: '100%' }}>
-          {currentFunction.function.parameters.map((param: FunctionParameter) => {
-            const deviceParam = currentFunction.parameters.find((p) => p.param_id === param.id);
-            return (
-              <Descriptions key={param.id} column={1} bordered>
-                <Descriptions.Item label={param.name} labelStyle={{ fontWeight: 'bold' }}>
-                  <Input
-                    value={tempParameters[param.id] ?? (deviceParam ? deviceParam.value : '')}
-                    onChange={(e) => handleParameterChange(param.id, e.target.value)}
-                    placeholder={`Enter ${param.name}`}
-                  />
-                </Descriptions.Item>
-              </Descriptions>
-            );
-          })}
-        </Space>
-      );
-    } else if (currentAction === 'ingresso' && currentFunction) {
+    if (currentAction === 'ingresso' && currentFunction) {
       return (
         <Space direction="vertical" style={{ width: '100%' }}>
           {currentFunction.function.inputs.map((input) => {
@@ -312,11 +319,50 @@ export default function Component({ device }: { device: DataDevice | null }) {
             return (
               <Descriptions key={input.id} column={1} bordered>
                 <Descriptions.Item label={input.name} labelStyle={{ fontWeight: 'bold' }}>
-                  <Input
-                    value={tempInputs[input.id] ?? (deviceInput ? deviceInput.value : '')}
-                    onChange={(e) => handleInputChange(input.id, e.target.value)}
-                    placeholder={`Inserisci ${input.name}`}
-                  />
+                  <Space style={{ width: '100%' }}>
+                    <Input
+                      value={tempInputs[input.id]?.options1 ?? (deviceInput ? deviceInput.value : '')}
+                      onChange={(e) => handleInputChange(input.id, 'options1', e.target.value)}
+                      placeholder={`Inserisci ${input.name} (1)`}
+                    />
+                    <Input
+                      value={tempInputs[input.id]?.options2 ?? ''}
+                      onChange={(e) => handleInputChange(input.id, 'options2', e.target.value)}
+                      placeholder={`Inserisci ${input.name} (2)`}
+                    />
+                  </Space>
+                </Descriptions.Item>
+              </Descriptions>
+            );
+          })}
+        </Space>
+      );
+    } else if (currentAction === 'parametro' && currentFunction) {
+      return (
+        <Space direction="vertical" style={{ width: '100%' }}>
+          {currentFunction.function.parameters.map((param: FunctionParameter) => {
+            const deviceParam = currentFunction.parameters.find((p) => p.param_id === param.id);
+            return (
+              <Descriptions key={param.id} column={1} bordered>
+                <Descriptions.Item label={param.name} labelStyle={{ fontWeight: 'bold' }}>
+                  {param.name === 'mode' ? (
+                    <Select
+                      value={tempParameters[param.id] ?? (deviceParam ? deviceParam.value : undefined)}
+                      onChange={(value) => handleParameterChange(param.id, value)}
+                      placeholder={`Select ${param.name}`}
+                      style={{ width: '100%' }}
+                    >
+                      <Select.Option value={1}>Mode 1</Select.Option>
+                      <Select.Option value={2}>Mode 2</Select.Option>
+                      <Select.Option value={3}>Mode 3</Select.Option>
+                    </Select>
+                  ) : (
+                    <Input
+                      value={tempParameters[param.id] ?? (deviceParam ? deviceParam.value : '')}
+                      onChange={(e) => handleParameterChange(param.id, e.target.value)}
+                      placeholder={`Enter ${param.name}`}
+                    />
+                  )}
                 </Descriptions.Item>
               </Descriptions>
             );
@@ -345,7 +391,7 @@ export default function Component({ device }: { device: DataDevice | null }) {
         </Space>
       </Space>
       <Modal
-        title={`Modifica ${currentAction}`}
+        title={`Seleziona ${currentAction}`}
         open={isModalVisible}
         onCancel={() => setIsModalVisible(false)}
         onOk={handleModalOk}

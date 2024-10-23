@@ -30,7 +30,8 @@ type MenuItem = Required<MenuProps>['items'][number] & { roles?: string[] };
 const getPathMap = (locale: string) => ({
   [`/${locale}/admin/configurazione`]: '/admin/configurazione',
   [`/${locale}/admin/dispositivi`]: '/admin/dispositivi',
-  [`/${locale}/admin/catalogo`]: '/admin/catalogo',
+
+  [`/${locale}/admin/updater-Esp32`]: '/admin/updater-Esp32',
   [`/${locale}/admin/carica-firmware`]: '/admin/carica-firmware',
   [`/${locale}/admin`]: '/admin',
 });
@@ -74,9 +75,9 @@ export default function NavMenu({ role }: { role: string }) {
       label: <Link href={`/${locale}/admin/catalogo`}>{t('catalog')}</Link>,
     },
     {
-      key: '/admin/carica-firmware',
+      key: '/admin/updater-Esp32',
       icon: <SyncOutlined />,
-      label: <Link href="https://test.daasiot.net/flashtool/">Updater Esp32</Link>,
+      label: <Link href={`/${locale}/admin/updater-Esp32`}>Updater Esp32</Link>,
     },
   ];
 
