@@ -26,7 +26,21 @@ import {
   SearchOutlined,
   UnorderedListOutlined,
 } from '@ant-design/icons';
-import { Button, Empty, Form, Input, Layout, List, Modal, Pagination, Table, Tabs, TabsProps } from 'antd';
+import {
+  Button,
+  Descriptions,
+  Empty,
+  Form,
+  Input,
+  Layout,
+  List,
+  Modal,
+  Pagination,
+  Space,
+  Table,
+  Tabs,
+  TabsProps,
+} from 'antd';
 import debounce from 'debounce';
 import 'leaflet/dist/leaflet.css';
 import { useLocale, useTranslations } from 'next-intl';
@@ -163,7 +177,44 @@ export default function Dispositivi() {
     }
   };
 
-  const handleDeviceClick = (device: DataDevice) => {
+  const handleDeviceClick = useCallback(
+    async (device: DataDevice) => {
+      setSelectedDevice(device);
+      setIsDeviceSelected(true);
+      setIsLoading(true);
+      setActiveTabKey('1');
+      try {
+        const data = await ConfigService.getDeviceById(device.id);
+
+        formGenerali.setFieldsValue({
+          id: data.id,
+          sid: data.din.sid,
+          din: data.din.din,
+          latitudine: data.latitude,
+          longitudine: data.longitude,
+        });
+
+        formHeader.setFieldsValue({
+          id: data.id,
+          modello: data.device_model.description,
+          matricola: data.device_model.serial,
+        });
+      } catch (error) {
+        console.error('Error fetching device details:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [formGenerali, formHeader]
+  );
+
+  useEffect(() => {
+    if (selectedDevice) {
+      handleDeviceClick(selectedDevice);
+    }
+  }, [selectedDevice, handleDeviceClick]);
+
+  /*const handleDeviceClick = (device: DataDevice) => {
     setSelectedDevice(device);
     setIsDeviceSelected(true);
     setActiveTabKey('1');
@@ -181,7 +232,7 @@ export default function Dispositivi() {
         matricola: data.device_model.serial,
       });
     });
-  };
+  };*/
 
   const fetchDevices = useCallback(async () => {
     setIsLoading(true);
@@ -334,24 +385,30 @@ export default function Dispositivi() {
           <div style={{ display: 'flex', justifyContent: 'center', marginTop: '20px' }}>
             <Button type="primary">{t('clearLog')}</Button>
           </div>
-          <Modal title={t('details')} open={isModalInfoEventVisible} onCancel={handleModalClose} footer={null}>
+          <Modal
+            title={<span style={{ fontSize: '1.2rem', fontWeight: 'bold' }}>{t('details')}</span>}
+            open={isModalInfoEventVisible}
+            onCancel={handleModalClose}
+            footer={null}
+          >
             {selectedRow ? (
-              <>
-                <p>
-                  <strong>Timestamp:</strong> {selectedRow.timestamp}
-                </p>
-                <p>
-                  <strong>Typeset:</strong> {selectedRow.typeset}
-                </p>
-                <p>
-                  <strong>Payload Size:</strong>
-                  {selectedRow.payloadSize}
-                </p>
-                <p style={{ marginTop: 10, fontSize: '1.1rem' }}>
+              <Space direction="vertical" style={{ width: '100%' }}>
+                <Descriptions key={selectedRow.id} column={1} bordered>
+                  <Descriptions.Item label={'Timestamp'} labelStyle={{ fontWeight: 'bold' }}>
+                    {selectedRow.timestamp}
+                  </Descriptions.Item>
+                  <Descriptions.Item label={'Typeset'} labelStyle={{ fontWeight: 'bold' }}>
+                    {selectedRow.typeset}
+                  </Descriptions.Item>
+                  <Descriptions.Item label={'Payload Size [Byte]'} labelStyle={{ fontWeight: 'bold' }}>
+                    {selectedRow.payloadSize}
+                  </Descriptions.Item>
+                </Descriptions>
+                <p style={{ marginTop: 10, fontSize: '1rem' }}>
                   <strong>Payload Content</strong>
                   <PayloadContentViewer payloadContent={selectedRow.payload} />
                 </p>
-              </>
+              </Space>
             ) : null}
           </Modal>
         </>

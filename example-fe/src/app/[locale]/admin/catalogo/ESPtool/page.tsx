@@ -19,7 +19,9 @@ import { ESPLoader, Transport } from 'esptool-js';
 import dynamic from 'next/dynamic';
 import React, { useEffect, useRef, useState } from 'react';
 //import { ITerminalOptions, Terminal } from 'xterm';
+import { useTranslations } from 'next-intl';
 import Terminal from 'react-console-emulator';
+import styles from './ESP.module.css';
 
 const { Title } = Typography;
 
@@ -29,6 +31,7 @@ const { Title } = Typography;
 }*/
 
 const DaaSUpdater = () => {
+  const t = useTranslations('DaaSUpdater');
   const XTerm = dynamic(() => import('react-xtermjs').then((mod) => mod.XTerm), {
     ssr: false,
     loading: () => <p>Caricamento terminale...</p>,
@@ -38,7 +41,7 @@ const DaaSUpdater = () => {
   const [chip, setChip] = useState(null);
   const [isConnected, setIsConnected] = useState(false);
   const [progress, setProgress] = useState(0);
-  const [selectedFirmware, setSelectedFirmware] = useState('');
+  const [selectedFirmware, setSelectedFirmware] = useState();
   const [updateComplete, setUpdateComplete] = useState(false);
   const [portInfo, setPortInfo] = useState('');
   const [terminalLineData, setTerminalLineData] = useState([
@@ -120,7 +123,7 @@ const DaaSUpdater = () => {
       setChip(detectedChip);
       setIsConnected(true);
       //espLoaderTerminal.writeLine(`Connected to device: ${detectedChip}`);
-      message.success(`Connected to device: ${detectedChip}`);
+      message.success(`Connesso al dispositivo: ${detectedChip}`);
     } catch (e) {
       console.error(e);
       message.error(`Error: ${e.message}`);
@@ -136,13 +139,13 @@ const DaaSUpdater = () => {
     setChip(null);
     setIsConnected(false);
     //espLoaderTerminal.clean();
-    message.info('Disconnected from device');
+    message.info('Dispositivo disconnesso');
   };
 
   const uploadFirmware = async () => {
     if (!isConnected || !selectedFirmware) {
       //espLoaderTerminal.writeLine('Please select firmware');
-      message.warning('Please select firmware');
+      message.warning('Seleziona firmware');
       return;
     }
     try {
@@ -177,11 +180,11 @@ const DaaSUpdater = () => {
       await esploader.writeFlash(flashOptions);
       setUpdateComplete(true);
       //espLoaderTerminal.writeLine('Firmware update completed successfully!');
-      message.success('Firmware uploaded successfully');
+      message.success('Firmware aggiornato correttamente');
     } catch (e) {
       console.error(e);
       //espLoaderTerminal.writeLine(`Error: ${e.message}`);
-      message.error(`Update failed: ${e.message}`);
+      message.error(`Errore nell'aggiornamento del firmware: ${e.message}`);
     } finally {
       setProgress(0);
     }
@@ -227,97 +230,98 @@ const DaaSUpdater = () => {
 
   return (
     <>
-      <div style={{ display: 'flex', justifyContent: 'center' }}>
-        <Title level={2}>Devices Firmware Updater (Esp32)</Title>
-      </div>
-      <div style={{ padding: '20px' }}>
-        <div style={{ width: '20%', display: 'flex', flexDirection: 'column', justifyContent: 'left' }}>
-          <span>
-            <strong>Firmware</strong>
-          </span>
-          <Select
-            style={{ marginBottom: 20, width: '50%' }}
-            placeholder="Select Firmware"
-            onChange={(value) => setSelectedFirmware(value)}
-            value={selectedFirmware}
-          >
-            <Select.Option value="firmware1">Firmware 1</Select.Option>
-            <Select.Option value="firmware2">Firmware 2</Select.Option>
-          </Select>
-          <Button
-            icon={<UsbOutlined />}
-            onClick={isConnected ? disconnectDevice : connectDevice}
-            type="primary"
-            style={{ marginBottom: '20px', width: '50%' }}
-          >
-            {isConnected ? 'Disconnetti dispositivo' : 'Connetti dispositivo'}
-          </Button>
-          {isConnected && (
-            <Space direction="vertical" style={{ width: '100%' }}>
-              <Descriptions column={1} size="small" bordered>
-                <Descriptions.Item
-                  label={
-                    <>
-                      <UsbOutlined /> Port
-                    </>
-                  }
-                  labelStyle={{ fontWeight: 'bold' }}
-                >
-                  {portInfo}
-                </Descriptions.Item>
-                <Descriptions.Item
-                  label={
-                    <>
-                      <InfoCircleOutlined /> Device
-                    </>
-                  }
-                  labelStyle={{ fontWeight: 'bold' }}
-                >
-                  {chip || 'Unknown'}
-                </Descriptions.Item>
-              </Descriptions>
-              <Button
-                onClick={uploadFirmware}
-                type="primary"
-                icon={<SyncOutlined />}
-                style={{ width: '50%', marginTop: 20 }}
-              >
-                Start Update
-              </Button>
-            </Space>
+      <div className={styles.container}>
+        <div style={{ display: 'flex', justifyContent: 'center' }}>
+          <Title level={2} style={{ fontWeight: 'bold' }}>
+            Devices Firmware Updater (Esp32)
+          </Title>
+        </div>
+        <div style={{ padding: '20px' }}>
+          <div style={{ width: '20%', display: 'flex', flexDirection: 'column', justifyContent: 'left' }}>
+            <Button
+              icon={<UsbOutlined />}
+              onClick={isConnected ? disconnectDevice : connectDevice}
+              type="primary"
+              style={{ marginBottom: '20px', width: '50%' }}
+            >
+              {isConnected ? 'Disconnetti dispositivo' : 'Connetti dispositivo'}
+            </Button>
+
+            {isConnected && (
+              <Space direction="vertical" style={{ width: '100%' }}>
+                <Descriptions column={1} size="small" bordered>
+                  <Descriptions.Item
+                    label={
+                      <>
+                        <UsbOutlined /> Port
+                      </>
+                    }
+                    labelStyle={{ fontWeight: 'bold' }}
+                  >
+                    {portInfo}
+                  </Descriptions.Item>
+                  <Descriptions.Item
+                    label={
+                      <>
+                        <InfoCircleOutlined /> Device
+                      </>
+                    }
+                    labelStyle={{ fontWeight: 'bold' }}
+                  >
+                    {chip || 'Unknown'}
+                  </Descriptions.Item>
+                </Descriptions>
+                <div style={{ display: 'flex', gap: 20, marginTop: 20 }}>
+                  <Select
+                    style={{ width: '50%' }}
+                    placeholder="Seleziona Firmware"
+                    onChange={(value) => setSelectedFirmware(value)}
+                    value={selectedFirmware}
+                  >
+                    <Select.Option value="firmware1">Firmware 1</Select.Option>
+                    <Select.Option value="firmware2">Firmware 2</Select.Option>
+                  </Select>
+
+                  <Button onClick={uploadFirmware} type="primary" icon={<SyncOutlined />} style={{ width: '50%' }}>
+                    Start Update
+                  </Button>
+                </div>
+              </Space>
+            )}
+          </div>
+        </div>
+        <div style={{ width: '65%' }}>
+          {!updateComplete && (
+            <Terminal
+              commands={{}}
+              promptLabel={''}
+              style={{
+                height: '300px',
+                width: '50%',
+                marginBottom: '20px',
+                backgroundColor: '#000',
+                color: '#00ff00',
+                fontFamily: 'monospace',
+                fontSize: '14px',
+                overflow: 'auto',
+              }}
+              noEchoBack
+              readOnly
+            />
+          )}
+
+          {progress > 0 && <Progress percent={progress} />}
+          {updateComplete && (
+            <Alert
+              message="Aggiornamento completato!"
+              description="Scollegare il dispositivo e riavviarlo!"
+              type="success"
+              showIcon
+            />
           )}
         </div>
       </div>
-      <div style={{ width: '65%' }}>
-        {!updateComplete && (
-          <Terminal
-            commands={{}}
-            promptLabel={''}
-            style={{
-              height: '300px',
-              width: '50%',
-              marginBottom: '20px',
-              backgroundColor: '#000',
-              color: '#00ff00',
-              fontFamily: 'monospace',
-              fontSize: '14px',
-              overflow: 'auto',
-            }}
-            noEchoBack
-            readOnly
-          />
-        )}
-
-        {progress > 0 && <Progress percent={progress} />}
-        {updateComplete && (
-          <Alert
-            message="Aggiornamento completato!"
-            description="Scollegare il dispositivo e riavviarlo!"
-            type="success"
-            showIcon
-          />
-        )}
-      </div>
+      <div className={styles.mobileMessage}>{t('mobileMessage')}</div>
     </>
   );
 };
