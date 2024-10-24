@@ -244,7 +244,7 @@ export default function ParametersTab({ device }: { device: DataDevice | null })
             {record.function.inputs
               .map((input) => {
                 const deviceInput = record.inputs.find((i) => i.param_id === input.id);
-                return `${input.name}: ${deviceInput ? deviceInput.value : 'Not set'}`;
+                return `${input.name}`;
               })
               .join(', ')}
             <SettingOutlined
@@ -304,40 +304,60 @@ export default function ParametersTab({ device }: { device: DataDevice | null })
 
   const renderModalContent = () => {
     if (currentAction === 'ingresso' && currentFunction) {
-      return (
-        <Space direction="vertical" style={{ width: '100%' }}>
-          {currentFunction.function.inputs.map((input) => {
-            const deviceInput = currentFunction.inputs.find((i) => i.param_id === input.id);
+      const columns = [
+        {
+          title: 'Nome',
+          dataIndex: 'name',
+          key: 'name',
+          render: (text: string) => text,
+        },
+        {
+          title: 'Tipo',
+          dataIndex: 'type',
+          key: 'type',
+          render: (text: string, record: any) => {
+            const options = ['GPIO', 'DIN'];
             return (
-              <Descriptions key={input.id} column={1} bordered>
-                <Descriptions.Item label={'Nome'} labelStyle={{ fontWeight: 'bold' }}>
-                  <Input />
-                </Descriptions.Item>
-                <Descriptions.Item label={'Tipo'} labelStyle={{ fontWeight: 'bold' }}>
-                  <Input />
-                </Descriptions.Item>
-                <Descriptions.Item label={'Valore'} labelStyle={{ fontWeight: 'bold' }}>
-                  <Input />
-                </Descriptions.Item>
-                {/*<Descriptions.Item label={input.name} labelStyle={{ fontWeight: 'bold' }}>
-                  <Space style={{ width: '100%' }}>
-                    <Input
-                      value={tempInputs[input.id]?.options1 ?? (deviceInput ? deviceInput.value : '')}
-                      onChange={(e) => handleInputChange(input.id, 'options1', e.target.value)}
-                      placeholder={`Inserisci ${input.name} (1)`}
-                    />
-                    <Input
-                      value={tempInputs[input.id]?.options2 ?? ''}
-                      onChange={(e) => handleInputChange(input.id, 'options2', e.target.value)}
-                      placeholder={`Inserisci ${input.name} (2)`}
-                    />
-                  </Space>
-                </Descriptions.Item>*/}
-              </Descriptions>
+              <Select
+                value={tempInputs[record.id]?.options1 ?? text}
+                onChange={(value) => handleInputChange(record.id, 'options1', value)}
+                style={{ width: '100%' }}
+              >
+                {options.map((option) => (
+                  <Select.Option key={option} value={option}>
+                    {option}
+                  </Select.Option>
+                ))}
+              </Select>
             );
-          })}
-        </Space>
-      );
+          },
+        },
+        {
+          title: 'Valore',
+          dataIndex: 'value',
+          key: 'value',
+          render: (text: string, record: any) => (
+            <Input
+              value={tempInputs[record.id]?.options2 ?? ''}
+              onChange={(e) => handleInputChange(record.id, 'options2', e.target.value)}
+              placeholder={`Inserisci valore`}
+            />
+          ),
+        },
+      ];
+
+      const data = currentFunction.function.inputs.map((input) => {
+        const deviceInput = currentFunction.inputs.find((i) => i.param_id === input.id);
+        return {
+          key: input.id,
+          id: input.id,
+          name: input.name,
+          type: deviceInput ? deviceInput.value : 'GPIO',
+          value: deviceInput.value,
+        };
+      });
+
+      return <Table columns={columns} dataSource={data} pagination={false} />;
     } else if (currentAction === 'parametro' && currentFunction) {
       return (
         <Space direction="vertical" style={{ width: '100%' }}>
