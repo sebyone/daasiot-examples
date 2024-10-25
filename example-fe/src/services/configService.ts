@@ -237,9 +237,26 @@ const ConfigService = {
    * id - ID device_model
    * Promise<Function> - Oggetto Function in cui è presente l'id del modello
    */
-  getFunctions: async (id: number): Promise<Function[]> => {
+  getFunctions: async (device_model_id: number): Promise<Function[]> => {
     try {
-      const response = await axiosInstance.get(`device_models/1/functions`);
+      const response = await axiosInstance.get(`device_models/${device_model_id}/functions`);
+      return response.data;
+    } catch (error) {
+      console.error('Error:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Aggiunge una nuova funzione al device tramite il suo ID passando anche l'ID della funzione selezionata
+   * deviceid - ID device, functionId - ID funzione selezionata
+   * Promise<DeviceFunction> - Oggetto DeviceFunction in cui sono presenti tutti i campi della nuova funzione
+   */
+  addFunction: async (deviceId: number, functionId: number): Promise<DeviceFunction> => {
+    try {
+      const response = await axiosInstance.post(`/devices/${deviceId}/functions`, {
+        device_model_function_id: functionId,
+      });
       return response.data;
     } catch (error) {
       console.error('Error:', error);
@@ -252,7 +269,7 @@ const ConfigService = {
    * id - ID device
    * Promise<DeviceFunction> - Oggetto Function in cui è presente l'id del dispositivo
    */
-  getProgram: async (id: number): Promise<DeviceFunction> => {
+  getProgram: async (id: number): Promise<DeviceFunction[]> => {
     try {
       const response = await axiosInstance.get(`devices/1/functions`); //??
       return response.data;

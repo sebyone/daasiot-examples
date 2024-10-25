@@ -12,7 +12,7 @@
  *
  */
 import ConfigService from '@/services/configService';
-import { DataDevice, DeviceFunction, DeviceFunctionParameter, Function, FunctionParameter } from '@/types';
+import { DataDevice, DeviceFunction, Function, FunctionParameter } from '@/types';
 import { BellOutlined, ExportOutlined, ImportOutlined, SettingOutlined, SlidersOutlined } from '@ant-design/icons';
 import { Button, Checkbox, Descriptions, Input, List, message, Modal, Select, Space, Table } from 'antd';
 import React, { useCallback, useEffect, useState } from 'react';
@@ -41,12 +41,12 @@ export default function ParametersTab({ device }: { device: DataDevice | null })
   const fetchFunctions = useCallback(async () => {
     if (!device?.id) return;
     try {
-      const response = await ConfigService.getFunctions(device.id);
+      const response = await ConfigService.getFunctions(device.device_model_id);
       setFunctions(response);
     } catch (error) {
       console.error('Error fetching functions:', error);
     }
-  }, [device?.id]);
+  }, [device?.id, device?.device_model_id]);
 
   useEffect(() => {
     fetchFunctions();
@@ -56,7 +56,8 @@ export default function ParametersTab({ device }: { device: DataDevice | null })
     if (!device?.id) return;
     try {
       const response = await ConfigService.getProgram(device.id);
-      setSelectedFunctions(Array.isArray(response) ? response : [response]);
+      setSelectedFunctions(response);
+      setCheckedFunctions(response.filter((func) => func.enabled).map((func) => func.id));
     } catch (error) {
       console.error('Error fetching program:', error);
     }
@@ -78,24 +79,21 @@ export default function ParametersTab({ device }: { device: DataDevice | null })
     setIsModalVisible(true);
   }, []);
 
-  const handleAddFunction = useCallback(async (functionToAdd: Function) => {
-    try {
-      const response = await ConfigService.getFunctions(functionToAdd.id);
+  const handleAddFunction = useCallback(
+    async (functionToAdd: Function) => {
+      if (!device?.id) return;
+      try {
+        const newDeviceFunction = await ConfigService.addFunction(device.id, functionToAdd.id);
 
-      const newDeviceFunctions: DeviceFunction[] = Array.isArray(response)
-        ? response.map((func) => ({ id: func.id, function: func, parameters: [], inputs: [] }))
-        : [{ id: response.id, function: response, parameters: [], inputs: [] }];
-
-      setSelectedFunctions((prev) => {
-        const newFunctions = [...prev, ...newDeviceFunctions];
-        return newFunctions;
-      });
-      setIsAddModalVisible(false);
-      message.success('Funzione aggiunta con successo');
-    } catch (error) {
-      message.error("Errore nell'aggiunta della funzione");
-    }
-  }, []);
+        setSelectedFunctions((prev) => [...prev, newDeviceFunction]);
+        setIsAddModalVisible(false);
+        message.success('Funzione aggiunta con successo');
+      } catch (error) {
+        message.error('Errore');
+      }
+    },
+    [device?.id]
+  );
 
   const handleDeleteFunctions = useCallback(() => {
     if (checkedFunctions.length === 0) {
@@ -404,37 +402,55 @@ export default function ParametersTab({ device }: { device: DataDevice | null })
         </Space>
       );
     } else if (currentAction === 'uscita' && currentFunction) {
-      return (
-        <Space direction="vertical" style={{ width: '100%' }}>
-          <Descriptions key={6} column={1} bordered>
-            <Descriptions.Item label={'Nome'} labelStyle={{ fontWeight: 'bold' }}>
-              <Input />
-            </Descriptions.Item>
-            <Descriptions.Item label={'Tipo'} labelStyle={{ fontWeight: 'bold' }}>
-              <Input />
-            </Descriptions.Item>
-            <Descriptions.Item label={'Valore'} labelStyle={{ fontWeight: 'bold' }}>
-              <Input />
-            </Descriptions.Item>
-          </Descriptions>
-        </Space>
-      );
+      const columns = [
+        {
+          title: 'Nome',
+          dataIndex: 'name',
+          key: 'name',
+          render: (text: string) => text,
+        },
+        {
+          title: 'Tipo',
+          dataIndex: 'type',
+          key: 'type',
+          render: (text: string, record: any) => {
+            return <Select style={{ width: '100%' }}></Select>;
+          },
+        },
+        {
+          title: 'Valore',
+          dataIndex: 'value',
+          key: 'value',
+          render: (text: string, record: any) => <Input placeholder={`Inserisci valore`} />,
+        },
+      ];
+
+      return <Table columns={columns} pagination={false} />;
     } else if (currentAction === 'notifica' && currentFunction) {
-      return (
-        <Space direction="vertical" style={{ width: '100%' }}>
-          <Descriptions key={6} column={1} bordered>
-            <Descriptions.Item label={'Nome'} labelStyle={{ fontWeight: 'bold' }}>
-              <Input />
-            </Descriptions.Item>
-            <Descriptions.Item label={'Tipo'} labelStyle={{ fontWeight: 'bold' }}>
-              <Input />
-            </Descriptions.Item>
-            <Descriptions.Item label={'Valore'} labelStyle={{ fontWeight: 'bold' }}>
-              <Input />
-            </Descriptions.Item>
-          </Descriptions>
-        </Space>
-      );
+      const columns = [
+        {
+          title: 'Nome',
+          dataIndex: 'name',
+          key: 'name',
+          render: (text: string) => text,
+        },
+        {
+          title: 'Tipo',
+          dataIndex: 'type',
+          key: 'type',
+          render: (text: string, record: any) => {
+            return <Select style={{ width: '100%' }}></Select>;
+          },
+        },
+        {
+          title: 'Valore',
+          dataIndex: 'value',
+          key: 'value',
+          render: (text: string, record: any) => <Input placeholder={`Inserisci valore`} />,
+        },
+      ];
+
+      return <Table columns={columns} pagination={false} />;
     }
     return null;
   };
