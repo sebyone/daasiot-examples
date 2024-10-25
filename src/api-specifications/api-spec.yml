@@ -413,6 +413,7 @@ components:
             1: i32
             2: i16
             3: f32
+            4: string
           nullable: false
         default_value:
           type: string
@@ -2294,6 +2295,35 @@ paths:
 
 
 #region Programming
+
+  /device_models/any/functions:
+    get:
+      parameters:
+        - $ref: '#/components/parameters/offset'
+        - $ref: '#/components/parameters/limit'
+      description: Ritorna un elenco di tutte le funzioni disponibili per qualsiasi modello di device.
+      tags:
+        - device models
+        - programming
+        - device model functions
+      responses:
+        '200':
+          description: Pagina di funzioni di tutte le funzioni disponibili per qualsiasi modello di device.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/DeviceModelFunction'
+                  pagination:
+                    $ref: '#/components/schemas/PaginationData'
+        default:
+          $ref: '#/components/responses/InternalError'
+
+
   /device_models/{deviceModelId}/functions:
     parameters:
       - name: deviceModelId
@@ -2365,6 +2395,7 @@ paths:
                           1: i32
                           2: i16
                           3: f32
+                          4: string
                       default_value:
                         type: string
                         description: Valore di default del parametro
@@ -2394,6 +2425,7 @@ paths:
                           1: i32
                           2: i16
                           3: f32
+                          4: string
                       default_value:
                         type: string
                         description: Valore di default dell'input
@@ -2423,6 +2455,7 @@ paths:
                           1: i32
                           2: i16
                           3: f32
+                          4: string
                       default_value:
                         type: string
                         description: Valore di default dell'output
@@ -2452,6 +2485,7 @@ paths:
                           1: i32
                           2: i16
                           3: f32
+                          4: string
                       default_value:
                         type: string
                         description: Valore di default della notifica
@@ -2500,6 +2534,8 @@ paths:
         schema:
           type: integer
     get:
+      description: Ritorna una funzione del modello di device specifica.
+
       tags:
         - device models
         - programming
