@@ -5,7 +5,7 @@ module.exports = (sequelize, DataTypes) => {
   class DeviceFunctionProperty extends Model {
     static associate(models) {
       this.belongsTo(models.DeviceFunction, { foreignKey: 'device_function_id', as: 'device_function', onDelete: 'CASCADE' });
-      this.belongsTo(models.DeviceModelFunctionProperty, { foreignKey: 'property_id', as: 'property_id', onDelete: 'CASCADE' });
+      this.belongsTo(models.DeviceModelFunctionProperty, { foreignKey: 'property_id', as: 'property_template', onDelete: 'CASCADE' });
     }
   }
 
