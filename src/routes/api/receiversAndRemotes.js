@@ -331,7 +331,6 @@ router.delete('/receivers/:receiverId/links/:id', async function (req, res) {
 //#region DINs
 
 
-// restituisce tutti i dins e i link associat (se il parametro links è diverso da false)
 router.get('/dins/', async function (req, res) {
     try {
         const data = await Din.findAll();

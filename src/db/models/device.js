@@ -7,6 +7,7 @@ module.exports = (sequelize, DataTypes) => {
     static associate(models) {
       this.belongsTo(models.DeviceModel, { foreignKey: 'device_model_id', as: 'device_model', onDelete: 'CASCADE' });
       this.belongsTo(models.Din, { foreignKey: 'din_id', as: 'din', onDelete: 'CASCADE' });
+      this.hasMany(models.DeviceFunction, { foreignKey: 'device_id', sourceKey: 'id', as: 'functions' });
     }
   }
   Device.init({

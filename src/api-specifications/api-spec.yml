@@ -467,26 +467,26 @@ components:
     DeviceFunctionProperty:
       type: object
       description: >
-        Parametro (param, input, output, notification) di una DeviceFunction
-        Interpretabile come istanza di un parametro di una DeviceModelFunction
+        Property (param, input, output, notification) di una DeviceFunction
+        Interpretabile come istanza di un property di una DeviceModelFunction
       properties:
         id:
           type: integer
-          description: ID del parametro
+          description: ID della property
           nullable: false
-        param_id:
+        property_id:
           type: integer
-          description: ID del parametro del modello di device
+          description: ID della property del modello di device
           nullable: false
         device_function_id:
           type: integer
-          description: ID della DeviceFunction a cui si riferisce questo parametro
+          description: ID della DeviceFunction a cui si riferisce questa property
           nullable: false
         value:
           type: string
-          description: valore del parametro in formato stringa
+          description: valore della property in formato stringa
           maxLength: 45
-        parameter_template:
+        property_template:
           $ref: '#/components/schemas/DeviceModelFunctionProperty'
           nullable: true
 
