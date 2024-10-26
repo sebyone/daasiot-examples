@@ -4,12 +4,12 @@ const {
 } = require('sequelize');
 
 module.exports = (sequelize, DataTypes) => {
-  class DeviceModelFunctionParam extends Model {
+  class DeviceModelFunctionProperty extends Model {
     static associate(models) {
       this.belongsTo(models.DeviceModelFunction, { foreignKey: 'function_id', as: 'function', onDelete: 'CASCADE' });
     }
   }
-  DeviceModelFunctionParam.init({
+  DeviceModelFunctionProperty.init({
     id: {
       type: DataTypes.INTEGER,
       primaryKey: true,
@@ -61,5 +61,5 @@ module.exports = (sequelize, DataTypes) => {
     timestamps: false
   });
 
-  return DeviceModelFunctionParam;
+  return DeviceModelFunctionProperty;
 };

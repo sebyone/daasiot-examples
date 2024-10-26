@@ -2620,6 +2620,51 @@ paths:
         default:
           $ref: '#/components/responses/InternalError'
 
+  /device_models/{deviceModelId}/functions/{deviceModelFunctionId}/properties/{propertyId}:
+    delete:
+      tags:
+        - device models
+        - programming
+        - device model functions
+      parameters:
+        - name: deviceModelId
+          in: path
+          description: ID del modello di device
+          required: true
+          schema:
+            type: integer
+        - name: deviceModelFunctionId
+          in: path
+          description: ID della funzione del modello di device
+          required: true
+          schema:
+            type: integer
+        - name: propertyId
+          in: path
+          description: ID della proprietà della funzione del modello di device
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Proprietà della funzione del modello di device eliminata con successo.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Messaggio di successo
+        '404':
+          description: Proprietà della funzione del modello di device non trovata.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        default:
+          $ref: '#/components/responses/InternalError'
+
 
   /devices/{deviceId}/functions:
     parameters:
