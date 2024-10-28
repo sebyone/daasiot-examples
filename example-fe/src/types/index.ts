@@ -397,15 +397,17 @@ export interface Function {
 
 export interface FunctionParameter {
   id: number;
-  param_type: number;
+  property_type: number;
   name: string;
   function_id: number;
   data_type: number;
+  default_value: string;
+  safe_value: string;
 }
 
 export interface DeviceFunctionParameter {
   id: number;
-  param_id: number;
+  property_id: number;
   device_function_id: number;
   value: any;
   parameter_template: FunctionParameter;

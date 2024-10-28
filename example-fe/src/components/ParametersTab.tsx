@@ -144,15 +144,15 @@ export default function ParametersTab({ device }: { device: DataDevice | null })
                 func.id === currentFunction.id
                   ? {
                       ...func,
-                      parameters: func.parameters.some((p) => p.param_id === Number(paramId))
+                      parameters: func.parameters.some((p) => p.property_id === Number(paramId))
                         ? func.parameters.map((param) =>
-                            param.param_id === Number(paramId) ? { ...param, value } : param
+                            param.property_id === Number(paramId) ? { ...param, value } : param
                           )
                         : [
                             ...func.parameters,
                             {
                               id: Date.now(),
-                              param_id: Number(paramId),
+                              property_id: Number(paramId),
                               device_function_id: func.id,
                               value,
                               parameter_template: currentFunction.function.parameters.find(
@@ -242,11 +242,11 @@ export default function ParametersTab({ device }: { device: DataDevice | null })
           <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
             {record.function.parameters
               .map((param) => {
-                const deviceParam = record.parameters.find((p) => p.param_id === param.id);
+                const deviceParam = record.parameters.find((p) => p.property_id === param.id);
                 if (param.name === 'delay' && (!deviceParam || !deviceParam.value)) {
                   return null;
                 }
-                return `${param.name}: ${deviceParam ? deviceParam.value : 'Not set'}`;
+                return `${param.name}: ${deviceParam ? deviceParam.value : ''}`;
               })
               .filter(Boolean)
               .join(', ')}
@@ -390,7 +390,7 @@ export default function ParametersTab({ device }: { device: DataDevice | null })
       return (
         <Space direction="vertical" style={{ width: '100%' }}>
           {currentFunction.function.parameters.map((param: FunctionParameter) => {
-            const deviceParam = currentFunction.parameters.find((p) => p.param_id === param.id);
+            const deviceParam = currentFunction.parameters.find((p) => p.property_id === param.id);
             return (
               <Descriptions key={param.id} column={1} bordered>
                 <Descriptions.Item label={param.name} labelStyle={{ fontWeight: 'bold' }}>
