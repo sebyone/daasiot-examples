@@ -32,10 +32,19 @@ module.exports = (sequelize, DataTypes) => {
         key: 'id'
       }
     },
+    // needed for the association with DeviceFunction, to filter by property_type
+    // without having to check using the device_model_function_property table
+    property_type: {
+      type: DataTypes.INTEGER,
+      validate: {
+        isIn: [[1, 2, 3, 4]],
+      },
+      allowNull: false
+    },
     value: {
       type: DataTypes.STRING(45),
       allowNull: false,
-    }
+    },
   }, {
     sequelize,
     modelName: 'DeviceFunctionProperty',

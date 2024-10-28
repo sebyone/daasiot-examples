@@ -30,6 +30,13 @@ module.exports = {
         onUpdate: 'CASCADE',
         onDelete: 'CASCADE'
       },
+      property_type: {
+        type: Sequelize.INTEGER,
+        validate: {
+          isIn: [[1, 2, 3, 4]],
+        },
+        allowNull: false
+      },
       value: {
         type: Sequelize.STRING(45),
         allowNull: false
