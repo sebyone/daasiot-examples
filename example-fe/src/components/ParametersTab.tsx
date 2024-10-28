@@ -46,6 +46,7 @@ export default function ParametersTab({ device }: { device: DataDevice | null })
   const [checkedFunctions, setCheckedFunctions] = useState<number[]>([]);
   const [tempParameters, setTempParameters] = useState<{ [key: number]: any }>({});
   const [tempInputs, setTempInputs] = useState<{ [key: number]: any }>({});
+  const [tempOutputs, setTempOutputs] = useState<{ [key: number]: any }>({});
 
   const fetchFunctions = useCallback(async () => {
     if (!device?.id) return;
@@ -94,30 +95,44 @@ export default function ParametersTab({ device }: { device: DataDevice | null })
       try {
         const response = await ConfigService.addFunction(device.id, functionToAdd.id);
 
-        setSelectedFunctions(response);
+        setSelectedFunctions((prevFunctions) => [...prevFunctions, response]);
         setIsAddModalVisible(false);
         message.success('Funzione aggiunta con successo');
       } catch (error) {
         message.error('Errore');
       }
+      fetchProgram();
     },
-    [device?.id]
+
+    [device?.id, fetchProgram]
   );
 
-  const handleDeleteFunctions = useCallback(() => {
-    if (checkedFunctions.length === 0) {
-      message.warning('Seleziona almeno una funzione da eliminare');
+  const handleDeleteFunctions = useCallback(async () => {
+    if (!device?.id) {
       return;
     }
-    setSelectedFunctions((prev) => prev.filter((f) => !checkedFunctions.includes(f.id)));
-    setCheckedFunctions([]);
-    message.success('Funzioni eliminate con successo');
-  }, [checkedFunctions]);
+
+    if (checkedFunctions.length === 0) {
+      message.warning('Seleziona una funzione da eliminare');
+      return;
+    }
+
+    try {
+      for (const functionId of checkedFunctions) {
+        await ConfigService.deleteFunction(device.id, functionId);
+      }
+
+      setSelectedFunctions((prev) => prev.filter((f) => !checkedFunctions.includes(f.id)));
+      setCheckedFunctions([]);
+      message.success('Funzione eliminata con successo');
+    } catch (error) {
+      message.error("Si è verificato un errore durante l'eliminazione della funzione");
+    }
+  }, [device?.id, checkedFunctions]);
 
   const handleParameterChange = useCallback((paramId: number, value: any) => {
     setTempParameters((prev) => ({ ...prev, [paramId]: value }));
   }, []);
-
   const handleInputChange = useCallback((inputId: number, field: 'options1' | 'options2', value: string) => {
     setTempInputs((prev) => ({
       ...prev,
@@ -201,6 +216,41 @@ export default function ParametersTab({ device }: { device: DataDevice | null })
             );
           }
           setTempInputs({});
+        } else if (currentAction === 'uscita') {
+          for (const [outputId, outputData] of Object.entries(tempOutputs)) {
+            const updateData = {
+              param_id: Number(outputId),
+              function_id: currentFunction.function.id,
+              value: outputData.options1,
+            };
+
+            setSelectedFunctions((prev) =>
+              prev.map((func) =>
+                func.id === currentFunction.id
+                  ? {
+                      ...func,
+                      outputs: func.outputs.some((i) => i.param_id === Number(outputId))
+                        ? func.outputs.map((output) =>
+                            output.param_id === Number(outputId) ? { ...output, value: outputData.options1 } : output
+                          )
+                        : [
+                            ...func.outputs,
+                            {
+                              id: Date.now(),
+                              param_id: Number(outputId),
+                              device_function_id: func.id,
+                              value: outputData.options1,
+                              parameter_template: currentFunction.function.outputs.find(
+                                (o) => o.id === Number(outputId)
+                              )!,
+                            },
+                          ],
+                    }
+                  : func
+              )
+            );
+          }
+          setTempOutputs({});
         }
 
         setIsModalVisible(false);
@@ -211,7 +261,7 @@ export default function ParametersTab({ device }: { device: DataDevice | null })
         //message.error(`Errore nell'aggiornamento dei ${currentAction === 'parametro' ? 'parametri' : 'ingressi'}`);
       }
     }
-  }, [currentFunction, device?.id, tempParameters, tempInputs, currentAction]);
+  }, [currentFunction, device?.id, tempParameters, tempInputs, tempOutputs, currentAction]);
 
   const columns = [
     {
@@ -299,6 +349,10 @@ export default function ParametersTab({ device }: { device: DataDevice | null })
         record?.function?.outputs.length > 0 ? (
           <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
             {record.function.outputs.map((output) => output.name).join(', ')}
+            <SettingOutlined
+              onClick={() => handleIconClick(record, 'uscita')}
+              style={{ fontSize: '1rem', color: '#1890ff', cursor: 'pointer' }}
+            />
           </div>
         ) : (
           <Button
@@ -381,7 +435,7 @@ export default function ParametersTab({ device }: { device: DataDevice | null })
           id: input.id,
           name: input.name,
           type: deviceInput ? deviceInput.value : 'GPIO',
-          value: deviceInput.value,
+          value: deviceInput?.value,
         };
       });
 
@@ -441,6 +495,17 @@ export default function ParametersTab({ device }: { device: DataDevice | null })
           render: (text: string, record: any) => <Input placeholder={t('insertValue')} />,
         },
       ];
+
+      const data = currentFunction.function.outputs.map((output) => {
+        const deviceOutput = currentFunction.outputs.find((o) => o.param_id === output.id);
+        return {
+          key: output.id,
+          id: output.id,
+          name: output.name,
+          type: deviceOutput ? deviceOutput.value : 'GPIO',
+          value: deviceOutput?.value,
+        };
+      });
 
       return <Table columns={columns} pagination={false} />;
     } else if (currentAction === 'notifica' && currentFunction) {

@@ -252,7 +252,7 @@ const ConfigService = {
    * deviceid - ID device, functionId - ID funzione selezionata
    * Promise<DeviceFunction> - Oggetto DeviceFunction in cui sono presenti tutti i campi della nuova funzione
    */
-  addFunction: async (deviceId: number, functionId: number): Promise<DeviceFunction[]> => {
+  addFunction: async (deviceId: number, functionId: number): Promise<DeviceFunction> => {
     try {
       const response = await axiosInstance.post(`/devices/${deviceId}/functions`, {
         device_model_function_id: functionId,
@@ -269,10 +269,23 @@ const ConfigService = {
    * id - ID device
    * Promise<DeviceFunction> - Oggetto Function in cui è presente l'id del dispositivo
    */
-  getProgram: async (id: number): Promise<DeviceFunction[]> => {
+  getProgram: async (deviceId: number): Promise<DeviceFunction[]> => {
     try {
-      const response = await axiosInstance.get(`devices/1/functions`);
+      const response = await axiosInstance.get(`devices/${deviceId}/functions`);
       return response.data;
+    } catch (error) {
+      console.error('Error:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Elimina una funzione specifica di un device
+   * id - ID del device
+   */
+  deleteFunction: async (deviceId: number, deviceFunctionId: number): Promise<void> => {
+    try {
+      await axiosInstance.delete(`/devices/${deviceId}/functions/${deviceFunctionId}`);
     } catch (error) {
       console.error('Error:', error);
       throw error;
