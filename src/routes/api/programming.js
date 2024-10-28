@@ -2,8 +2,9 @@ const express = require('express');
 const router = express.Router();
 
 const { sendError, getPaginationParams, toPaginationData } = require('./utilities');
-const { DeviceModel, DeviceModelFunction, DeviceModelFunctionProperty } = require('../../db/models');
+const { DeviceModel, DeviceModelFunction, DeviceModelFunctionProperty, DeviceFunction, DeviceFunctionProperty } = require('../../db/models');
 const db = require('../../db/models');
+const { name } = require('ejs');
 
 
 module.exports = router;
@@ -424,12 +425,65 @@ router.delete('/device_models/:deviceModelId/functions/:dmFuntionId/properties/:
 
 
 router.get('/devices/:deviceId/functions/', async function (req, res) {
-  // 
-  res.send([fake_device_function]);
+  const deviceId = parseInt(req.params.deviceId);
+  try {
+
+    const deviceFunctions = await DeviceFunction.findAll({
+      where: { device_id: deviceId },
+      include: [
+        {
+          model: DeviceModelFunction,
+          as: 'function',
+          include: DEV_MOD_PROPERTY_TYPE_LIST,
+        },
+        'parameters',
+        'inputs',
+        'outputs',
+        'notifications'
+      ]
+    });
+
+
+    let deviceFunctionsJSON = [];
+    for (const deviceFunction of deviceFunctions) {
+      deviceFunctionsJSON.push(addPropertyTemplateToDeviceFunction(deviceFunction));
+    }
+    res.send(deviceFunctionsJSON);
+  }
+  catch (err) {
+    sendError(res, err);
+  }
+
 });
 
 router.get('/devices/:deviceId/functions/:dFuntionId', async function (req, res) {
-  res.send(fake_device_function);
+  const deviceId = parseInt(req.params.deviceId);
+  const deviceFuntionId = parseInt(req.params.dFuntionId);
+  
+  try {
+    const deviceFunction = await DeviceFunction.findByPk(deviceFuntionId, {
+      where: { device_id: deviceId },
+      include: [
+        {
+          model: DeviceModelFunction,
+          as: 'function',
+          include: DEV_MOD_PROPERTY_TYPE_LIST
+        },
+        ...DEV_MOD_PROPERTY_TYPE_LIST,
+      ]
+    });
+
+    if (deviceFunction === null) {
+      res.status(404);
+      throw new Error(`DeviceFunction con id=${deviceFuntionId} non trovato.`);
+    }
+
+    const deviceFunctionJSON = addPropertyTemplateToDeviceFunction(deviceFunction);
+    res.send(deviceFunctionJSON);
+  }
+  catch (err) {
+    sendError(res, err);
+  }
 });
 
 router.post('/devices/:deviceId/functions/', async function (req, res) {
@@ -440,7 +494,105 @@ router.post('/devices/:deviceId/functions/', async function (req, res) {
   // id_device_function
 
 
-  sendError(res, new Error("Not yet implemented."), 501);
+  const t = await db.sequelize.transaction();
+  const deviceId = parseInt(req.params.deviceId);
+
+  try {
+    const deviceFunction = req.body;
+
+    if (!deviceFunction) {
+      res.status(400);
+      throw new Error("Il body della richiesta è vuoto.");
+    }
+
+    if (!deviceFunction.device_model_function_id) {
+      res.status(400);
+      throw new Error("Il campo device_model_function_id è obbligatorio.");
+    }
+
+    const deviceModelFunction = await DeviceModelFunction.findByPk(deviceFunction.device_model_function_id, { transaction: t, include: DEV_MOD_PROPERTY_TYPE_LIST });
+
+    if (deviceModelFunction === null) {
+      res.status(404);
+      throw new Error(`DeviceModelFunction con id=${deviceFunction.device_model_function_id} non trovato.`);
+    }
+
+    if (deviceModelFunction.device_model_id !== deviceId) {
+      res.status(404);
+      throw new Error(`DeviceModelFunction con id=${deviceFunction.device_model_function_id} non appartiene al DeviceModel con id=${deviceId}.`);
+    }
+
+    const newDeviceFunction = await DeviceFunction.create({
+      device_id: deviceId,
+      device_model_function_id: deviceFunction.device_model_function_id,
+      enabled: true
+    }, { transaction: t });
+
+    for (const property_list of DEV_MOD_PROPERTY_TYPE_LIST) {
+      const property_type = DEV_MOD_PROPERTY_TYPE_MAP_REVERSE[property_list];
+
+      if (deviceModelFunction[property_list]) {
+        for (const property of deviceModelFunction[property_list]) {
+          await DeviceFunctionProperty.create({
+            property_id: property.id,
+            device_function_id: newDeviceFunction.id,
+            property_type,
+            value: property.default_value
+          }, { transaction: t });
+        }
+      }
+    }
+
+    const deviceFunctionWithProperties = await DeviceFunction.findByPk(newDeviceFunction.id, {
+      include: [
+        {
+          model: DeviceModelFunction,
+          as: 'function',
+          include: DEV_MOD_PROPERTY_TYPE_LIST
+        },
+        ...DEV_MOD_PROPERTY_TYPE_LIST,
+      ],
+      transaction: t,
+    });
+
+    const deviceFunctionJSON = addPropertyTemplateToDeviceFunction(deviceFunctionWithProperties);
+
+    await t.commit();
+    res.send(deviceFunctionJSON);
+  }
+  catch (err) {
+    await t.rollback();
+    sendError(res, err);
+  }
+});
+
+
+router.delete('/devices/:deviceId/functions/:dFuntionId', async function (req, res) {
+  const t = await db.sequelize.transaction();
+  try {
+    const deviceId = parseInt(req.params.deviceId);
+    const deviceFuntionId = parseInt(req.params.dFuntionId);
+
+    const deviceFunction = await DeviceFunction.findByPk(deviceFuntionId, { transaction: t });
+
+    if (deviceFunction === null) {
+      res.status(404);
+      throw new Error(`DeviceFunction con id=${deviceFuntionId} non trovato.`);
+    }
+
+    if (deviceFunction.device_id !== deviceId) {
+      res.status(404);
+      throw new Error(`DeviceFunction con id=${deviceFuntionId} non appartiene al Device con id=${deviceId}.`);
+    }
+
+    await deviceFunction.destroy({ transaction: t });
+    await t.commit();
+    res.send({ message: `DeviceFunction con id=${deviceFuntionId} eliminato con successo.`});
+  }
+  catch (err) {
+    await t.rollback();
+    sendError(res, err);
+  }
 });
 
 router.all('/devices/:deviceId/functions/:dFuntionId', function (req, res) {
@@ -559,3 +711,23 @@ async function updateDeviceModelFunctionProperty(res, oldProperty, newProperty, 
   
 }
   
+
+function addPropertyTemplateToProperty(property, deviceModelFunction) {
+  const propertyType = DEV_MOD_PROPERTY_TYPE_MAP[property.property_type];  
+  
+  const property_template = deviceModelFunction[propertyType]?.find(property_template => property_template.id === property.property_id);
+  if (property_template) {
+    property.parameter_template = property_template;
+  }
+  return property;
+}
+
+function addPropertyTemplateToDeviceFunction(deviceFunction) {
+  const deviceModelFunction = deviceFunction.function;
+  const deviceFunctionJSON = deviceFunction.toJSON();
+  for (const property_list of DEV_MOD_PROPERTY_TYPE_LIST) {
+    deviceFunctionJSON[property_list] = deviceFunctionJSON[property_list].map(property => addPropertyTemplateToProperty(property, deviceModelFunction));
+  }
+  return deviceFunctionJSON;
+}
+
