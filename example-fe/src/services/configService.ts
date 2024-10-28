@@ -252,7 +252,7 @@ const ConfigService = {
    * deviceid - ID device, functionId - ID funzione selezionata
    * Promise<DeviceFunction> - Oggetto DeviceFunction in cui sono presenti tutti i campi della nuova funzione
    */
-  addFunction: async (deviceId: number, functionId: number): Promise<DeviceFunction> => {
+  addFunction: async (deviceId: number, functionId: number): Promise<DeviceFunction[]> => {
     try {
       const response = await axiosInstance.post(`/devices/${deviceId}/functions`, {
         device_model_function_id: functionId,
@@ -271,7 +271,7 @@ const ConfigService = {
    */
   getProgram: async (id: number): Promise<DeviceFunction[]> => {
     try {
-      const response = await axiosInstance.get(`devices/1/functions`); //??
+      const response = await axiosInstance.get(`devices/1/functions`);
       return response.data;
     } catch (error) {
       console.error('Error:', error);

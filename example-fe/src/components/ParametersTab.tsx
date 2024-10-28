@@ -13,8 +13,16 @@
  */
 import ConfigService from '@/services/configService';
 import { DataDevice, DeviceFunction, Function, FunctionParameter } from '@/types';
-import { BellOutlined, ExportOutlined, ImportOutlined, SettingOutlined, SlidersOutlined } from '@ant-design/icons';
+import {
+  BellOutlined,
+  ControlOutlined,
+  ExportOutlined,
+  ImportOutlined,
+  SettingOutlined,
+  SlidersOutlined,
+} from '@ant-design/icons';
 import { Button, Checkbox, Descriptions, Input, List, message, Modal, Select, Space, Table } from 'antd';
+import { useTranslations } from 'next-intl';
 import React, { useCallback, useEffect, useState } from 'react';
 
 //const mockInputs: InputType[] = [];
@@ -27,6 +35,7 @@ type SelectedItems = {
 };
 
 export default function ParametersTab({ device }: { device: DataDevice | null }) {
+  const t = useTranslations('ParametersTab');
   const [functions, setFunctions] = useState<Function[]>([]);
   const [selectedFunctions, setSelectedFunctions] = useState<DeviceFunction[]>([]);
   const [isModalVisible, setIsModalVisible] = useState(false);
@@ -83,9 +92,9 @@ export default function ParametersTab({ device }: { device: DataDevice | null })
     async (functionToAdd: Function) => {
       if (!device?.id) return;
       try {
-        const newDeviceFunction = await ConfigService.addFunction(device.id, functionToAdd.id);
+        const response = await ConfigService.addFunction(device.id, functionToAdd.id);
 
-        setSelectedFunctions((prev) => [...prev, newDeviceFunction]);
+        setSelectedFunctions(response);
         setIsAddModalVisible(false);
         message.success('Funzione aggiunta con successo');
       } catch (error) {
@@ -212,11 +221,19 @@ export default function ParametersTab({ device }: { device: DataDevice | null })
         <Checkbox checked={checkedFunctions.includes(record.id)} onChange={() => handleSelectFunction(record.id)} />
       ),
     },
-    { title: 'Funzione', dataIndex: ['function', 'name'], key: 'name' },
     {
       title: (
         <Space>
-          <SlidersOutlined /> Parametri
+          <ControlOutlined style={{ fontSize: '1.2rem' }} /> {t('function')}
+        </Space>
+      ),
+      dataIndex: ['function', 'name'],
+      key: 'name',
+    },
+    {
+      title: (
+        <Space>
+          <SlidersOutlined style={{ fontSize: '1.2rem' }} /> {t('parameters')}
         </Space>
       ),
       key: 'parameters',
@@ -245,7 +262,7 @@ export default function ParametersTab({ device }: { device: DataDevice | null })
     {
       title: (
         <Space>
-          <ImportOutlined /> Ingressi
+          <ImportOutlined style={{ fontSize: '1.2rem' }} /> {t('inputs')}
         </Space>
       ),
       key: 'inputs',
@@ -274,7 +291,7 @@ export default function ParametersTab({ device }: { device: DataDevice | null })
     {
       title: (
         <Space>
-          <ExportOutlined /> Uscite
+          <ExportOutlined style={{ fontSize: '1.2rem' }} /> {t('outputs')}
         </Space>
       ),
       key: 'outputs',
@@ -294,7 +311,7 @@ export default function ParametersTab({ device }: { device: DataDevice | null })
     {
       title: (
         <Space>
-          <BellOutlined /> Notifiche
+          <BellOutlined style={{ fontSize: '1.2rem' }} /> {t('notifications')}
         </Space>
       ),
       key: 'notifications',
@@ -317,13 +334,13 @@ export default function ParametersTab({ device }: { device: DataDevice | null })
     if (currentAction === 'ingresso' && currentFunction) {
       const columns = [
         {
-          title: 'Nome',
+          title: t('name'),
           dataIndex: 'name',
           key: 'name',
           render: (text: string) => text,
         },
         {
-          title: 'Tipo',
+          title: t('type'),
           dataIndex: 'type',
           key: 'type',
           render: (text: string, record: any) => {
@@ -344,14 +361,14 @@ export default function ParametersTab({ device }: { device: DataDevice | null })
           },
         },
         {
-          title: 'Valore',
+          title: t('value'),
           dataIndex: 'value',
           key: 'value',
           render: (text: string, record: any) => (
             <Input
               value={tempInputs[record.id]?.options2 ?? ''}
               onChange={(e) => handleInputChange(record.id, 'options2', e.target.value)}
-              placeholder={`Inserisci valore`}
+              placeholder={t('insertValue')}
             />
           ),
         },
@@ -404,13 +421,13 @@ export default function ParametersTab({ device }: { device: DataDevice | null })
     } else if (currentAction === 'uscita' && currentFunction) {
       const columns = [
         {
-          title: 'Nome',
+          title: t('name'),
           dataIndex: 'name',
           key: 'name',
           render: (text: string) => text,
         },
         {
-          title: 'Tipo',
+          title: t('type'),
           dataIndex: 'type',
           key: 'type',
           render: (text: string, record: any) => {
@@ -418,10 +435,10 @@ export default function ParametersTab({ device }: { device: DataDevice | null })
           },
         },
         {
-          title: 'Valore',
+          title: t('value'),
           dataIndex: 'value',
           key: 'value',
-          render: (text: string, record: any) => <Input placeholder={`Inserisci valore`} />,
+          render: (text: string, record: any) => <Input placeholder={t('insertValue')} />,
         },
       ];
 
@@ -429,13 +446,13 @@ export default function ParametersTab({ device }: { device: DataDevice | null })
     } else if (currentAction === 'notifica' && currentFunction) {
       const columns = [
         {
-          title: 'Nome',
+          title: t('name'),
           dataIndex: 'name',
           key: 'name',
           render: (text: string) => text,
         },
         {
-          title: 'Tipo',
+          title: t('type'),
           dataIndex: 'type',
           key: 'type',
           render: (text: string, record: any) => {
@@ -443,10 +460,10 @@ export default function ParametersTab({ device }: { device: DataDevice | null })
           },
         },
         {
-          title: 'Valore',
+          title: t('value'),
           dataIndex: 'value',
           key: 'value',
-          render: (text: string, record: any) => <Input placeholder={`Inserisci valore`} />,
+          render: (text: string, record: any) => <Input placeholder={t('insertValue')} />,
         },
       ];
 
@@ -461,15 +478,15 @@ export default function ParametersTab({ device }: { device: DataDevice | null })
       <Space style={{ width: '100%', justifyContent: 'space-between' }}>
         <Space>
           <Button onClick={handleDeleteFunctions} type="primary">
-            Elimina
+            {t('delete')}
           </Button>
           <Button onClick={() => setIsAddModalVisible(true)} type="primary">
-            Aggiungi
+            {t('add')}
           </Button>
         </Space>
         <Space>
           <Button type="primary">Recall</Button>
-          <Button type="primary">Programma</Button>
+          <Button type="primary">{t('schedule')}</Button>
         </Space>
       </Space>
       <Modal
@@ -482,7 +499,7 @@ export default function ParametersTab({ device }: { device: DataDevice | null })
         {renderModalContent()}
       </Modal>
       <Modal
-        title="Aggiungi Funzione"
+        title={t('addFunction')}
         open={isAddModalVisible}
         onCancel={() => setIsAddModalVisible(false)}
         footer={null}

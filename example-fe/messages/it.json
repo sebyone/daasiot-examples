@@ -150,5 +150,21 @@
   },
   "DaaSUpdater": {
     "mobileMessage": "Questo contenuto non è disponibile sui dispositivi mobile."
+  },
+  "ParametersTab": {
+    "function": "Funzione",
+    "parameters": "Parametri",
+    "inputs": "Ingressi",
+    "outputs": "Uscite",
+    "notifications": "Notifiche",
+    "name": "Nome",
+    "type": "Tipo",
+    "value": "Valore",
+    "insertValue": "Inserisci valore",
+    "edit": "Modifica",
+    "addFunction": "Aggiungi funzione",
+    "delete": "Elimina",
+    "add": "Aggiungi",
+    "schedule": "Programma"
   }
 }

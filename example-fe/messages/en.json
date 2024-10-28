@@ -147,5 +147,21 @@
     "lastUpdateDate": "Last update date:",
     "importantNotes": "Important notes",
     "note": "Make sure your device is connected correctly during the update. Do not interrupt the update process to avoid damage to your device."
+  },
+  "ParametersTab": {
+    "function": "Function",
+    "parameters": "Parameters",
+    "inputs": "Inputs",
+    "outputs": "Outputs",
+    "notifications": "Notifications",
+    "name": "Name",
+    "type": "Type",
+    "value": "Value",
+    "insertValue": "Insert value",
+    "edit": "Edit",
+    "addFunction": "Add function",
+    "delete": "Delete",
+    "add": "Add",
+    "schedule": "Schedule"
   }
 }
