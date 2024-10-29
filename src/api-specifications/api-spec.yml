@@ -2371,166 +2371,166 @@ paths:
         default:
           $ref: '#/components/responses/InternalError'
 
-    post:
-      description: >
-        Aggiunge una nuova funzione al modello di device.
-      tags:
-        - device models
-        - programming
-        - device model functions
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                name:
-                  type: string
-                  description: Nome della funzione
-                  maxLength: 45
-                parameters:
-                  type: array
-                  items:
-                    type: object
-                    description: Parametri della funzione
-                    properties:
-                      name:
-                        type: string
-                        description: Nome del parametro
-                        maxLength: 45
-                      data_type:
-                        type: integer
-                        enum:
-                          - 1
-                          - 2
-                          - 3
-                        description: >
-                          Tipo di dato del parametro
-                          1: i32
-                          2: i16
-                          3: f32
-                          4: string
-                      default_value:
-                        type: string
-                        description: Valore di default del parametro
-                        maxLength: 45
-                      safe_value:
-                        type: string
-                        description: Valore sicuro del parametro
-                        maxLength: 45
-                inputs:
-                  type: array
-                  items:
-                    type: object
-                    description: Input della funzione
-                    properties:
-                      name:
-                        type: string
-                        description: Nome dell'input
-                        maxLength: 45
-                      data_type:
-                        type: integer
-                        enum:
-                          - 1
-                          - 2
-                          - 3
-                        description: >
-                          Tipo di dato dell'input
-                          1: i32
-                          2: i16
-                          3: f32
-                          4: string
-                      default_value:
-                        type: string
-                        description: Valore di default dell'input
-                        maxLength: 45
-                      safe_value:
-                        type: string
-                        description: Valore sicuro dell'input
-                        maxLength: 45
-                outputs:
-                  type: array
-                  items:
-                    type: object
-                    description: Output della funzione
-                    properties:
-                      name:
-                        type: string
-                        description: Nome dell'output
-                        maxLength: 45
-                      data_type:
-                        type: integer
-                        enum:
-                          - 1
-                          - 2
-                          - 3
-                        description: >
-                          Tipo di dato dell'output
-                          1: i32
-                          2: i16
-                          3: f32
-                          4: string
-                      default_value:
-                        type: string
-                        description: Valore di default dell'output
-                        maxLength: 45
-                      safe_value:
-                        type: string
-                        description: Valore sicuro dell'output
-                        maxLength: 45
-                notifications:
-                  type: array
-                  items:
-                    type: object
-                    description: Notifiche della funzione
-                    properties:
-                      name:
-                        type: string
-                        description: Nome della notifica
-                        maxLength: 45
-                      data_type:
-                        type: integer
-                        enum:
-                          - 1
-                          - 2
-                          - 3
-                        description: >
-                          Tipo di dato della notifica
-                          1: i32
-                          2: i16
-                          3: f32
-                          4: string
-                      default_value:
-                        type: string
-                        description: Valore di default della notifica
-                        maxLength: 45
-                      safe_value:
-                        type: string
-                        description: Valore sicuro della notifica
-                        maxLength: 45
-              required:
-                - name
-      responses:
-        '200':
-          description: Funzione del modello di device aggiunta con successo.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/DeviceModelFunction'
-        '400':
-          description: Errore nei parametri della richiesta.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '404':
-          description: Modello di device non trovato.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        default:
-          $ref: '#/components/responses/InternalError'
+    # post:
+    #   description: >
+    #     Aggiunge una nuova funzione al modello di device.
+    #   tags:
+    #     - device models
+    #     - programming
+    #     - device model functions
+    #   requestBody:
+    #     content:
+    #       application/json:
+    #         schema:
+    #           type: object
+    #           properties:
+    #             name:
+    #               type: string
+    #               description: Nome della funzione
+    #               maxLength: 45
+    #             parameters:
+    #               type: array
+    #               items:
+    #                 type: object
+    #                 description: Parametri della funzione
+    #                 properties:
+    #                   name:
+    #                     type: string
+    #                     description: Nome del parametro
+    #                     maxLength: 45
+    #                   data_type:
+    #                     type: integer
+    #                     enum:
+    #                       - 1
+    #                       - 2
+    #                       - 3
+    #                     description: >
+    #                       Tipo di dato del parametro
+    #                       1: i32
+    #                       2: i16
+    #                       3: f32
+    #                       4: string
+    #                   default_value:
+    #                     type: string
+    #                     description: Valore di default del parametro
+    #                     maxLength: 45
+    #                   safe_value:
+    #                     type: string
+    #                     description: Valore sicuro del parametro
+    #                     maxLength: 45
+    #             inputs:
+    #               type: array
+    #               items:
+    #                 type: object
+    #                 description: Input della funzione
+    #                 properties:
+    #                   name:
+    #                     type: string
+    #                     description: Nome dell'input
+    #                     maxLength: 45
+    #                   data_type:
+    #                     type: integer
+    #                     enum:
+    #                       - 1
+    #                       - 2
+    #                       - 3
+    #                     description: >
+    #                       Tipo di dato dell'input
+    #                       1: i32
+    #                       2: i16
+    #                       3: f32
+    #                       4: string
+    #                   default_value:
+    #                     type: string
+    #                     description: Valore di default dell'input
+    #                     maxLength: 45
+    #                   safe_value:
+    #                     type: string
+    #                     description: Valore sicuro dell'input
+    #                     maxLength: 45
+    #             outputs:
+    #               type: array
+    #               items:
+    #                 type: object
+    #                 description: Output della funzione
+    #                 properties:
+    #                   name:
+    #                     type: string
+    #                     description: Nome dell'output
+    #                     maxLength: 45
+    #                   data_type:
+    #                     type: integer
+    #                     enum:
+    #                       - 1
+    #                       - 2
+    #                       - 3
+    #                     description: >
+    #                       Tipo di dato dell'output
+    #                       1: i32
+    #                       2: i16
+    #                       3: f32
+    #                       4: string
+    #                   default_value:
+    #                     type: string
+    #                     description: Valore di default dell'output
+    #                     maxLength: 45
+    #                   safe_value:
+    #                     type: string
+    #                     description: Valore sicuro dell'output
+    #                     maxLength: 45
+    #             notifications:
+    #               type: array
+    #               items:
+    #                 type: object
+    #                 description: Notifiche della funzione
+    #                 properties:
+    #                   name:
+    #                     type: string
+    #                     description: Nome della notifica
+    #                     maxLength: 45
+    #                   data_type:
+    #                     type: integer
+    #                     enum:
+    #                       - 1
+    #                       - 2
+    #                       - 3
+    #                     description: >
+    #                       Tipo di dato della notifica
+    #                       1: i32
+    #                       2: i16
+    #                       3: f32
+    #                       4: string
+    #                   default_value:
+    #                     type: string
+    #                     description: Valore di default della notifica
+    #                     maxLength: 45
+    #                   safe_value:
+    #                     type: string
+    #                     description: Valore sicuro della notifica
+    #                     maxLength: 45
+    #           required:
+    #             - name
+    #   responses:
+    #     '200':
+    #       description: Funzione del modello di device aggiunta con successo.
+    #       content:
+    #         application/json:
+    #           schema:
+    #             $ref: '#/components/schemas/DeviceModelFunction'
+    #     '400':
+    #       description: Errore nei parametri della richiesta.
+    #       content:
+    #         application/json:
+    #           schema:
+    #             $ref: '#/components/schemas/Error'
+    #     '404':
+    #       description: Modello di device non trovato.
+    #       content:
+    #         application/json:
+    #           schema:
+    #             $ref: '#/components/schemas/Error'
+    #     default:
+    #       $ref: '#/components/responses/InternalError'
 
     # template di tutte le funzionzi disponibili per un certo modello di device
   /device_models/{deviceModelId}/functions/{deviceModelFunctionId}:
@@ -2571,113 +2571,113 @@ paths:
           $ref: '#/components/responses/InternalError'
 
 
-    put:
-      description: Aggiorna una funzione del modello di device specifica.
-      tags:
-        - device models
-        - programming
-        - device model functions
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/DeviceModelFunction'
-      responses:
-        '200':
-          description: Funzione del modello di device aggiornata con successo.
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                    description: Messaggio di successo
-        '400':
-          description: Errore nei parametri della richiesta.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '404':
-          description: Funzione del modello di device non trovata.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        default:
-          $ref: '#/components/responses/InternalError'
+  #   put:
+  #     description: Aggiorna una funzione del modello di device specifica.
+  #     tags:
+  #       - device models
+  #       - programming
+  #       - device model functions
+  #     requestBody:
+  #       content:
+  #         application/json:
+  #           schema:
+  #             $ref: '#/components/schemas/DeviceModelFunction'
+  #     responses:
+  #       '200':
+  #         description: Funzione del modello di device aggiornata con successo.
+  #         content:
+  #           application/json:
+  #             schema:
+  #               type: object
+  #               properties:
+  #                 message:
+  #                   type: string
+  #                   description: Messaggio di successo
+  #       '400':
+  #         description: Errore nei parametri della richiesta.
+  #         content:
+  #           application/json:
+  #             schema:
+  #               $ref: '#/components/schemas/Error'
+  #       '404':
+  #         description: Funzione del modello di device non trovata.
+  #         content:
+  #           application/json:
+  #             schema:
+  #               $ref: '#/components/schemas/Error'
+  #       default:
+  #         $ref: '#/components/responses/InternalError'
 
 
-    delete:
-      tags:
-        - device models
-        - programming
-        - device model functions
-      responses:
-        '200':
-          description: Funzione del modello di device eliminata con successo.
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                    description: Messaggio di successo
-        '404':
-          description: Funzione del modello di device non trovata.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        default:
-          $ref: '#/components/responses/InternalError'
+  #   delete:
+  #     tags:
+  #       - device models
+  #       - programming
+  #       - device model functions
+  #     responses:
+  #       '200':
+  #         description: Funzione del modello di device eliminata con successo.
+  #         content:
+  #           application/json:
+  #             schema:
+  #               type: object
+  #               properties:
+  #                 message:
+  #                   type: string
+  #                   description: Messaggio di successo
+  #       '404':
+  #         description: Funzione del modello di device non trovata.
+  #         content:
+  #           application/json:
+  #             schema:
+  #               $ref: '#/components/schemas/Error'
+  #       default:
+  #         $ref: '#/components/responses/InternalError'
 
-  /device_models/{deviceModelId}/functions/{deviceModelFunctionId}/properties/{propertyId}:
-    delete:
-      tags:
-        - device models
-        - programming
-        - device model functions
-      parameters:
-        - name: deviceModelId
-          in: path
-          description: ID del modello di device
-          required: true
-          schema:
-            type: integer
-        - name: deviceModelFunctionId
-          in: path
-          description: ID della funzione del modello di device
-          required: true
-          schema:
-            type: integer
-        - name: propertyId
-          in: path
-          description: ID della proprietà della funzione del modello di device
-          required: true
-          schema:
-            type: integer
-      responses:
-        '200':
-          description: Proprietà della funzione del modello di device eliminata con successo.
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                    description: Messaggio di successo
-        '404':
-          description: Proprietà della funzione del modello di device non trovata.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        default:
-          $ref: '#/components/responses/InternalError'
+  # /device_models/{deviceModelId}/functions/{deviceModelFunctionId}/properties/{propertyId}:
+  #   delete:
+  #     tags:
+  #       - device models
+  #       - programming
+  #       - device model functions
+  #     parameters:
+  #       - name: deviceModelId
+  #         in: path
+  #         description: ID del modello di device
+  #         required: true
+  #         schema:
+  #           type: integer
+  #       - name: deviceModelFunctionId
+  #         in: path
+  #         description: ID della funzione del modello di device
+  #         required: true
+  #         schema:
+  #           type: integer
+  #       - name: propertyId
+  #         in: path
+  #         description: ID della proprietà della funzione del modello di device
+  #         required: true
+  #         schema:
+  #           type: integer
+  #     responses:
+  #       '200':
+  #         description: Proprietà della funzione del modello di device eliminata con successo.
+  #         content:
+  #           application/json:
+  #             schema:
+  #               type: object
+  #               properties:
+  #                 message:
+  #                   type: string
+  #                   description: Messaggio di successo
+  #       '404':
+  #         description: Proprietà della funzione del modello di device non trovata.
+  #         content:
+  #           application/json:
+  #             schema:
+  #               $ref: '#/components/schemas/Error'
+  #       default:
+  #         $ref: '#/components/responses/InternalError'
 
 
   /devices/{deviceId}/functions:
