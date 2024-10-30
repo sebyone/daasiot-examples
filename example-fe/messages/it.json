@@ -28,7 +28,7 @@
     "selectDevice": "Seleziona un dispositivo nella lista per visualizzarne i dettagli",
     "mobileMessage": "Questo contenuto non è disponibile sui dispositivi mobile.",
     "general": "Generali",
-    "program": "Programma",
+    "config": "Configurazione",
     "events": "Eventi DDO",
     "search": "Cerca...",
     "function": "Funzione",
@@ -163,8 +163,8 @@
     "insertValue": "Inserisci valore",
     "edit": "Modifica",
     "addFunction": "Aggiungi funzione",
-    "delete": "Elimina",
-    "add": "Aggiungi",
-    "schedule": "Programma"
+    "delete": "Elimina funzione",
+    "schedule": "Applica configurazione",
+    "recall": "Importa configurazione"
   }
 }

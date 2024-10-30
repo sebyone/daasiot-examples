@@ -15,7 +15,10 @@ import ConfigService from '@/services/configService';
 import { DataDevice, DeviceFunction, Function, FunctionParameter } from '@/types';
 import {
   BellOutlined,
+  CloudDownloadOutlined,
+  CloudUploadOutlined,
   ControlOutlined,
+  DeleteOutlined,
   ExportOutlined,
   ImportOutlined,
   SettingOutlined,
@@ -25,15 +28,6 @@ import { Button, Checkbox, Descriptions, Input, List, message, Modal, Select, Sp
 import { useTranslations } from 'next-intl';
 import React, { useCallback, useEffect, useState } from 'react';
 
-//const mockInputs: InputType[] = [];
-
-type SelectedItems = {
-  [key: number]: {
-    parametro?: { [key: number]: string };
-    ingresso?: { [key: number]: { options1?: string; options2?: string } };
-  };
-};
-
 export default function ParametersTab({ device }: { device: DataDevice | null }) {
   const t = useTranslations('ParametersTab');
   const [functions, setFunctions] = useState<Function[]>([]);
@@ -42,7 +36,6 @@ export default function ParametersTab({ device }: { device: DataDevice | null })
   const [isAddModalVisible, setIsAddModalVisible] = useState(false);
   const [currentAction, setCurrentAction] = useState<string | null>(null);
   const [currentFunction, setCurrentFunction] = useState<DeviceFunction | null>(null);
-  const [selectedItems, setSelectedItems] = useState<SelectedItems>({});
   const [checkedFunctions, setCheckedFunctions] = useState<number[]>([]);
   const [tempParameters, setTempParameters] = useState<{ [key: number]: any }>({});
   const [tempInputs, setTempInputs] = useState<{ [key: number]: any }>({});
@@ -117,148 +110,124 @@ export default function ParametersTab({ device }: { device: DataDevice | null })
       return;
     }
 
+    const loadingMessage = message.loading('Eliminazione in corso...', 0);
+
+    const results: { success: boolean; functionId: number; error?: any }[] = [];
+
     try {
       for (const functionId of checkedFunctions) {
-        await ConfigService.deleteFunction(device.id, functionId);
+        try {
+          if (results.length > 0) {
+            await new Promise((resolve) => setTimeout(resolve, 500));
+          }
+
+          await ConfigService.deleteFunction(device.id, functionId);
+          results.push({ success: true, functionId });
+        } catch (error: any) {
+          if (error?.error_name === 'SequelizeTimeoutError' && error?.message?.includes('database is locked')) {
+            try {
+              await new Promise((resolve) => setTimeout(resolve, 1500));
+              await ConfigService.deleteFunction(device.id, functionId);
+              results.push({ success: true, functionId });
+            } catch (retryError) {
+              results.push({ success: false, functionId, error: retryError });
+            }
+          } else {
+            results.push({ success: false, functionId, error });
+          }
+        }
       }
 
-      setSelectedFunctions((prev) => prev.filter((f) => !checkedFunctions.includes(f.id)));
-      setCheckedFunctions([]);
-      message.success('Funzione eliminata con successo');
+      loadingMessage();
+
+      const successfulDeletes = results.filter((result) => result.success).map((result) => result.functionId);
+
+      const failedDeletes = results.filter((result) => !result.success).map((result) => result.functionId);
+
+      if (successfulDeletes.length > 0) {
+        setSelectedFunctions((prev) => prev.filter((f) => !successfulDeletes.includes(f.id)));
+        setCheckedFunctions((prev) => prev.filter((id) => !successfulDeletes.includes(id)));
+      }
+
+      if (successfulDeletes.length > 0) {
+        message.success(
+          successfulDeletes.length === 1
+            ? 'Funzione eliminata con successo'
+            : `${successfulDeletes.length} funzioni eliminate con successo`
+        );
+      }
+
+      if (failedDeletes.length > 0) {
+        message.error(
+          failedDeletes.length === 1
+            ? "Errore nell'eliminazione della funzione"
+            : `Errore nell'eliminazione di ${failedDeletes.length} funzioni`
+        );
+      }
     } catch (error) {
-      message.error("Si è verificato un errore durante l'eliminazione della funzione");
+      message.error("Si è verificato un errore durante l'eliminazione delle funzioni");
+    } finally {
+      loadingMessage();
     }
   }, [device?.id, checkedFunctions]);
 
   const handleParameterChange = useCallback((paramId: number, value: any) => {
     setTempParameters((prev) => ({ ...prev, [paramId]: value }));
   }, []);
+
   const handleInputChange = useCallback((inputId: number, field: 'options1' | 'options2', value: string) => {
-    setTempInputs((prev) => ({
-      ...prev,
-      [inputId]: {
-        ...prev[inputId],
-        [field]: value,
-      },
-    }));
+    if (field === 'options2') {
+      setTempInputs((prev) => ({
+        ...prev,
+        [inputId]: value,
+      }));
+    }
+  }, []);
+
+  const handleOutputChange = useCallback((outputId: number, field: 'options1' | 'options2', value: string) => {
+    if (field === 'options2') {
+      setTempOutputs((prev) => ({
+        ...prev,
+        [outputId]: value,
+      }));
+    }
   }, []);
 
   const handleModalOk = useCallback(async () => {
     if (currentFunction && device?.id) {
       try {
+        let updatedFunction: DeviceFunction = { ...currentFunction };
+
         if (currentAction === 'parametro') {
-          for (const [paramId, value] of Object.entries(tempParameters)) {
-            const updateData = {
-              param_id: Number(paramId),
-              function_id: currentFunction.function.id,
-              value: value,
-            };
-
-            setSelectedFunctions((prev) =>
-              prev.map((func) =>
-                func.id === currentFunction.id
-                  ? {
-                      ...func,
-                      parameters: func.parameters.some((p) => p.property_id === Number(paramId))
-                        ? func.parameters.map((param) =>
-                            param.property_id === Number(paramId) ? { ...param, value } : param
-                          )
-                        : [
-                            ...func.parameters,
-                            {
-                              id: Date.now(),
-                              property_id: Number(paramId),
-                              device_function_id: func.id,
-                              value,
-                              parameter_template: currentFunction.function.parameters.find(
-                                (p) => p.id === Number(paramId)
-                              )!,
-                            },
-                          ],
-                    }
-                  : func
-              )
-            );
-          }
-          setTempParameters({});
+          updatedFunction.parameters = updatedFunction.parameters.map((param) => ({
+            ...param,
+            value: tempParameters[param.property_id] || param.value,
+          }));
         } else if (currentAction === 'ingresso') {
-          for (const [inputId, inputData] of Object.entries(tempInputs)) {
-            const updateData = {
-              param_id: Number(inputId),
-              function_id: currentFunction.function.id,
-              value: inputData.options1,
-            };
-
-            setSelectedFunctions((prev) =>
-              prev.map((func) =>
-                func.id === currentFunction.id
-                  ? {
-                      ...func,
-                      inputs: func.inputs.some((i) => i.param_id === Number(inputId))
-                        ? func.inputs.map((input) =>
-                            input.param_id === Number(inputId) ? { ...input, value: inputData.options1 } : input
-                          )
-                        : [
-                            ...func.inputs,
-                            {
-                              id: Date.now(),
-                              param_id: Number(inputId),
-                              device_function_id: func.id,
-                              value: inputData.options1,
-                              parameter_template: currentFunction.function.inputs.find(
-                                (i) => i.id === Number(inputId)
-                              )!,
-                            },
-                          ],
-                    }
-                  : func
-              )
-            );
-          }
-          setTempInputs({});
+          updatedFunction.inputs = updatedFunction.inputs.map((input) => ({
+            ...input,
+            value: tempInputs[input.property_id] || input.value,
+          }));
         } else if (currentAction === 'uscita') {
-          for (const [outputId, outputData] of Object.entries(tempOutputs)) {
-            const updateData = {
-              param_id: Number(outputId),
-              function_id: currentFunction.function.id,
-              value: outputData.options1,
-            };
-
-            setSelectedFunctions((prev) =>
-              prev.map((func) =>
-                func.id === currentFunction.id
-                  ? {
-                      ...func,
-                      outputs: func.outputs.some((i) => i.param_id === Number(outputId))
-                        ? func.outputs.map((output) =>
-                            output.param_id === Number(outputId) ? { ...output, value: outputData.options1 } : output
-                          )
-                        : [
-                            ...func.outputs,
-                            {
-                              id: Date.now(),
-                              param_id: Number(outputId),
-                              device_function_id: func.id,
-                              value: outputData.options1,
-                              parameter_template: currentFunction.function.outputs.find(
-                                (o) => o.id === Number(outputId)
-                              )!,
-                            },
-                          ],
-                    }
-                  : func
-              )
-            );
-          }
-          setTempOutputs({});
+          updatedFunction.outputs = updatedFunction.outputs.map((output) => ({
+            ...output,
+            value: tempOutputs[output.property_id] || output.value,
+          }));
         }
 
-        setIsModalVisible(false);
+        await ConfigService.updateFunction(device.id, currentFunction.id, updatedFunction);
 
-        //message.success(`${currentAction === 'parametro' ? 'Parametri' : 'Ingressi'} aggiornati correttamente`);
+        setSelectedFunctions((prev) => prev.map((func) => (func.id === currentFunction.id ? updatedFunction : func)));
+
+        setIsModalVisible(false);
+        setTempParameters({});
+        setTempInputs({});
+        setTempOutputs({});
+
+        message.success(`${currentAction} aggiornato correttamente`);
       } catch (error) {
-        console.error(`Error updating ${currentAction === 'parametro' ? 'parameters' : 'inputs'}:`, error);
-        //message.error(`Errore nell'aggiornamento dei ${currentAction === 'parametro' ? 'parametri' : 'ingressi'}`);
+        console.error(`Error updating ${currentAction}:`, error);
+        message.error(`Errore nell'aggiornamento di ${currentAction}`);
       }
     }
   }, [currentFunction, device?.id, tempParameters, tempInputs, tempOutputs, currentAction]);
@@ -321,8 +290,8 @@ export default function ParametersTab({ device }: { device: DataDevice | null })
           <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
             {record.function.inputs
               .map((input) => {
-                const deviceInput = record.inputs.find((i) => i.param_id === input.id);
-                return `${input.name}`;
+                const deviceInput = record.inputs.find((i) => i.property_id === input.id);
+                return `${input.name}: ${deviceInput ? deviceInput.value : ''}`;
               })
               .join(', ')}
             <SettingOutlined
@@ -348,7 +317,12 @@ export default function ParametersTab({ device }: { device: DataDevice | null })
       render: (_: any, record: DeviceFunction) =>
         record?.function?.outputs.length > 0 ? (
           <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
-            {record.function.outputs.map((output) => output.name).join(', ')}
+            {record.function.outputs
+              .map((output) => {
+                const deviceOutput = record.outputs.find((o) => o.property_id === output.id);
+                return `${output.name}: ${deviceOutput ? deviceOutput.value : ''}`;
+              })
+              .join(', ')}
             <SettingOutlined
               onClick={() => handleIconClick(record, 'uscita')}
               style={{ fontSize: '1rem', color: '#1890ff', cursor: 'pointer' }}
@@ -400,11 +374,7 @@ export default function ParametersTab({ device }: { device: DataDevice | null })
           render: (text: string, record: any) => {
             const options = ['GPIO', 'DIN'];
             return (
-              <Select
-                value={tempInputs[record.id]?.options1 ?? text}
-                onChange={(value) => handleInputChange(record.id, 'options1', value)}
-                style={{ width: '100%' }}
-              >
+              <Select value={text} style={{ width: '100%' }}>
                 {options.map((option) => (
                   <Select.Option key={option} value={option}>
                     {option}
@@ -418,24 +388,74 @@ export default function ParametersTab({ device }: { device: DataDevice | null })
           title: t('value'),
           dataIndex: 'value',
           key: 'value',
-          render: (text: string, record: any) => (
-            <Input
-              value={tempInputs[record.id]?.options2 ?? ''}
-              onChange={(e) => handleInputChange(record.id, 'options2', e.target.value)}
-              placeholder={t('insertValue')}
-            />
-          ),
+          render: (text: string, record: any) => {
+            const deviceInput = currentFunction.inputs.find((i) => i.property_id === record.id);
+            return (
+              <Input
+                value={tempInputs[record.id] ?? (deviceInput ? deviceInput.value : '')}
+                onChange={(e) => handleInputChange(record.id, 'options2', e.target.value)}
+                placeholder={t('insertValue')}
+              />
+            );
+          },
         },
       ];
 
       const data = currentFunction.function.inputs.map((input) => {
-        const deviceInput = currentFunction.inputs.find((i) => i.param_id === input.id);
+        const deviceInput = currentFunction.inputs.find((i) => i.property_id === input.id);
         return {
           key: input.id,
           id: input.id,
           name: input.name,
-          type: deviceInput ? deviceInput.value : 'GPIO',
-          value: deviceInput?.value,
+          type: 'GPIO',
+          value: deviceInput?.value || '',
+        };
+      });
+
+      return <Table columns={columns} dataSource={data} pagination={false} />;
+    } else if (currentAction === 'uscita' && currentFunction) {
+      const columns = [
+        {
+          title: t('name'),
+          dataIndex: 'name',
+          key: 'name',
+          render: (text: string) => text,
+        },
+        {
+          title: t('type'),
+          dataIndex: 'type',
+          key: 'type',
+          render: (text: string) => (
+            <Select value={text} style={{ width: '100%' }}>
+              <Select.Option value="GPIO">GPIO</Select.Option>
+            </Select>
+          ),
+        },
+        {
+          title: t('value'),
+          dataIndex: 'value',
+          key: 'value',
+          render: (text: string, record: any) => {
+            const deviceOutput = currentFunction.outputs.find((o) => o.property_id === record.id);
+            return (
+              <Input
+                value={tempOutputs[record.id] ?? (deviceOutput ? deviceOutput.value : '')}
+                onChange={(e) => handleOutputChange(record.id, 'options2', e.target.value)}
+                placeholder={t('insertValue')}
+              />
+            );
+          },
+        },
+      ];
+
+      const data = currentFunction.function.outputs.map((output) => {
+        const deviceOutput = currentFunction.outputs.find((o) => o.property_id === output.id);
+        return {
+          key: output.id,
+          id: output.id,
+          name: output.name,
+          type: 'GPIO',
+          value: deviceOutput?.value || '',
         };
       });
 
@@ -472,42 +492,6 @@ export default function ParametersTab({ device }: { device: DataDevice | null })
           })}
         </Space>
       );
-    } else if (currentAction === 'uscita' && currentFunction) {
-      const columns = [
-        {
-          title: t('name'),
-          dataIndex: 'name',
-          key: 'name',
-          render: (text: string) => text,
-        },
-        {
-          title: t('type'),
-          dataIndex: 'type',
-          key: 'type',
-          render: (text: string, record: any) => {
-            return <Select style={{ width: '100%' }}></Select>;
-          },
-        },
-        {
-          title: t('value'),
-          dataIndex: 'value',
-          key: 'value',
-          render: (text: string, record: any) => <Input placeholder={t('insertValue')} />,
-        },
-      ];
-
-      const data = currentFunction.function.outputs.map((output) => {
-        const deviceOutput = currentFunction.outputs.find((o) => o.param_id === output.id);
-        return {
-          key: output.id,
-          id: output.id,
-          name: output.name,
-          type: deviceOutput ? deviceOutput.value : 'GPIO',
-          value: deviceOutput?.value,
-        };
-      });
-
-      return <Table columns={columns} pagination={false} />;
     } else if (currentAction === 'notifica' && currentFunction) {
       const columns = [
         {
@@ -539,19 +523,31 @@ export default function ParametersTab({ device }: { device: DataDevice | null })
 
   return (
     <Space direction="vertical" style={{ width: '100%' }}>
-      <Table columns={columns} dataSource={selectedFunctions} rowKey="id" pagination={false} />
+      <Table columns={columns} dataSource={selectedFunctions} rowKey="id" pagination={false} scroll={{ y: 210 }} />
       <Space style={{ width: '100%', justifyContent: 'space-between' }}>
         <Space>
-          <Button onClick={handleDeleteFunctions} type="primary">
+          <Button
+            onClick={handleDeleteFunctions}
+            type="primary"
+            icon={<DeleteOutlined style={{ fontSize: '1.2rem' }} />}
+          >
             {t('delete')}
           </Button>
-          <Button onClick={() => setIsAddModalVisible(true)} type="primary">
-            {t('add')}
+          <Button
+            onClick={() => setIsAddModalVisible(true)}
+            type="primary"
+            icon={<ControlOutlined style={{ fontSize: '1.2rem' }} />}
+          >
+            {t('addFunction')}
           </Button>
         </Space>
         <Space>
-          <Button type="primary">Recall</Button>
-          <Button type="primary">{t('schedule')}</Button>
+          <Button type="primary" icon={<CloudDownloadOutlined style={{ fontSize: '1.2rem' }} />}>
+            {t('recall')}
+          </Button>
+          <Button type="primary" icon={<CloudUploadOutlined style={{ fontSize: '1.2rem' }} />}>
+            {t('schedule')}
+          </Button>
         </Space>
       </Space>
       <Modal

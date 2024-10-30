@@ -27,7 +27,7 @@
     "selectDevice": "Select a device in the list to view its details",
     "mobileMessage": "This content is not available on mobile devices.",
     "general": "General",
-    "program": "Schedule",
+    "config": "Configuration",
     "events": "DDO Events",
     "search": "Search...",
     "function": "Function",
@@ -160,8 +160,8 @@
     "insertValue": "Insert value",
     "edit": "Edit",
     "addFunction": "Add function",
-    "delete": "Delete",
-    "add": "Add",
-    "schedule": "Schedule"
+    "delete": "Delete function",
+    "schedule": "Apply configuration",
+    "recall": "Import configuration"
   }
 }

@@ -22,8 +22,8 @@ import {
   InfoCircleOutlined,
   LoadingOutlined,
   PlusCircleOutlined,
-  ScheduleOutlined,
   SearchOutlined,
+  SettingOutlined,
   UnorderedListOutlined,
 } from '@ant-design/icons';
 import {
@@ -353,7 +353,7 @@ export default function Dispositivi() {
       key: '2',
       label: (
         <span style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          {<ScheduleOutlined style={{ fontSize: '1.1rem' }} />} {t('program')}
+          {<SettingOutlined style={{ fontSize: '1.1rem' }} />} {t('config')}
         </span>
       ),
       children: <ParametersTab key={selectedDevice?.id} device={selectedDevice} />,

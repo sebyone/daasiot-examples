@@ -19,7 +19,6 @@ import {
   DeviceFunction,
   DeviceGroup,
   DeviceModel,
-  DeviceModelGroup,
   DinDataType,
   DinFormData,
   DinLocalDataType,
@@ -27,7 +26,6 @@ import {
   FormDataDevice,
   Function,
   LinkDataType,
-  LinkFormData,
   MapDataType,
   StatusDataType,
 } from '@/types';
@@ -272,6 +270,21 @@ const ConfigService = {
   getProgram: async (deviceId: number): Promise<DeviceFunction[]> => {
     try {
       const response = await axiosInstance.get(`devices/${deviceId}/functions`);
+      return response.data;
+    } catch (error) {
+      console.error('Error:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Aggiorna una funzione esistente
+   * deviceId - ID del device, deviceFunctionId - ID della funzione da aggiornare
+   * func - Oggetto DeviceFunction con i nuovi dati della funzione
+   */
+  updateFunction: async (deviceId: number, deviceFunctionId: number, func: DeviceFunction): Promise<void> => {
+    try {
+      const response = await axiosInstance.put(`/devices/${deviceId}/functions/${deviceFunctionId}`, func);
       return response.data;
     } catch (error) {
       console.error('Error:', error);
