@@ -40,6 +40,7 @@ export default function ParametersTab({ device }: { device: DataDevice | null })
   const [tempParameters, setTempParameters] = useState<{ [key: number]: any }>({});
   const [tempInputs, setTempInputs] = useState<{ [key: number]: any }>({});
   const [tempOutputs, setTempOutputs] = useState<{ [key: number]: any }>({});
+  const [isDeleteConfirmVisible, setIsDeleteConfirmVisible] = useState<boolean>(false);
 
   const fetchFunctions = useCallback(async () => {
     if (!device?.id) return;
@@ -100,7 +101,22 @@ export default function ParametersTab({ device }: { device: DataDevice | null })
     [device?.id, fetchProgram]
   );
 
-  const handleDeleteFunctions = useCallback(async () => {
+  const handleDeleteFunctions = useCallback(() => {
+    if (!device?.id) {
+      return;
+    }
+
+    if (checkedFunctions.length === 0) {
+      message.warning('Seleziona una funzione da eliminare');
+      return;
+    }
+
+    setIsDeleteConfirmVisible(true);
+  }, [device?.id, checkedFunctions]);
+
+  const confirmDelete = useCallback(async () => {
+    setIsDeleteConfirmVisible(false);
+
     if (!device?.id) {
       return;
     }
@@ -141,7 +157,6 @@ export default function ParametersTab({ device }: { device: DataDevice | null })
       loadingMessage();
 
       const successfulDeletes = results.filter((result) => result.success).map((result) => result.functionId);
-
       const failedDeletes = results.filter((result) => !result.success).map((result) => result.functionId);
 
       if (successfulDeletes.length > 0) {
@@ -300,10 +315,9 @@ export default function ParametersTab({ device }: { device: DataDevice | null })
             />
           </div>
         ) : (
-          <Button
-            icon={<SettingOutlined style={{ fontSize: '1rem', color: '#1890ff', cursor: 'pointer' }} />}
+          <SettingOutlined
+            style={{ fontSize: '1rem', color: '#1890ff', cursor: 'pointer' }}
             onClick={() => handleIconClick(record, 'ingresso')}
-            style={{ border: 'none', outline: 'none', backgroundColor: 'transparent' }}
           />
         ),
     },
@@ -329,10 +343,9 @@ export default function ParametersTab({ device }: { device: DataDevice | null })
             />
           </div>
         ) : (
-          <Button
-            icon={<SettingOutlined style={{ fontSize: '1rem', color: '#1890ff', cursor: 'pointer' }} />}
+          <SettingOutlined
+            style={{ fontSize: '1rem', color: '#1890ff', cursor: 'pointer' }}
             onClick={() => handleIconClick(record, 'uscita')}
-            style={{ border: 'none', outline: 'none', backgroundColor: 'transparent' }}
           />
         ),
     },
@@ -349,10 +362,9 @@ export default function ParametersTab({ device }: { device: DataDevice | null })
             {record.function.notifications.map((notification) => notification.name).join(', ')}
           </div>
         ) : (
-          <Button
-            icon={<SettingOutlined style={{ fontSize: '1rem', color: '#1890ff', cursor: 'pointer' }} />}
+          <SettingOutlined
+            style={{ fontSize: '1rem', color: '#1890ff', cursor: 'pointer' }}
             onClick={() => handleIconClick(record, 'notifica')}
-            style={{ border: 'none', outline: 'none', backgroundColor: 'transparent' }}
           />
         ),
     },
@@ -467,7 +479,7 @@ export default function ParametersTab({ device }: { device: DataDevice | null })
             const deviceParam = currentFunction.parameters.find((p) => p.property_id === param.id);
             return (
               <Descriptions key={param.id} column={1} bordered>
-                <Descriptions.Item label={param.name} labelStyle={{ fontWeight: 'bold' }}>
+                <Descriptions.Item label={param.name} labelStyle={{ fontWeight: 'bold', width: '200px' }}>
                   {param.name === 'mode' ? (
                     <Select
                       value={tempParameters[param.id] ?? (deviceParam ? deviceParam.value : undefined)}
@@ -574,6 +586,22 @@ export default function ParametersTab({ device }: { device: DataDevice | null })
             </List.Item>
           )}
         />
+      </Modal>
+      <Modal
+        title="Conferma eliminazione"
+        open={isDeleteConfirmVisible}
+        onOk={confirmDelete}
+        onCancel={() => setIsDeleteConfirmVisible(false)}
+        okText="Elimina"
+        cancelText="Annulla"
+      >
+        <p>
+          Sei sicuro di voler eliminare{' '}
+          {checkedFunctions.length === 1
+            ? 'la funzione selezionata'
+            : `le ${checkedFunctions.length} funzioni selezionate`}
+          ?
+        </p>
       </Modal>
     </Space>
   );
