@@ -2038,6 +2038,163 @@ paths:
           $ref: '#/components/responses/InternalError'
 
 
+  /device_models/{deviceModelId}/resources:
+    parameters:
+      - name: deviceModelId
+        in: path
+        description: ID del modello di device
+        required: true
+        schema:
+          type: integer
+    get:
+      description: Ritorna le risorse associate al modello di device specificato
+      tags:
+        - device models
+      parameters:
+        - name: type
+          in: query
+          description: >
+            Filtro per tipo di risorsa.
+          schema:
+            type: integer
+            enum:
+              - 1
+              - 2
+              - 3
+              - 4
+              - 5
+          example: 4
+      responses:
+        '200':
+          description: Lista di risorse associate al modello di device.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/DeviceModelResource'
+        '400':
+          description: Errore nei parametri della richiesta.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        default:
+          $ref: '#/components/responses/InternalError'
+    
+    post:
+      description: >
+        Aggiunge una risorsa al modello di device.
+      tags:
+        - device models
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  description: Nome della risorsa
+                  maxLength: 45
+                link:
+                  type: string
+                  format: uri
+                  description: collegamento alla risorsa
+                  maxLength: 255
+                  example: "https://placehold.co/600x400"
+                resource_type:
+                  type: integer
+                  enum:
+                    - 1
+                    - 2
+                    - 3
+                    - 4
+                    - 5
+                  description: >
+                    Tipo di risorsa
+
+                    1: altro
+
+                    2: scheda tecnica
+
+                    3: scheda utente
+
+                    4: immagine
+
+                    5: binario
+                  nullable: false
+                  example: 1
+              required:
+                - name
+                - link
+                - resource_type
+              example:
+                name: "copertina"
+                link: "https://placehold.co/200x300"
+                resource_type: 4
+      responses:
+        '200':
+          description: Risorsa aggiunta con successo.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeviceModelResource'
+        '400':
+          description: Errore nei parametri della richiesta.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Modello di device non trovato.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        default:
+          $ref: '#/components/responses/InternalError'
+
+
+  /device_models/{deviceModelId}/resources/{resourceId}:
+    parameters:
+      - name: deviceModelId
+        in: path
+        description: ID del modello di device
+        required: true
+        schema:
+          type: integer
+      - name: resourceId
+        in: path
+        description: ID della risorsa
+        required: true
+        schema:
+          type: integer
+    delete:
+      description: Elimina una risorsa specifica associata al modello di device.
+      tags:
+        - device models
+      responses:
+        '200':
+          description: Risorsa eliminata con successo.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Messaggio di successo
+        '404':
+          description: Modello di device o risorsa non trovato.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        default:
+          $ref: '#/components/responses/InternalError'
+      
+
 #region Device Model Groups
 
   /device_model_groups:
