@@ -105,6 +105,11 @@ async function loadConfig(node) {
         }
 
     });
+
+    return {
+        sid,
+        din
+    }
 };
 
 module.exports = {

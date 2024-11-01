@@ -59,13 +59,8 @@ app.use(swaggerApp);
 // Web Server
 const server = http.createServer(app);
 
-// print all the api routes with their methods as curl commands to test
-// apiRouter.stack.forEach(r => {
-//     if (r.route && r.route.path) {
-//         console.log(`curl -X ${Object.keys(r.route.methods).join(', ').toUpperCase()}\t localhost:${port}/api${r.route.path}`);
-//     }
-// });
-
+let localSid = undefined;
+let localDin = undefined;
 
 // Web Socket
 const wss = new WebSocketServer({ server });
@@ -109,7 +104,8 @@ localNode.onDDOReceived((din) => {
             let decodedData = decode(data);
             console.log(getTime(), `⬇⬇ Pulling data from DIN:`, origin, `| typeset: ${typeset} | ${secondsSinceMessageWasSent}s ago`);
             console.log(decodedData);
-            const ddo = await createDDO(origin, 101, data, timestamp, typeset);
+
+            const ddo = await createDDO(origin, localDin, data, timestamp, typeset);
             if (!ddo) {
                 console.error(getTime(), "Failed to save DDO to db");
             }
@@ -132,7 +128,12 @@ db.sequelize.sync({ force: false })
 
         console.log(getTime(), `server listen on ${port} port`)
 
-        DaasService.loadConfig(localNode).then(() => {
+        DaasService.loadConfig(localNode).then((res) => {
+            localSid = res.sid;
+            localDin = res.din;
+
+            console.log(getTime(), `[daas] DinLocal loaded: sid=${localSid} din=${localDin} \n\n\n\n`);
+            
             if (localNode.doPerform()) {
                 console.log(getTime(), `[daas] doPerform OK`)
             } else {
