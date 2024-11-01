@@ -280,21 +280,6 @@ components:
           type: string
           description: seriale del modello
           maxLength: 20
-        link_image:
-          type: string
-          format: uri
-          description: collegamento all'immagine del device
-          maxLength: 45
-        link_datasheet:
-          type: string
-          format: uri
-          description: collegamento alla scheda tecnica
-          maxLength: 45
-        link_userguide:
-          type: string
-          format: uri
-          description: collegamento al manuale utente
-          maxLength: 45
 
     DeviceModelFull:
       type: object
@@ -314,21 +299,6 @@ components:
           type: string
           description: seriale del modello
           maxLength: 20
-        link_image:
-          type: string
-          format: uri
-          description: collegamento all'immagine del device
-          maxLength: 45
-        link_datasheet:
-          type: string
-          format: uri
-          description: collegamento alla scheda tecnica
-          maxLength: 45
-        link_userguide:
-          type: string
-          format: uri
-          description: collegamento al manuale utente
-          maxLength: 45
         device_group:
           $ref: '#/components/schemas/DeviceModelGroup'
         resources:
@@ -364,12 +334,39 @@ components:
           type: integer
           description: ID della risorsa
           nullable: false
-        title:
+        name:
           type: string
           nullable: false
         device_model_id:
           type: integer
           description: ID del modello di device al quale si riferisce questa risorsa
+          nullable: false
+        link:
+          type: string
+          format: uri
+          description: collegamento alla risorsa
+          maxLength: 255
+          example: "https://placehold.co/600x400"
+        resource_type:
+          type: integer
+          enum:
+            - 1
+            - 2
+            - 3
+            - 4
+            - 5
+          description: >
+            Tipo di risorsa
+
+            1: altro
+
+            2: scheda tecnica
+
+            3: scheda utente
+
+            4: immagine
+
+            5: binario
           nullable: false
 
     DeviceModelFunctionProperty:
@@ -1863,21 +1860,6 @@ paths:
                   type: string
                   description: Seriale del modello
                   maxLength: 20
-                link_image:
-                  type: string
-                  format: uri
-                  description: Collegamento all'immagine del device
-                  maxLength: 45
-                link_datasheet:
-                  type: string
-                  format: uri
-                  description: Collegamento alla scheda tecnica
-                  maxLength: 45
-                link_userguide:
-                  type: string
-                  format: uri
-                  description: Collegamento al manuale utente
-                  maxLength: 45                
               required:
                 - device_group_id
                 - description
@@ -1886,9 +1868,6 @@ paths:
                 device_group_id: 1
                 description: "Modello di device 1"
                 serial: "1234567890"
-                link_image: "https://placehold.co/600x400"
-                link_datasheet: "https://placehold.co/600x400"
-                link_userguide: "https://placehold.co/600x400"
       responses:
         '200':
           description: Modello di device aggiunto con successo.
@@ -1955,26 +1934,10 @@ paths:
                   type: string
                   description: Seriale del modello
                   maxLength: 20
-                link_image:
-                  type: string
-                  format: uri
-                  description: Collegamento all'immagine del device
-                  maxLength: 45
-                link_datasheet:
-                  type: string
-                  format: uri
-                  description: Collegamento alla scheda tecnica
-                  maxLength: 45
-                link_userguide:
-                  type: string
-                  format: uri
-                  description: Collegamento al manuale utente
-                  maxLength: 45
               example:
                 device_group_id: 1
                 description: "Modello di device 1"
                 serial: "1234567890"
-                link_image: "https://placehold.co/300x300"
       responses:
         '200':
           description: Modello di device aggiornato con successo.

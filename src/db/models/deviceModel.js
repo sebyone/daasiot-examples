@@ -8,6 +8,7 @@ module.exports = (sequelize, DataTypes) => {
 			this.belongsTo(models.DeviceModelGroup, { foreignKey: 'device_group_id', as: 'device_group' });
 			this.hasMany(models.Device, { foreignKey: 'device_model_id', onDelete: 'CASCADE', as: 'devices' });
 			this.hasMany(models.DeviceModelFunction, { foreignKey: 'device_model_id', onDelete: 'CASCADE', as: 'functions' });
+			this.hasMany(models.DeviceModelResource, { foreignKey: 'device_model_id', onDelete: 'CASCADE', as: 'resources' });
 		}
 	}
 	DeviceModel.init({
@@ -20,30 +21,9 @@ module.exports = (sequelize, DataTypes) => {
 			allowNull: false,
 		},
 		serial: {
-			type: DataTypes.STRING,
+			type: DataTypes.STRING(20),
 			allowNull: false,
 			maxLength: 20,
-		},
-		link_image: {
-			type: DataTypes.STRING,
-			maxLength: 45,
-			validate: {
-				isUrl: true,
-			}
-		},
-		link_datasheet: {
-			type: DataTypes.STRING,
-			maxLength: 45,
-			validate: {
-				isUrl: true,
-			}
-		},
-		link_userguide: {
-			type: DataTypes.STRING,
-			maxLength: 45,
-			validate: {
-				isUrl: true,
-			}
 		},
 	}, {
 		sequelize,

@@ -10,7 +10,7 @@ module.exports = (sequelize, DataTypes) => {
 	}
 	DeviceModelGroup.init({
 		title: {
-			type: DataTypes.STRING,
+			type: DataTypes.STRING(45),
 			allowNull: false,
 			validate: {
 				notEmpty: true,
@@ -24,13 +24,12 @@ module.exports = (sequelize, DataTypes) => {
 			defaultValue: '',
 		},
 		link_image: {
-			type: DataTypes.STRING,
+			type: DataTypes.STRING(45),
 			validate: {
 				isUrl: true,
 			},
 			allowNull: false,
 			defaultValue: '',
-			maxLength: 45,
 		},
 	}, {
 		sequelize,
