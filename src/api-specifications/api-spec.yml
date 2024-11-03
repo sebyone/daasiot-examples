@@ -324,7 +324,6 @@ components:
           type: string
           format: uri
           description: collegamento all'immagine del gruppo
-          maxLength: 45
           example: "https://placehold.co/600x400"
 
     DeviceModelResource:
@@ -420,7 +419,6 @@ components:
           type: string
           description: valore sicuro della property, usato in caso di errore
           maxLength: 45
-        
 
     DeviceModelFunction:
       type: object
@@ -1841,7 +1839,10 @@ paths:
           $ref: '#/components/responses/InternalError'
 
     post:
-      description: Crea un nuovo modello di device.
+      description: >
+        Crea un nuovo modello di device, associando un gruppo di device esistente o creandone uno nuovo se non esiste.
+
+        Permette di creare risorse di device da allegare al modello e DeviceModelFunctions per definire le funzioni che questo modello può eseguire.
       tags:
         - device models
       requestBody:
@@ -1860,14 +1861,81 @@ paths:
                   type: string
                   description: Seriale del modello
                   maxLength: 20
+                
+                resources:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/DeviceModelResource'
+                    example:
+                      name: "cover"
+                      link: "https://m.media-amazon.com/images/I/71D4E5DS-qL.jpg"
+                      resource_type: 1
+
+                functions:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/DeviceModelFunction'
+
+
               required:
                 - device_group_id
                 - description
                 - serial
-              example:
-                device_group_id: 1
-                description: "Modello di device 1"
-                serial: "1234567890"
+            example:
+              description: ESP32
+              serial: '1234567890'
+              device_group:
+                title: ESP32 DIY Modules
+                description: ESP32 DIY Modules
+                link_image: https://ce8dc832c.cloudimg.io/v7/_cdn_/BE/B6/90/00/0/617451_1.jpg?width=640&height=480&wat=1&wat_url=_tme-wrk_%2Ftme_new.png&wat_scale=100p&ci_sign=ecbc082e1968d44612ae5635e6defb9c957a3da9
+              resources:
+              - name: cover
+                link: https://m.media-amazon.com/images/I/71D4E5DS-qL.jpg
+                resource_type: 1
+              - name: datasheet
+                link: https://www.espressif.com/sites/default/files/documentation/esp32_datasheet_en.pdf
+                resource_type: 2
+              - name: hardware design guidelines
+                link: https://www.espressif.com/sites/default/files/documentation/esp32_hardware_design_guidelines_en.pdf
+                resource_type: 2
+              - name: programming guide
+                link: https://docs.espressif.com/projects/esp-idf/en/latest/esp32/get-started/index.html
+                resource_type: 1
+              functions:
+              - name: PID1
+                parameters:
+                - name: P
+                  data_type: 1
+                - name: I
+                  data_type: 1
+                - name: D
+                  data_type: 1
+                - name: Frequenza
+                  data_type: 1
+                - name: Timeout
+                  data_type: 1
+                inputs:
+                - name: target
+                  data_type: 1
+                - name: corrente
+                  data_type: 1
+                outputs:
+                - name: pilota
+                  data_type: 1
+              - name: PLN1
+                parameters:
+                - name: ix
+                  data_type: 1
+                - name: week-day
+                  data_type: 1
+                - name: time
+                  data_type: 1
+                - name: pilota
+                  data_type: 1
+                outputs:
+                - name: pilota
+                  data_type: 1
+
       responses:
         '200':
           description: Modello di device aggiunto con successo.
@@ -1883,7 +1951,6 @@ paths:
                 $ref: '#/components/schemas/Error'
         default:
           $ref: '#/components/responses/InternalError'
-
     
   /device_models/{deviceModelId}:
     parameters:
@@ -2255,7 +2322,6 @@ paths:
                   type: string
                   format: uri
                   description: Collegamento all'immagine del gruppo
-                  maxLength: 45
               required:
                 - name
               example:
@@ -2327,7 +2393,6 @@ paths:
                   type: string
                   format: uri
                   description: Collegamento all'immagine del gruppo
-                  maxLength: 45
               example:
                 name: "Gruppo 1"
       responses:

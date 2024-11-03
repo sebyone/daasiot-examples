@@ -29,15 +29,15 @@ const programming = require('./programming');
 
 module.exports = router;
 
-router.use(configAndLifecycle);
+router.use(configAndLifecycle.router);
 
-router.use(receiversAndRemotes);
+router.use(receiversAndRemotes.router);
 
-router.use(devices);
-router.use(deviceModels);
-router.use(deviceModelGroups);
+router.use(devices.router);
+router.use(deviceModels.router);
+router.use(deviceModelGroups.router);
 
-router.use(programming);
+router.use(programming.router);
 
 router.all('*', function (req, res) {
     res.status(404);

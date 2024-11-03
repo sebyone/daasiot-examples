@@ -20,6 +20,13 @@ module.exports = (sequelize, DataTypes) => {
         isUrl: true,
       }
     },
+    /**
+      1: altro
+      2: scheda tecnica
+      3: scheda utente
+      4: immagine
+      5: binario
+     */
     resource_type: {
       type: DataTypes.INTEGER,
       allowNull: false,

@@ -12,7 +12,7 @@
  *
  */
 
-const db  = require('../db/models');
+const db = require('../db/models');
 
 
 async function createDDO(originDin, destinationDin, payload, timestamp_seconds, typeset) {

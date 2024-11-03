@@ -24,12 +24,12 @@ module.exports = (sequelize, DataTypes) => {
 			defaultValue: '',
 		},
 		link_image: {
-			type: DataTypes.STRING(45),
+			type: DataTypes.STRING,
 			validate: {
 				isUrl: true,
+				notEmpty: true,
 			},
 			allowNull: false,
-			defaultValue: '',
 		},
 	}, {
 		sequelize,

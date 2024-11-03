@@ -5,7 +5,9 @@ const { Device, DeviceModel, Din, DDO } = require('../../db/models');
 const db = require('../../db/models');
 const { getPaginationParams, getQuery, sendError, toPaginationData, addQuery } = require('./utilities');
 
-module.exports = router;
+module.exports = {
+    router
+};
 
 
 //#region Devices

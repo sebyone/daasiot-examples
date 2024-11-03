@@ -3,8 +3,13 @@ const router = express.Router();
 const { Op } = require("sequelize");
 const { DeviceModel, DeviceModelGroup, Device, DeviceModelResource } = require('../../db/models');
 const { getPaginationParams, getQuery, sendError, toPaginationData, addQuery } = require('./utilities');
+const db = require('../../db/models');
+const { createDeviceModelFunction } = require('./programming');
 
-module.exports = router;
+
+module.exports = {
+    router
+};
 
 router.get('/device_models', async function (req, res) {
     try {
@@ -38,38 +43,77 @@ router.get('/device_models/:deviceModelId', async function (req, res) {
 });
 
 router.post('/device_models', async function (req, res) {
+    const t = await db.sequelize.transaction();
     try {
         const deviceModel = req.body;
 
-        for (const field of ['device_group_id', 'description', 'serial']) {
+        if (!deviceModel) {
+            res.status(400);
+            throw new Error("Il body della richiesta non può essere vuoto.");
+        }
+
+        for (const field of ['description', 'serial']) {
             if (!deviceModel[field]) {
                 res.status(400);
                 throw new Error(`Il campo ${field} è obbligatorio.`);
             }
         }
+        
+        let deviceGroup = null;        
+        if (deviceModel.device_group_id != undefined) {
+            deviceGroup = await DeviceModelGroup.findByPk(parseInt(deviceModel.device_group_id), { transaction: t });
+        }
+        else {
+            if (!deviceModel.device_group) {
+                res.status(400);
+                throw new Error("Il device model deve avere un device_group, specificato come nuovo oggetto o come id.");
+            }
 
-        if (deviceModel.device_group) {
-            res.status(400);
-            throw new Error("Non è possibile aggiungere il device_group durante la creazione del device_model");
+            if (deviceModel.device_group.id) {
+                deviceGroup = await DeviceModelGroup.findByPk(parseInt(deviceModel.device_group.id), { transaction: t });
+            }
+            else {
+                if (!deviceModel.device_group.title) {
+                    res.status(400);
+                    throw new Error("Il campo title è obbligatorio, non può essere vuoto e deve essere diverso da gli altri title già presenti.");
+                }
+                deviceGroup = await DeviceModelGroup.findOne({ where: { title: deviceModel.device_group.title }, transaction: t });
+
+                if (deviceGroup === null) {
+                    deviceGroup = await DeviceModelGroup.create(deviceModel.device_group, { transaction: t });
+                }
+            }
         }
 
-        const deviceGroup = await DeviceModelGroup.findByPk(parseInt(deviceModel.device_group_id));
         if (deviceGroup === null) {
             res.status(404);
             throw new Error(`DeviceModelGroup con id=${deviceModel.device_group_id} non trovato.`);
         }
 
-        for (const field of ['link_image', 'link_datasheet', 'link_userguide']) {
-            if (deviceModel[field] && !deviceModel[field].match(/^http(s)?:\/\/.+/)) {
-                res.status(400);
-                throw new Error(`Il campo ${field} deve essere un URL.`);
+        deviceModel.device_group_id = deviceGroup.id;        
+
+        const newDeviceModel = await DeviceModel.create(deviceModel, { transaction: t });
+
+        if (deviceModel.resources) {
+            for (const resource of deviceModel.resources) {
+                await createResource(newDeviceModel.id, resource, t);
             }
         }
 
-        const newDeviceModel = await DeviceModel.create(deviceModel);
-        res.send(newDeviceModel);
+        if (deviceModel.functions) {
+            for (const func of deviceModel.functions) {
+                await createDeviceModelFunction(req, res, newDeviceModel.id, func, t);
+            }
+        }
+        
+        await t.commit();
+        
+        const fullDeviceModel = await DeviceModel.findByPk(newDeviceModel.id, { include: ['device_group', 'resources', 'functions'] });
+
+        res.send(fullDeviceModel);
     }
     catch (err) {
+        await t.rollback();
         sendError(res, err);
     }
 });
@@ -102,13 +146,6 @@ router.put('/device_models/:deviceModelId', async function (req, res) {
             if (deviceGroup === null) {
                 res.status(404);
                 throw new Error(`DeviceModelGroup con id=${deviceModel.device_group_id} non trovato.`);
-            }
-        }
-
-        for (const field of ['link_image', 'link_datasheet', 'link_userguide']) {
-            if (deviceModel[field] && !deviceModel[field].match(/^http(s)?:\/\/.+/)) {
-                res.status(400);
-                throw new Error(`Il campo ${field} deve essere un URL.`);
             }
         }
 
@@ -211,20 +248,7 @@ router.post('/device_models/:deviceModelId/resources', async function (req, res)
             throw new Error(`DeviceModel con id=${deviceModelId} non trovato.`);
         }
 
-        for (const field of ['name', 'link', 'resource_type']) {
-            if (!resource[field]) {
-                res.status(400);
-                throw new Error(`Il campo ${field} è obbligatorio.`);
-            }
-        }
-
-        resource.resource_type = parseInt(resource.resource_type);
-        if (resource.resource_type < 1 || resource.resource_type > 5) {
-            res.status(400);
-            throw new Error("Il campo resource_type deve essere un intero compreso tra 1 e 5.");
-        }
-
-        const newResource = await DeviceModelResource.create(resource, { transaction: t });
+        const newResource = await createResource(deviceModelId, resource, t);
         await t.commit();
         res.send(newResource);
     }
@@ -260,3 +284,24 @@ router.delete('/device_models/:deviceModelId/resources/:resourceId', async funct
         sendError(res, err);
     }
 });
+
+
+
+async function createResource(deviceModelId, resource, t) {
+    resource.device_model_id = deviceModelId;
+    
+    for (const field of ['name', 'link', 'resource_type']) {
+        if (!resource[field]) {
+            res.status(400);
+            throw new Error(`Il campo ${field} è obbligatorio.`);
+        }
+    }
+
+    resource.resource_type = parseInt(resource.resource_type);
+    if (resource.resource_type < 1 || resource.resource_type > 5) {
+        res.status(400);
+        throw new Error("Il campo resource_type deve essere un intero compreso tra 1 e 5.");
+    }
+
+    return DeviceModelResource.create(resource, { transaction: t });
+}

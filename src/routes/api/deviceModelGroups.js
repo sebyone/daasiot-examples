@@ -4,7 +4,9 @@ const { Op } = require("sequelize");
 const { DeviceModelGroup, DeviceModel } = require('../../db/models');
 const { getPaginationParams, getQuery, sendError, toPaginationData, addQuery } = require('./utilities');
 
-module.exports = router;
+module.exports = {
+    router
+};
 
 router.get('/device_model_groups', async function (req, res) {
     try {

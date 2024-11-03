@@ -6,7 +6,9 @@ const db = require("../../db/models");
 const daasNode = require('../../daas/daas');
 const { sendError } = require('./utilities');
 
-module.exports = router;
+module.exports = {
+    router
+};
 
 
 //#region Receivers

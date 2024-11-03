@@ -205,8 +205,15 @@ La funzione di regolazione PLN1 (plan) non richiede ingressi, prevede una lista 
         default_value: '1',
         safe_value: '1',
       },
-
-
+      {
+        id: 28,
+        property_type: 3,
+        name: 'pilota',
+        function_id: 3,
+        data_type: 1,
+        default_value: '1',
+        safe_value: '1',
+      },
 
 
       {
@@ -319,6 +326,9 @@ La funzione di regolazione PLN1 (plan) non richiede ingressi, prevede una lista 
         default_value: '1',
         safe_value: '1',
       },
+
+      // id: 28 was already defined
+
     ], {});
   },
 

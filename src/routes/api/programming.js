@@ -5,7 +5,10 @@ const { sendError, getPaginationParams, toPaginationData } = require('./utilitie
 const { DeviceModel, DeviceModelFunction, DeviceModelFunctionProperty, DeviceFunction, DeviceFunctionProperty } = require('../../db/models');
 const db = require('../../db/models');
 
-module.exports = router;
+module.exports = {
+  router,
+  createDeviceModelFunction,
+};
 
 const DEV_MOD_PROPERTY_TYPE_LIST = ['parameters', 'inputs', 'outputs', 'notifications'];
 
@@ -106,65 +109,23 @@ router.get('/device_models/:deviceModelId/functions/:dmFuntionId', async functio
   }
 });
 
-// router.post('/device_models/:deviceModelId/functions/', async function (req, res) {
-//   const t = await db.sequelize.transaction();
-//   try {
-//     const deviceModelId = parseInt(req.params.deviceModelId);
-//     const deviceModelFunction = req.body;
+router.post('/device_models/:deviceModelId/functions/', async function (req, res) {
+  const t = await db.sequelize.transaction();
+  try {
+    const deviceModelId = parseInt(req.params.deviceModelId);
+    const deviceModelFunction = req.body;
 
-//     console.log(deviceModelFunction);
+    const deviceModelFunctionWithProperties = await createDeviceModelFunction(req, res, deviceModelId, deviceModelFunction, t);
 
-//     if (!deviceModelFunction) {
-//       res.status(400);
-//       throw new Error("Il body della richiesta è vuoto.");
-//     }
+    await t.commit();
+    res.send(deviceModelFunctionWithProperties);
+  }
+  catch (err) {
+    await t.rollback();
+    sendError(res, err);
+  }
+});
 
-//     if (!deviceModelFunction.name) {
-//       res.status(400);
-//       throw new Error("Il campo name è obbligatorio.");
-//     }
-
-//     if (deviceModelFunction.device_model_id && deviceModelFunction.device_model_id !== deviceModelId) {
-//       res.status(400);
-//       throw new Error("Il campo device_model_id non corrisponde all'id del DeviceModel.");
-//     }
-//     deviceModelFunction.device_model_id = deviceModelId;
-
-//     const deviceModel = await DeviceModel.findByPk(deviceModelId, { transaction: t });
-//     if (deviceModel === null) {
-//       res.status(404);
-//       throw new Error(`DeviceModel con id=${deviceModelId} non trovato.`);
-//     }
-
-//     const newDeviceModelFunction = await DeviceModelFunction.create(deviceModelFunction, { transaction: t });
-    
-//     for (const property_list of DEV_MOD_PROPERTY_TYPE_LIST) {
-//       const property_type = DEV_MOD_PROPERTY_TYPE_MAP_REVERSE[property_list];
-
-//       console.log(property_list, property_type);
-//       console.log(deviceModelFunction[property_list]);
-
-
-//       if (deviceModelFunction[property_list]) {
-//         for (const property of deviceModelFunction[property_list]) {
-//           await createDeviceModelFunctionProperty(res, property, newDeviceModelFunction, property_type, t);
-//         }
-//       }
-//     }
-
-//     const deviceModelFunctionWithProperties = await DeviceModelFunction.findByPk(newDeviceModelFunction.id, {
-//       include: DEV_MOD_PROPERTY_TYPE_LIST,
-//       transaction: t,
-//     });
-
-//     await t.commit();
-//     res.send(deviceModelFunctionWithProperties);
-//   }
-//   catch (err) {
-//     await t.rollback();
-//     sendError(res, err);
-//   }
-// });
 
 
 // router.put('/device_models/:deviceModelId/functions/:dmFuntionId', async function (req, res) {
@@ -743,4 +704,49 @@ async function updateDeviceFunctionProperty(res, oldDeviceFunction, property, pr
     oldProperty.value = property.value;
     return await oldProperty.save({ transaction: t });
   }  
+}
+
+
+async function createDeviceModelFunction(req, res, deviceModelId, deviceModelFunction, t) {
+  if (!deviceModelFunction) {
+    res.status(400);
+    throw new Error("Il body della richiesta è vuoto.");
+  }
+
+  if (!deviceModelFunction.name) {
+    res.status(400);
+    throw new Error("Il campo name è obbligatorio.");
+  }
+
+  if (deviceModelFunction.device_model_id && deviceModelFunction.device_model_id !== deviceModelId) {
+    res.status(400);
+    throw new Error("Il campo device_model_id non corrisponde all'id del DeviceModel.");
+  }
+  deviceModelFunction.device_model_id = deviceModelId;
+
+
+  const deviceModel = await DeviceModel.findByPk(deviceModelId, { transaction: t });
+  if (deviceModel === null) {
+    res.status(404);
+    throw new Error(`DeviceModel con id=${deviceModelId} non trovato.`);
+  }
+
+  const newDeviceModelFunction = await DeviceModelFunction.create(deviceModelFunction, { transaction: t });
+
+  for (const property_list of DEV_MOD_PROPERTY_TYPE_LIST) {
+    const property_type = DEV_MOD_PROPERTY_TYPE_MAP_REVERSE[property_list];
+
+    if (deviceModelFunction[property_list]) {
+      for (const property of deviceModelFunction[property_list]) {
+        await createDeviceModelFunctionProperty(res, property, newDeviceModelFunction, property_type, t);
+      }
+    }
+  }
+
+  const deviceModelFunctionWithProperties = await DeviceModelFunction.findByPk(newDeviceModelFunction.id, {
+    include: DEV_MOD_PROPERTY_TYPE_LIST,
+    transaction: t,
+  });
+
+  return deviceModelFunctionWithProperties;
 }

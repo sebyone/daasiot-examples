@@ -6,7 +6,10 @@ const daasNode = require('../../daas/daas');
 const db = require("../../db/models");
 const { sendError } = require('./utilities');
 
-module.exports = router;
+module.exports = {
+    router
+};
+    
 
 router.get('/', function (req, res) {
     res.send({
