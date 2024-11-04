@@ -114,12 +114,29 @@ export default function Catalogo() {
     router.push(`/${locale}/admin/catalogo/ESPtool`);
   };
 
-  const getModelImage = (model: Dev): string | undefined => {
-    return model.resources?.find((resource) => resource.resource_type === 1)?.link;
+  const getCoverModelImage = (model: Dev): string | undefined => {
+    return model.resources?.find((resource) => resource.resource_type === 4 && resource.name == 'copertina')?.link;
   };
 
-  const getModelDocuments = (model: Dev): string | undefined => {
-    return model.resources?.find((resource) => resource.resource_type === 2)?.link;
+  const getPinoutModelImage = (model: Dev): string | undefined => {
+    return model.resources?.find(
+      (resource) => resource.resource_type === 4 && resource.name == 'ESP32 pinout reference'
+    )?.link;
+  };
+
+  const getDatasheetModelDocuments = (model: Dev): string | undefined => {
+    return model.resources?.find((resource) => resource.resource_type === 2 && resource.name == 'datasheet')?.link;
+  };
+
+  const getHardwareDesignGuideLinesModelDocuments = (model: Dev): string | undefined => {
+    return model.resources?.find(
+      (resource) => resource.resource_type === 2 && resource.name == 'hardware design guidelines'
+    )?.link;
+  };
+
+  const getProgrammingGuideModelDocuments = (model: Dev): string | undefined => {
+    return model.resources?.find((resource) => resource.resource_type === 1 && resource.name == 'programming guide')
+      ?.link;
   };
 
   return (
@@ -222,10 +239,11 @@ export default function Catalogo() {
                             }}
                           >
                             <div style={{ display: 'flex', alignItems: 'center', gap: 50 }}>
-                              {getModelImage(model) && (
+                              {getCoverModelImage(model) && (
                                 // eslint-disable-next-line @next/next/no-img-element
                                 <img
-                                  src={getModelImage(model)}
+                                  key={getCoverModelImage(model)}
+                                  src={getCoverModelImage(model)}
                                   alt={model.description}
                                   style={{ width: '20%', height: '20%' }}
                                 />
@@ -267,10 +285,11 @@ export default function Catalogo() {
                       }}
                     >
                       <div style={{ width: '50%', height: '150px', backgroundColor: '#f0f0f0' }}>
-                        {getModelImage(selectedModel) && (
+                        {getPinoutModelImage(selectedModel) && (
                           // eslint-disable-next-line @next/next/no-img-element
                           <img
-                            src={getModelImage(selectedModel)}
+                            key={getPinoutModelImage(selectedModel)}
+                            src={getPinoutModelImage(selectedModel)}
                             alt={selectedModel.description}
                             style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                           />
@@ -291,15 +310,47 @@ export default function Catalogo() {
                         {selectedModel.device_group && <p>{selectedModel.device_group.title}</p>}
                       </section>
                       <Divider type="vertical" style={{ height: 'auto' }} />
+
                       <section style={{ marginLeft: 10 }}>
                         <Title level={5}>{t('documents')}</Title>
-                        {getModelDocuments(selectedModel) && (
-                          <Text key={selectedModel.id} style={{ display: 'block' }}>
-                            <a href={getModelDocuments(selectedModel)} target="_blank" rel="noopener noreferrer">
-                              {getModelDocuments(selectedModel)}
-                            </a>
-                          </Text>
-                        )}
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                          {getDatasheetModelDocuments(selectedModel) && (
+                            <Text key={`datasheet-${selectedModel.id}`}>
+                              <a
+                                href={getDatasheetModelDocuments(selectedModel)}
+                                title={getDatasheetModelDocuments(selectedModel)}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                              >
+                                Datasheet
+                              </a>
+                            </Text>
+                          )}
+                          {getHardwareDesignGuideLinesModelDocuments(selectedModel) && (
+                            <Text key={`hardware-${selectedModel.id}`}>
+                              <a
+                                href={getHardwareDesignGuideLinesModelDocuments(selectedModel)}
+                                title={getHardwareDesignGuideLinesModelDocuments(selectedModel)}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                              >
+                                Hardware Design Guide Lines
+                              </a>
+                            </Text>
+                          )}
+                          {getProgrammingGuideModelDocuments(selectedModel) && (
+                            <Text key={`programming-${selectedModel.id}`}>
+                              <a
+                                href={getProgrammingGuideModelDocuments(selectedModel)}
+                                title={getProgrammingGuideModelDocuments(selectedModel)}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                              >
+                                Programming Guide
+                              </a>
+                            </Text>
+                          )}
+                        </div>
                       </section>
                     </div>
                     <div

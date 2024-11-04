@@ -42,10 +42,13 @@ const EditMap = () => {
     configService
       .getMapById(id)
       .then((data) => {
+        const firstLink = data.cdin.links?.[0];
         form.setFieldsValue({
           id: data.cdin.id,
           sid: data.cdin.sid,
           din: data.cdin.din,
+          links: firstLink?.id || null,
+          address: firstLink?.url || null,
           profileR: data.cdin.p_res.charAt(0),
           profileE: data.cdin.p_res.charAt(1),
           profileS: data.cdin.p_res.charAt(2),

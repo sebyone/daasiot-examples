@@ -216,9 +216,17 @@ export interface DinFormData {
   };
 }
 
+export interface Link {
+  id: number;
+  link: number;
+  din_id: number;
+  url: string;
+}
+
 export interface MapDataType {
   id?: number;
   din: string;
+  links: Link[];
   tech: string;
 }
 

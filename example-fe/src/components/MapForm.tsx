@@ -87,12 +87,12 @@ const MapForm = ({ form, onFinish, setIsDataSaved }: MapFormProps) => {
 
                 <Row gutter={16}>
                   <Col span={8}>
-                    <Form.Item label="Link">
+                    <Form.Item name="links" label="Link">
                       <Select disabled={!isCallableChecked} />
                     </Form.Item>
                   </Col>
                   <Col span={8}>
-                    <Form.Item label="Address">
+                    <Form.Item name="address" label="Address">
                       <Input disabled={!isCallableChecked} />
                     </Form.Item>
                   </Col>
