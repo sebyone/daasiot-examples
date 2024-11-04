@@ -187,7 +187,7 @@ router.post('/device_models/:deviceModelId/functions/', async function (req, res
 //     }
 
 //     const updated = await oldDeviceModelFunction.save({ transaction: t });
-    
+
 //     if (!updated) {
 //       res.status(500);
 //       throw new Error("Errore durante il salvataggio del DeviceModelFunction.");
@@ -311,7 +311,7 @@ router.get('/devices/:deviceId/functions/', async function (req, res) {
 router.get('/devices/:deviceId/functions/:dFuntionId', async function (req, res) {
   const deviceId = parseInt(req.params.deviceId);
   const deviceFuntionId = parseInt(req.params.dFuntionId);
-  
+
   try {
     const deviceFunction = await DeviceFunction.findByPk(deviceFuntionId, {
       where: { device_id: deviceId },
@@ -442,8 +442,8 @@ router.put('/devices/:deviceId/functions/:dFuntionId', async function (req, res)
       throw new Error("Il campo id non corrisponde all'id del DeviceFunction.");
     }
 
-    const oldDeviceFunction = await DeviceFunction.findByPk(deviceFuntionId, { 
-      transaction: t, 
+    const oldDeviceFunction = await DeviceFunction.findByPk(deviceFuntionId, {
+      transaction: t,
       include: [
         {
           model: DeviceModelFunction,
@@ -484,7 +484,7 @@ router.put('/devices/:deviceId/functions/:dFuntionId', async function (req, res)
       throw new Error("Errore durante il salvataggio del DeviceFunction.");
     }
     await t.commit();
-    res.send({ message: `DeviceFunction con id=${deviceFuntionId} aggiornato con successo.`});
+    res.send({ message: `DeviceFunction con id=${deviceFuntionId} aggiornato con successo.` });
   }
   catch (err) {
     await t.rollback();
@@ -515,7 +515,7 @@ router.delete('/devices/:deviceId/functions/:dFuntionId', async function (req, r
 
     await deviceFunction.destroy({ transaction: t });
     await t.commit();
-    res.send({ message: `DeviceFunction con id=${deviceFuntionId} eliminato con successo.`});
+    res.send({ message: `DeviceFunction con id=${deviceFuntionId} eliminato con successo.` });
   }
   catch (err) {
     await t.rollback();
@@ -527,16 +527,16 @@ router.delete('/devices/:deviceId/functions/:dFuntionId', async function (req, r
 
 function validateWithPropertyValueType(property, value) {
   switch (property.data_type) {
-    
+
     // int32
     case 1:
       return isNumeric(value) && Number.isInteger(parseFloat(value));
     // int16
-      case 2:
+    case 2:
       return isNumeric(value) && Number.isInteger(parseFloat(value));
 
     // float32
-      case 3:
+    case 3:
       return isNumeric(value)
     case 4:
       return typeof value === 'string';
@@ -547,9 +547,9 @@ function validateWithPropertyValueType(property, value) {
   function isNumeric(str) {
     if (typeof str != "string") return false // we only process strings!  
     return !isNaN(str) && // use type coercion to parse the _entirety_ of the string (`parseFloat` alone does not do this)...
-           !isNaN(parseFloat(str)) // ...and ensure strings of whitespace fail
+      !isNaN(parseFloat(str)) // ...and ensure strings of whitespace fail
   }
-  
+
 }
 
 async function createDeviceModelFunctionProperty(res, property, deviceModelFunction, property_type, t) {
@@ -644,13 +644,13 @@ async function updateDeviceModelFunctionProperty(res, oldProperty, newProperty, 
   }
 
   return await oldProperty.save({ transaction: t });
-  
+
 }
-  
+
 
 function addPropertyTemplateToProperty(property, deviceModelFunction) {
-  const propertyType = DEV_MOD_PROPERTY_TYPE_MAP[property.property_type];  
-  
+  const propertyType = DEV_MOD_PROPERTY_TYPE_MAP[property.property_type];
+
   const property_template = deviceModelFunction[propertyType]?.find(property_template => property_template.id === property.property_id);
   if (property_template) {
     property.parameter_template = property_template;
@@ -686,24 +686,24 @@ async function updateDeviceFunctionProperty(res, oldDeviceFunction, property, pr
   }
 
   if (property.value !== undefined && property.value !== oldProperty.value) {
-    
+
     const deviceModelFunction = oldDeviceFunction.function;
     const property_template = deviceModelFunction[property_list].find(property_template => property_template.id === oldProperty.property_id);
 
     if (property_template === undefined) {
       res.status(500);
       throw new Error(`Il template della property non trovato. (property_id=${oldProperty.id
-      })`);
+        })`);
     }
 
     if (!validateWithPropertyValueType(property_template, property.value)) {
       res.status(400);
       throw new Error(`Il campo value non è valido per il tipo di dato. (property_id=${oldProperty.id})`);
     }
-    
+
     oldProperty.value = property.value;
     return await oldProperty.save({ transaction: t });
-  }  
+  }
 }
 
 

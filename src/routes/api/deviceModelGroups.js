@@ -77,7 +77,7 @@ router.put('/device_model_groups/:deviceModelGroupId', async function (req, res)
 
         if (updatedRows === 0) {
             res.status(404);
-                    throw new Error(`Non è stato possibile aggiornare il device_model_group con id=${id}.`);
+            throw new Error(`Non è stato possibile aggiornare il device_model_group con id=${id}.`);
         }
 
         res.send({ message: "DeviceModelGroup aggiornato con successo." });
@@ -109,8 +109,8 @@ router.get('/device_model_groups/:deviceModelGroupId/device_models', async funct
         const deviceModelGroupId = parseInt(req.params.deviceModelGroupId);
         const { limit, offset } = getPaginationParams(req);
         const q = getQuery(req);
-        
-        
+
+
         const deviceModelGroup = await DeviceModelGroup.findByPk(deviceModelGroupId);
         if (deviceModelGroup === null) {
             res.status(404);
@@ -118,7 +118,7 @@ router.get('/device_model_groups/:deviceModelGroupId/device_models', async funct
         }
         const where = q ? { description: { [Op.like]: `%${q}%` } } : {};
         where.device_group_id = deviceModelGroupId;
-        
+
         const rowsAndCount = await DeviceModel.findAndCountAll({ where, limit, offset });
 
         res.send(addQuery(toPaginationData(rowsAndCount, limit, offset), q));

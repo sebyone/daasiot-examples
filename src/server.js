@@ -133,7 +133,7 @@ db.sequelize.sync({ force: false })
             localDin = res.din;
 
             console.log(getTime(), `[daas] DinLocal loaded: sid=${localSid} din=${localDin} \n\n\n\n`);
-            
+
             if (localNode.doPerform()) {
                 console.log(getTime(), `[daas] doPerform OK`)
             } else {

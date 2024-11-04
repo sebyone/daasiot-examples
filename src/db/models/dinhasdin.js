@@ -18,7 +18,7 @@ module.exports = (sequelize, DataTypes) => {
       this.belongsTo(models.Din, { primaryKey: 'cdin_id', as: 'cdin', onDelete: 'CASCADE' });
     }
   }
-  
+
   DinHasDin.init({
 
     // id del DIN del nodo padre, in quale mappa il DIN con id 'cdin_id'

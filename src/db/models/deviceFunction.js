@@ -7,11 +7,11 @@ module.exports = (sequelize, DataTypes) => {
       this.belongsTo(models.DeviceModelFunction, { foreignKey: 'device_model_function_id', as: 'function' });
 
       this.hasMany(models.DeviceFunctionProperty, { foreignKey: 'device_function_id', sourceKey: 'id', as: 'parameters', scope: { property_type: 1 } });
-      
+
       this.hasMany(models.DeviceFunctionProperty, { foreignKey: 'device_function_id', sourceKey: 'id', as: 'inputs', scope: { property_type: 2 } });
-      
+
       this.hasMany(models.DeviceFunctionProperty, { foreignKey: 'device_function_id', sourceKey: 'id', as: 'outputs', scope: { property_type: 3 } });
-      
+
       this.hasMany(models.DeviceFunctionProperty, { foreignKey: 'device_function_id', sourceKey: 'id', as: 'notifications', scope: { property_type: 4 } });
     }
   }

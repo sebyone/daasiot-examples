@@ -3,7 +3,7 @@
  * @param {object} data
  * @returns {object}
  */
-function decode (data) {
+function decode(data) {
     const utf8decoder = new TextDecoder();
     const decodedData = utf8decoder.decode(data);
     return JSON.parse(decodedData);
@@ -14,7 +14,7 @@ function decode (data) {
  * @returns {string}
  */
 function getTime() {
-	return new Date().toTimeString().split(' ')[0]
+    return new Date().toTimeString().split(' ')[0]
 }
 
 module.exports = {

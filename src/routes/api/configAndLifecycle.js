@@ -9,7 +9,7 @@ const { sendError } = require('./utilities');
 module.exports = {
     router
 };
-    
+
 
 router.get('/', function (req, res) {
     res.send({
@@ -85,7 +85,7 @@ router.post('/send', async function (req, res) {
         const timestampSeconds = Math.floor(new Date().getTime() / 1000);
 
         daasNode.send(din, typeset, b64_payload);
-        
+
         // TODO: add checks for din not found, etc.
         const ddo = await createDDO(101, din, payload, timestampSeconds, typeset);
         res.send(ddo);
@@ -108,9 +108,9 @@ router.get('/version', function (req, res) {
 
 router.post('/dev/db_sync', async function (req, res) {
     try {
-        const force =  req.body.force || false;
+        const force = req.body.force || false;
         console.warn(`[API] /dev/db_sync force=${force}`);
-        
+
         // only in development env
         if (process.env.NODE_ENV !== 'development') {
             res.status(403);
@@ -119,7 +119,7 @@ router.post('/dev/db_sync', async function (req, res) {
 
         await db.sequelize.sync({ force: force });
         res.send({ message: "Database sincronizzato" });
-    } 
+    }
     catch (err) {
         sendError(res, err);
     }

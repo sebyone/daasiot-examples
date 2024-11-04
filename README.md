@@ -15,24 +15,19 @@ npx sequelize-cli db:migrate
 npx sequelize-cli db:seed:all
 ```
 
-
 Avviare il server:
 
 ```npm run start:server```
 
-
 Avviare il nodo sender:
 
 ```npm run start:sender```
-
-
 
 ### Sviluppo con VSCode e DevContainer
 
 Per sviluppare all'interno di un container, in modo da avere un ambiente di sviluppo isolato e riproducibile, è possibile utilizzare il DevContainer di VSCode.
 
 Richiede che l'estensione [`Dev Containers`](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers) sia installata sul proprio VS Code.
-
 
 Digitare `Ctrl + Shift + P` e cercare e poi eseguire il comando `Dev Containers: Rebuild and Reopen in Container`.
 
@@ -43,6 +38,7 @@ Per ulteriori info consultare la [documentazione ufficiale](https://code.visuals
 ---
 
 ![sebyone-logo](https://sebyone.it/res/lg_daasiot-410-72dpi.png)
+
 # Welcome to the DaaS-IoT project
 
 more information about the Project are available on:
@@ -65,4 +61,3 @@ Una volta avviato il server, visitare la pagina `http://localhost:3000/api-docs`
 ## Communicating with the Team
 
 If you would like to ask a question please reach out to us via email: [developers@sebyone.it](developers@sebyone.it)
-

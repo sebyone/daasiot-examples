@@ -14,7 +14,7 @@ module.exports = {
       unique: true,
       name: 'index_din_sid_din',
     });
-    
+
   },
   down: async (queryInterface, Sequelize) => {
     // Remove index

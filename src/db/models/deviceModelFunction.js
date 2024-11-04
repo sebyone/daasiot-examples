@@ -7,7 +7,7 @@ module.exports = (sequelize, DataTypes) => {
     static associate(models) {
       this.belongsTo(models.DeviceModel, { foreignKey: 'device_model_id', as: 'device_model' });
       this.hasMany(models.DeviceModelFunctionProperty, { foreignKey: 'function_id', sourceKey: 'id', as: 'properties' });
-      
+
       this.hasMany(models.DeviceModelFunctionProperty, {
         foreignKey: 'function_id',
         sourceKey: 'id',

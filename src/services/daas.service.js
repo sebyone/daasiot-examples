@@ -23,7 +23,7 @@ const { Op } = require('sequelize');
 const localDinId = 1;
 
 async function loadConfig(node) {
-    
+
     const dinLocal = await DinLocal.findByPk(localDinId, { raw: true, include: ['din'] });
     const dinLocalLinks = await DinLink.findAll({
         where: {
@@ -39,17 +39,17 @@ async function loadConfig(node) {
 
     const sid = parseInt(dinLocal['din.sid']);
     const din = parseInt(dinLocal['din.din']);
-    
+
     // Init nodo
     const initDone = node.doInit(sid, din);
-    
+
     if (initDone) {
         console.log(`[daas] doInit sid=${sid} din=${din} OK`);
     } else {
         console.error(`[daas] doInit sid=${sid} din=${din} ERROR`);
     }
-    
-    
+
+
 
     // Enable node links
     dinLocalLinks.forEach((llink) => {
@@ -65,15 +65,15 @@ async function loadConfig(node) {
 
     });
 
-    
-    
+
+
     const dinsToMap = await DinHasDin.findAll({
         raw: true,
         where: {
             pdin_id: dinLocal.id,
         }, include: ['cdin']
     });
-    
+
     dinsToMap.forEach(async (d) => {
         const dinId = parseInt(d['cdin.id']);
         const din = parseInt(d['cdin.din']);
@@ -95,7 +95,7 @@ async function loadConfig(node) {
         //     driver = parseInt(link.link);
         //     url = link.url;
         // }
-        
+
         isMapped = node.map(din, driver, url);
 
         if (isMapped) {

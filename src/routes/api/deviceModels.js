@@ -17,7 +17,7 @@ router.get('/device_models', async function (req, res) {
         const q = getQuery(req);
         const where = q ? { description: { [Op.like]: `%${q}%` } } : {};
         const rowsAndCount = await DeviceModel.findAndCountAll({ where, limit, offset, include: ['device_group'] });
-        
+
         res.send(addQuery(toPaginationData(rowsAndCount, limit, offset), q));
     }
     catch (err) {
@@ -58,8 +58,8 @@ router.post('/device_models', async function (req, res) {
                 throw new Error(`Il campo ${field} è obbligatorio.`);
             }
         }
-        
-        let deviceGroup = null;        
+
+        let deviceGroup = null;
         if (deviceModel.device_group_id != undefined) {
             deviceGroup = await DeviceModelGroup.findByPk(parseInt(deviceModel.device_group_id), { transaction: t });
         }
@@ -90,7 +90,7 @@ router.post('/device_models', async function (req, res) {
             throw new Error(`DeviceModelGroup con id=${deviceModel.device_group_id} non trovato.`);
         }
 
-        deviceModel.device_group_id = deviceGroup.id;        
+        deviceModel.device_group_id = deviceGroup.id;
 
         const newDeviceModel = await DeviceModel.create(deviceModel, { transaction: t });
 
@@ -105,9 +105,9 @@ router.post('/device_models', async function (req, res) {
                 await createDeviceModelFunction(req, res, newDeviceModel.id, func, t);
             }
         }
-        
+
         await t.commit();
-        
+
         const fullDeviceModel = await DeviceModel.findByPk(newDeviceModel.id, { include: ['device_group', 'resources', 'functions'] });
 
         res.send(fullDeviceModel);
@@ -140,9 +140,9 @@ router.put('/device_models/:deviceModelId', async function (req, res) {
         }
 
         if (deviceModel.device_group_id && deviceModel.device_group_id !== oldDeviceModel.device_group_id) {
-            
+
             const deviceGroup = await DeviceModelGroup.findByPk(parseInt(deviceModel.device_group_id));
-            
+
             if (deviceGroup === null) {
                 res.status(404);
                 throw new Error(`DeviceModelGroup con id=${deviceModel.device_group_id} non trovato.`);
@@ -225,7 +225,7 @@ router.get('/device_models/:deviceModelId/resources', async function (req, res) 
             where.resource_type = resource_type;
         }
 
-        const resources = await DeviceModelResource.findAll({ where});
+        const resources = await DeviceModelResource.findAll({ where });
 
         res.send(resources);
     }
@@ -289,7 +289,7 @@ router.delete('/device_models/:deviceModelId/resources/:resourceId', async funct
 
 async function createResource(deviceModelId, resource, t) {
     resource.device_model_id = deviceModelId;
-    
+
     for (const field of ['name', 'link', 'resource_type']) {
         if (!resource[field]) {
             res.status(400);

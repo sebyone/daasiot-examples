@@ -31,7 +31,7 @@ router.get('/devices/:id', async function (req, res) {
         const id = parseInt(req.params.id);
 
         const device = await Device.findByPk(id, { include: ['device_model', 'din'] });
-        
+
         if (device === null) {
             res.status(404);
             throw new Error(`Dispositivo con id=${id} non trovato.`);
@@ -77,7 +77,7 @@ router.post('/devices', async function (req, res) {
 
 router.put('/devices/:id', async function (req, res) {
     const t = await db.sequelize.transaction();
-    
+
     try {
         const id = parseInt(req.params.id);
         const device = req.body;
@@ -103,7 +103,7 @@ router.put('/devices/:id', async function (req, res) {
 
             const din = device.din;
             const oldDin = await Din.findByPk(oldDevice.din_id, { transaction: t });
-            
+
             if (oldDin === null) {
                 res.status(404);
                 throw new Error(`Din con id=${oldDevice.din_id} non trovato.`);
@@ -113,7 +113,7 @@ router.put('/devices/:id', async function (req, res) {
                 res.status(400);
                 throw new Error(`Non è possibile modificare l'id del din.`);
             }
-            
+
             const updatedRowsDin = await Din.update(din, { where: { id: oldDin.id }, transaction: t });
             if (updatedRowsDin === 0) {
                 res.status(404);
@@ -187,7 +187,7 @@ router.get('/devices/:id/ddos', async function (req, res) {
         }
         const countAndData = await DDO.findAndCountAll({ where, limit, offset, transaction: t });
         await t.commit();
-        
+
         res.send(toPaginationData(countAndData, limit, offset));
     }
     catch (err) {

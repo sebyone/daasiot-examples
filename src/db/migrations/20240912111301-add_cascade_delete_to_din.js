@@ -2,7 +2,7 @@
 
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
-  async up (queryInterface, Sequelize) {
+  async up(queryInterface, Sequelize) {
     // add onDelete: 'CASCADE' to all the associations of the din table
     await queryInterface.changeColumn('din_local', 'din_id', {
       onDelete: 'CASCADE',
@@ -21,7 +21,7 @@ module.exports = {
     });
   },
 
-  async down (queryInterface, Sequelize) {
+  async down(queryInterface, Sequelize) {
     // remove onDelete: 'CASCADE' from all the DIN associations
     await queryInterface.changeColumn('din_local', 'din_id', {
       onDelete: 'NO ACTION',

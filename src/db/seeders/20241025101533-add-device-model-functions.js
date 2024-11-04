@@ -5,24 +5,24 @@ module.exports = {
   up: async (queryInterface, Sequelize) => {
 
 
-  /*
-  PID1
-La funzione di regolazione PID1 prevede un ingresso, quattro parametri e due uscite:
-
-	parametri: P, I, D, Frequenza, Timeout
-ingresso: numero target ( obiettivo: 1..1024)
-	ingresso: numero corrente ( rilevato: 1..1024 )
-	uscita: numero  pilota ( pilota: 1..1024 )
-
-	notifiche: eventi di regolazione (ogni qualvolta viene eseguita la funzione)
-	allarmi: incongruenze ingressi uscite, mancanza di reazione,  
-
-PLN1
-La funzione di regolazione PLN1 (plan) non richiede ingressi, prevede una lista di parametri, e prevede una sola uscita:
-
-	parametri: <#ix>,<week-day>,<time>,<pilota:N16>
-	uscita: numero pilota ( pilota: 1..1024 )
-  */
+    /*
+    PID1
+  La funzione di regolazione PID1 prevede un ingresso, quattro parametri e due uscite:
+  
+    parametri: P, I, D, Frequenza, Timeout
+  ingresso: numero target ( obiettivo: 1..1024)
+    ingresso: numero corrente ( rilevato: 1..1024 )
+    uscita: numero  pilota ( pilota: 1..1024 )
+  
+    notifiche: eventi di regolazione (ogni qualvolta viene eseguita la funzione)
+    allarmi: incongruenze ingressi uscite, mancanza di reazione,  
+  
+  PLN1
+  La funzione di regolazione PLN1 (plan) non richiede ingressi, prevede una lista di parametri, e prevede una sola uscita:
+  
+    parametri: <#ix>,<week-day>,<time>,<pilota:N16>
+    uscita: numero pilota ( pilota: 1..1024 )
+    */
 
     await queryInterface.bulkInsert('device_model_function', [
       {

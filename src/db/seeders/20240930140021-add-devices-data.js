@@ -2,7 +2,7 @@
 
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
-  async up (queryInterface, Sequelize) {
+  async up(queryInterface, Sequelize) {
     /**
      * Add seed commands here.
      *
@@ -66,7 +66,7 @@ module.exports = {
           updated_at: new Date(),
         }
       ], { transaction: t });
-        
+
 
       await queryInterface.bulkInsert('device', [
         {
@@ -99,7 +99,7 @@ module.exports = {
     }
   },
 
-  async down (queryInterface, Sequelize) {
+  async down(queryInterface, Sequelize) {
     const t = await queryInterface.sequelize.transaction();
     try {
       await queryInterface.bulkDelete('device', null, { transaction: t });
