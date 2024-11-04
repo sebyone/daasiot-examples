@@ -358,14 +358,28 @@ export interface DeviceGroup {
   pagination: Pagination;
 }
 
+export interface Resource {
+  id: number;
+  name: string;
+  device_model_id: number;
+  link: string;
+  resource_type: number;
+}
+
+export interface DeviceGroup {
+  id: number;
+  title: string;
+  description: string;
+  link_image: string;
+}
+
 export interface Dev {
   id: number;
   device_group_id: number;
   description: string;
   serial: string;
-  link_image: string;
-  link_datasheet: string;
-  link_userguide: string;
+  device_group?: DeviceGroup;
+  resources?: Resource[];
 }
 
 export interface DeviceModel {

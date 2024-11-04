@@ -11,13 +11,19 @@
  * francescopantusa98@gmail.com - initial implementation
  *
  */
-import { DinFormData, MapFormProps } from '@/types';
-import { Form, Input } from 'antd';
+import ConfigService from '@/services/configService';
+import { DinDataType, DinFormData, MapFormProps } from '@/types';
+import { Checkbox, Col, Divider, Form, Input, Row, Select } from 'antd';
 import { useTranslations } from 'next-intl';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 
 const MapForm = ({ form, onFinish, setIsDataSaved }: MapFormProps) => {
   const t = useTranslations('MapForm');
+  const tipologiaOptions = [{ value: '0' }, { value: '1' }];
+  const [isCallableChecked, setIsCallableChecked] = useState(false);
+  const [isCustomFeaturesChecked, setIsCustomFeaturesChecked] = useState(false);
+  const [sidOptions, setSidOptions] = useState<{ value: string }[]>([]);
+
   const handleFinish = (values: DinFormData) => {
     onFinish(values);
     setIsDataSaved(true);
@@ -29,28 +35,99 @@ const MapForm = ({ form, onFinish, setIsDataSaved }: MapFormProps) => {
     }
   };
 
+  useEffect(() => {
+    const fetchDins = async () => {
+      try {
+        const dins = await ConfigService.getDin();
+        const uniqueSids = new Set(dins.map((din: DinDataType) => din.sid));
+        const options = Array.from(uniqueSids).map((sid) => ({
+          value: sid,
+        }));
+        setSidOptions(options);
+      } catch (error) {
+        console.error('Error fetching DINs:', error);
+      }
+    };
+
+    fetchDins();
+  }, []);
+
   return (
     <div style={{ width: '40%' }}>
-      <Form
-        layout="vertical"
-        form={form}
-        autoComplete="off"
-        onFinish={handleFinish}
-        onValuesChange={handleValuesChange}
-      >
-        <Form.Item label="SID" name="sid" rules={[{ required: true, message: t('enterSID') }]}>
-          <Input />
-        </Form.Item>
-        <Form.Item label="DIN" name="din" rules={[{ required: true, message: t('enterDIN') }]}>
-          <Input />
-        </Form.Item>
-        <Form.Item label="P_RES" name="p_res" rules={[{ required: true, message: t('enterPRES') }]}>
-          <Input />
-        </Form.Item>
-        <Form.Item label="SKey" name="skey" rules={[{ required: true, message: t('enterSkey') }]}>
-          <Input />
-        </Form.Item>
-      </Form>
+      <Row gutter={48}>
+        <Col span={24}>
+          <Form
+            layout="vertical"
+            form={form}
+            autoComplete="off"
+            onFinish={handleFinish}
+            onValuesChange={handleValuesChange}
+          >
+            <Row gutter={24}>
+              <Col span={12}>
+                <Form.Item
+                  style={{ marginTop: -20 }}
+                  label="SID"
+                  name="sid"
+                  rules={[{ required: true, message: t('enterSID') }]}
+                >
+                  <Select options={sidOptions} />
+                </Form.Item>
+
+                <Form.Item label="DIN" name="din" rules={[{ required: true, message: t('enterDIN') }]}>
+                  <Input />
+                </Form.Item>
+              </Col>
+
+              <Col span={12}>
+                <Form.Item style={{ marginBottom: -1 }}>
+                  <Checkbox onChange={(e) => setIsCallableChecked(e.target.checked)}>Callable</Checkbox>
+                  <Divider style={{ marginTop: '1px', marginBottom: '4px' }} />
+                </Form.Item>
+
+                <Row gutter={16}>
+                  <Col span={8}>
+                    <Form.Item label="Link">
+                      <Select disabled={!isCallableChecked} />
+                    </Form.Item>
+                  </Col>
+                  <Col span={8}>
+                    <Form.Item label="Address">
+                      <Input disabled={!isCallableChecked} />
+                    </Form.Item>
+                  </Col>
+                  <Col span={8}>
+                    <Form.Item label="Receiver">
+                      <Select disabled={!isCallableChecked} />
+                    </Form.Item>
+                  </Col>
+                </Row>
+
+                <Form.Item style={{ marginBottom: -1 }}>
+                  <Checkbox onChange={(e) => setIsCustomFeaturesChecked(e.target.checked)}>Custom Features</Checkbox>
+                  <Divider style={{ marginTop: '1px', marginBottom: '4px' }} />
+                </Form.Item>
+
+                <Form.Item label="Profile R (Realability)" name="profileR">
+                  <Select options={tipologiaOptions} disabled={!isCustomFeaturesChecked} />
+                </Form.Item>
+
+                <Form.Item label="Profile E (Efficiency)" name="profileE">
+                  <Select options={tipologiaOptions} disabled={!isCustomFeaturesChecked} />
+                </Form.Item>
+
+                <Form.Item label="Profile S (Privacy)" name="profileS">
+                  <Select options={tipologiaOptions} disabled={!isCustomFeaturesChecked} />
+                </Form.Item>
+
+                <Form.Item label="SKey" name="skey" rules={[{ required: true, message: t('enterSkey') }]}>
+                  <Input disabled={!isCustomFeaturesChecked} />
+                </Form.Item>
+              </Col>
+            </Row>
+          </Form>
+        </Col>
+      </Row>
     </div>
   );
 };

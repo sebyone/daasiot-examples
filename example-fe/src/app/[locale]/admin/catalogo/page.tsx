@@ -14,7 +14,7 @@
 'use client';
 import { useCustomNotification } from '@/hooks/useNotificationHook';
 import ConfigService from '@/services/configService';
-import { Dev, DeviceGroup, DeviceModel, DeviceModelGroup } from '@/types';
+import { Dev, DeviceGroup, DeviceModel, DeviceModelGroup, Resource } from '@/types';
 import { SearchOutlined, UnorderedListOutlined } from '@ant-design/icons';
 import { Button, Card, Col, Divider, Empty, Input, Layout, List, Menu, Pagination, Row, Spin, Typography } from 'antd';
 import debounce from 'debounce';
@@ -114,6 +114,14 @@ export default function Catalogo() {
     router.push(`/${locale}/admin/catalogo/ESPtool`);
   };
 
+  const getModelImage = (model: Dev): string | undefined => {
+    return model.resources?.find((resource) => resource.resource_type === 1)?.link;
+  };
+
+  const getModelDocuments = (model: Dev): string | undefined => {
+    return model.resources?.find((resource) => resource.resource_type === 2)?.link;
+  };
+
   return (
     <>
       {contextHolder}
@@ -155,7 +163,21 @@ export default function Catalogo() {
                       }}
                     >
                       {groups.data.map((group) => (
-                        <Menu.Item key={group.title}>{group.title}</Menu.Item>
+                        <Menu.Item key={group.title}>
+                          <div style={{ display: 'flex', alignItems: 'center' }}>
+                            <div>
+                              {group.link_image && (
+                                // eslint-disable-next-line @next/next/no-img-element
+                                <img
+                                  src={group.link_image}
+                                  alt={group.description}
+                                  style={{ width: '40px', height: '40px', marginRight: '30px', objectFit: 'cover' }}
+                                />
+                              )}
+                            </div>
+                            <span style={{ marginTop: -13 }}>{group.title}</span>
+                          </div>
+                        </Menu.Item>
                       ))}
                     </Menu>
                   ) : (
@@ -200,10 +222,10 @@ export default function Catalogo() {
                             }}
                           >
                             <div style={{ display: 'flex', alignItems: 'center', gap: 50 }}>
-                              {model.link_image && (
+                              {getModelImage(model) && (
                                 // eslint-disable-next-line @next/next/no-img-element
                                 <img
-                                  src={model.link_image}
+                                  src={getModelImage(model)}
                                   alt={model.description}
                                   style={{ width: '20%', height: '20%' }}
                                 />
@@ -245,10 +267,10 @@ export default function Catalogo() {
                       }}
                     >
                       <div style={{ width: '50%', height: '150px', backgroundColor: '#f0f0f0' }}>
-                        {selectedModel.link_image && (
+                        {getModelImage(selectedModel) && (
                           // eslint-disable-next-line @next/next/no-img-element
                           <img
-                            src={selectedModel.link_image}
+                            src={getModelImage(selectedModel)}
                             alt={selectedModel.description}
                             style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                           />
@@ -266,21 +288,15 @@ export default function Catalogo() {
                         <p>
                           {t('ModelGroupID')} {selectedModel.device_group_id}
                         </p>
+                        {selectedModel.device_group && <p>{selectedModel.device_group.title}</p>}
                       </section>
                       <Divider type="vertical" style={{ height: 'auto' }} />
                       <section style={{ marginLeft: 10 }}>
                         <Title level={5}>{t('documents')}</Title>
-                        {selectedModel.link_datasheet && (
-                          <Text>
-                            <a href={selectedModel.link_datasheet} target="_blank" rel="noopener noreferrer">
-                              Datasheet
-                            </a>
-                          </Text>
-                        )}
-                        {selectedModel.link_userguide && (
-                          <Text>
-                            <a href={selectedModel.link_userguide} target="_blank" rel="noopener noreferrer">
-                              User Guide
+                        {getModelDocuments(selectedModel) && (
+                          <Text key={selectedModel.id} style={{ display: 'block' }}>
+                            <a href={getModelDocuments(selectedModel)} target="_blank" rel="noopener noreferrer">
+                              {getModelDocuments(selectedModel)}
                             </a>
                           </Text>
                         )}

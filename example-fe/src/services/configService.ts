@@ -231,6 +231,20 @@ const ConfigService = {
   },
 
   /**
+   * Restituisce tutti i DIN's
+   * Promise<DinDataType> - Oggetto DinDataType
+   */
+  getDin: async (): Promise<DinDataType[]> => {
+    try {
+      const response = await axiosInstance.get(`/dins`);
+      return response.data;
+    } catch (error) {
+      console.error('Error:', error);
+      throw error;
+    }
+  },
+
+  /**
    * Recupera tutte le funzioni di un determinato modello tramite il suo ID
    * id - ID device_model
    * Promise<Function> - Oggetto Function in cui è presente l'id del modello

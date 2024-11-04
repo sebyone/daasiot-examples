@@ -46,10 +46,12 @@ const EditMap = () => {
           id: data.cdin.id,
           sid: data.cdin.sid,
           din: data.cdin.din,
-          p_res: data.cdin.p_res,
+          profileR: data.cdin.p_res.charAt(0),
+          profileE: data.cdin.p_res.charAt(1),
+          profileS: data.cdin.p_res.charAt(2),
           skey: data.cdin.skey,
         });
-        setMap(data.din);
+        setMap(data.cdin.din);
       })
       .catch((error) => {
         notify('error', t('error'), t('errorGetMap'));
