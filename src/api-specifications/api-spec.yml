@@ -314,6 +314,29 @@ components:
           description: seriale del modello
           maxLength: 20
 
+    DeviceModelWithResources:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: ID del modello del device
+          nullable: false
+        device_group_id:
+          type: integer
+          description: ID del gruppo del modello
+          nullable: false
+        description:
+          type: string
+          description: descrizione del modello
+        serial:
+          type: string
+          description: seriale del modello
+          maxLength: 20
+        resources:
+          type: array
+          items:
+            $ref: "#/components/schemas/DeviceModelResource"
+
     DeviceModelFull:
       type: object
       properties:
@@ -2510,7 +2533,7 @@ paths:
                   data:
                     type: array
                     items:
-                      $ref: "#/components/schemas/DeviceModel"
+                      $ref: "#/components/schemas/DeviceModelWithResources"
                   pagination:
                     $ref: "#/components/schemas/PaginationData"
                   q:

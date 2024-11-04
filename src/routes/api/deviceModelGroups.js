@@ -119,7 +119,7 @@ router.get('/device_model_groups/:deviceModelGroupId/device_models', async funct
         const where = q ? { description: { [Op.like]: `%${q}%` } } : {};
         where.device_group_id = deviceModelGroupId;
 
-        const rowsAndCount = await DeviceModel.findAndCountAll({ where, limit, offset });
+        const rowsAndCount = await DeviceModel.findAndCountAll({ where, limit, offset, include: ['resources'], subQuery: true });
 
         res.send(addQuery(toPaginationData(rowsAndCount, limit, offset), q));
     }
