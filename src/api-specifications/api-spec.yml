@@ -109,13 +109,36 @@ components:
         din_id:
           type: integer
           description: ID del DIN associato al receiver
+
+    DinLocalFull:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: ID del receiver
+        title:
+          type: string
+          description: Nome del receiver
+        acpt_all:
+          type: boolean
+          description: Flag per accettare messaggi da nodi non mappati
+          default: false
+        enable:
+          type: boolean
+          default: false
+        din_id:
+          type: integer
+          description: ID del DIN associato al receiver
         din:
           $ref: '#/components/schemas/Din'
         links:
           type: array
           items:
             $ref: '#/components/schemas/DinLink'
-
+        device:
+          $ref: '#/components/schemas/Device'
+          nullable: true
+        
 
     DinLink:
       type: object
@@ -156,7 +179,7 @@ components:
           description: SKEY del DIN
           example: "9efbaeb2a94f"
 
-    Din_with_links:
+    DinWithLinks:
       type: object
       properties:
         id:
@@ -180,21 +203,36 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/DinLink'
-      
-    DinHasDin:
+
+    DinWithLinksAndReceiver:
       type: object
       properties:
-        pdin_id:
+        id:
           type: integer
-          description: ID del DIN del nodo padre, in quale mappa il DIN con id 'cdin_id'
-        cdin_id:
-          type: integer
-          description: ID del DIN del nodo figlio, mappato dal nodo padre con id 'pdin_id'
-      required:
-        - pdin_id
-        - cdin_id
+          description: ID del DIN
+        sid:
+          type: string
+          description: identificatore della rete daas (SID)
+        din:
+          type: string
+          description: identificatore univoco del nodo daas all'interno della rete
+        p_res:
+          type: string
+          description: preferenze di rete dell'utente, (riservatezza, 
+          example: "000"
+        skey:
+          type: string
+          description: SKEY del DIN
+          example: "9efbaeb2a94f"
+        links:
+          type: array
+          items:
+            $ref: '#/components/schemas/DinLink'
+        receiver:
+          $ref: '#/components/schemas/DinLocal'
+          nullable: true
 
-    DinHasDin_with_CDin:
+    DinMappingFull:
       type: object
       properties:
         pdin_id:
@@ -204,7 +242,7 @@ components:
           type: integer
           description: ID del DIN del nodo figlio, mappato dal nodo padre con id 'pdin_id'
         cdin:
-          $ref: '#/components/schemas/Din'
+          $ref: '#/components/schemas/DinWithLinksAndReceiver'
 
     Device:
       type: object
@@ -862,7 +900,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/DinLocal'
+                  $ref: '#/components/schemas/DinLocalFull'
 
         default:
           $ref: '#/components/responses/InternalError'
@@ -894,7 +932,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DinLocal'
+                $ref: '#/components/schemas/DinLocalFull'
         '400':
           description: Errore nei parametri della richiesta.
           content:
@@ -941,7 +979,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DinLocal'
+                $ref: '#/components/schemas/DinLocalFull'
                 description: Receiver completo con i dati del DIN associato e i link
         '404':
           description: Receiver non trovato.
@@ -1302,7 +1340,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/Din_with_links'
+                  $ref: '#/components/schemas/DinWithLinks'
 
         default:
           $ref: '#/components/responses/InternalError'
@@ -1333,7 +1371,7 @@ paths:
     get:
       description: Ritorna tutti i nodi mappati sul receiver.
       tags:
-        - receiver
+        - receivers
         - remotes
       parameters:
         - name: receiverId
@@ -1350,7 +1388,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/DinHasDin_with_CDin'
+                  $ref: '#/components/schemas/DinMappingFull'
         '404':
           description: Receiver non trovato.
           content:
@@ -1364,7 +1402,7 @@ paths:
     post:
       description: Associa e modifica un nodo remoto al receiver, se non esiste lo crea.
       tags:
-        - receiver
+        - receivers
         - remotes
       parameters:
         - name: receiverId
@@ -1381,6 +1419,8 @@ paths:
               properties:
                 din:
                   $ref: '#/components/schemas/Din'
+                link:
+                  $ref: '#/components/schemas/DinLink'
               required:
                 - din
             examples:
@@ -1393,6 +1433,15 @@ paths:
               existing remote, make changes:
                 value:
                   din: { "id": 2, "din": "1669" }
+                  link: { "id": 1, "url": "123.45.67.89:1234" }
+              existing remote, add link:
+                value:
+                  din: { "id": 2 }
+                  link: { "link": 2, "url": "99.99.99.99:9999" }
+              existing remote, change link:
+                value:
+                  din: { "id": 2 }
+                  link: { "id": 2, "url": "98.98.98.98:9898" }
 
       responses:
         '200':
@@ -1400,7 +1449,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DinHasDin_with_CDin'
+                $ref: '#/components/schemas/DinMappingFull'
         '400':
           description: Errore nei parametri della richiesta.
           content:
@@ -1420,7 +1469,7 @@ paths:
     delete:
       description: Elimina tutte le associazione del receiver con i nodi remoti.
       tags:
-        - receiver
+        - receivers
         - remotes
       parameters:
         - name: receiverId
@@ -1459,7 +1508,7 @@ paths:
     get:
       description: Ritorna un nodo remoto specifico associato al receiver.
       tags:
-        - receiver
+        - receivers
         - remotes
       parameters:
         - name: receiverId
@@ -1480,7 +1529,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DinHasDin_with_CDin'
+                $ref: '#/components/schemas/DinMappingFull'
         '404':
           description: Receiver o nodo remoto mappato a receiver non trovato.
           content:
@@ -1493,7 +1542,7 @@ paths:
     delete:
       description: Elimina l'associazione tra il nodo remoto e il receiver, se il nodo remoto non ha altre associazioni, viene cancellato.
       tags:
-        - receiver
+        - receivers
         - remotes
       parameters:
         - name: receiverId

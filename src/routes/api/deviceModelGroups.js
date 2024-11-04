@@ -77,7 +77,7 @@ router.put('/device_model_groups/:deviceModelGroupId', async function (req, res)
 
         if (updatedRows === 0) {
             res.status(404);
-            throw new Error(`Non è stato possibile aggiornare il device_model_group con id=${id}.`);
+                    throw new Error(`Non è stato possibile aggiornare il device_model_group con id=${id}.`);
         }
 
         res.send({ message: "DeviceModelGroup aggiornato con successo." });
