@@ -11,14 +11,11 @@
  * vincenzo.petrungaro@gmail.com - initial implementation
  *
  */
-
-const e = require("express");
 const db = require("../db/models");
+const Din = db.Din;
 const DinLocal = db.DinLocal;
 const DinLink = db.DinLink;
 const DinHasDin = db.DinHasDin;
-
-const { Op } = require('sequelize');
 
 const localDinId = 1;
 
@@ -68,42 +65,52 @@ async function loadConfig(node) {
 
 
     const dinsToMap = await DinHasDin.findAll({
-        raw: true,
         where: {
-            pdin_id: dinLocal.id,
-        }, include: ['cdin']
+            pdin_id: dinLocal.din_id,
+        },
+        include: [
+            {
+                model: Din,
+                as: 'cdin',
+                include: ['links']
+            }
+        ]
     });
 
     dinsToMap.forEach(async (d) => {
-        const dinId = parseInt(d['cdin.id']);
-        const din = parseInt(d['cdin.din']);
+        const din = parseInt(d.cdin.din);
+        const links = d.cdin.links;
 
+        console.log('[daas] links for din', din, JSON.stringify(links, null, 4));
 
-        // TODO: do this once, instead of for each din
-        // const link = await DinLink.findOne({
-        //     where: {
-        //         din_id: dinId
-        //     },
-        //     raw: true
-        // });
+        if (!links || links.length == 0) {
+            let driver = 2;
+            let url = '0.0.0.0:0';
+            map(din, driver, url);
+        }
+        else {
+            links.forEach(async (link) => {
+                driver = parseInt(link.link);
+                url = link.url;
 
-        let isMapped = false;
-        let driver = 2;
-        let url = '0.0.0.0:0';
+                map(din, driver, url);
 
-        // if (link !== null) {
-        //     driver = parseInt(link.link);
-        //     url = link.url;
-        // }
-
-        isMapped = node.map(din, driver, url);
-
-        if (isMapped) {
-            console.log(`[daas] map din=${din} driver=${driver} url=${url} OK`);
-        } else {
-            console.error(`[daas] ERROR while mapping din=${din} driver=${driver} url=${url}`);
+            });
         }
 
+        function map(din, driver, url) {
+            try {
+                const isMapped = node.map(din, driver, url);
+                if (isMapped) {
+                    console.log(`[daas] map din=${din} driver=${driver} url=${url} OK`);
+                } else {
+                    console.error(`[daas] ERROR while mapping din=${din} driver=${driver} url=${url}`);
+                }
+            }
+            catch (e) {
+                console.error(`[daas] ERROR while mapping din=${din} driver=${driver} url=${url}: ${e.message}`);
+            }
+        }
     });
 
     return {
