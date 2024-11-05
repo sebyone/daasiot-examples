@@ -49,6 +49,7 @@ const EditMap = () => {
           din: data.cdin.din,
           links: firstLink?.id || null,
           address: firstLink?.url || null,
+          receiver: null,
           profileR: data.cdin.p_res.charAt(0),
           profileE: data.cdin.p_res.charAt(1),
           profileS: data.cdin.p_res.charAt(2),
@@ -64,7 +65,17 @@ const EditMap = () => {
 
   const onFinish = async (values: DinFormData) => {
     try {
-      await configService.updateMap(id, values);
+      const formattedValues: DinFormData = {
+        din: {
+          sid: values.sid,
+          din: values.din,
+          p_res: `${values.profileR}${values.profileE}${values.profileS}` || '',
+          skey: values.skey || '',
+          links: values.links || [],
+          receiver: values.receiver || null,
+        },
+      };
+      await configService.updateMap(id, formattedValues);
       notify('success', t('success'), t('successSave'));
     } catch {
       notify('error', t('error'), t('errorUpdateMap'));

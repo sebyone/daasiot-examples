@@ -208,11 +208,13 @@ export interface DinDataType {
   skey: string;
 }
 export interface DinFormData {
-  din: {
-    sid: number;
-    din: number;
+  cdin: {
+    sid: string;
+    din: string;
     p_res: string;
     skey: string;
+    links: Link[];
+    receiver: null;
   };
 }
 

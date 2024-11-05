@@ -177,7 +177,7 @@ const ConfigService = {
    */
   createMap: async (map: Omit<DinFormData, 'id'>) => {
     try {
-      const response = await axiosInstance.post<DinDataType>('/receivers/1/remotes', map);
+      const response = await axiosInstance.post<DinFormData>('/receivers/1/remotes', map);
       return response.data;
     } catch (error) {
       console.error('Error:', error);

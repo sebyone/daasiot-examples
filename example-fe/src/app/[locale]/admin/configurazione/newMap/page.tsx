@@ -41,19 +41,23 @@ const NewMap = () => {
   }, [locale]);
 
   const onFinish = async (values: DinFormData) => {
+    console.log(values);
     try {
-      const formattedValues = {
+      const formattedValues: DinFormData = {
         din: {
           sid: values.sid,
           din: values.din,
-          p_res: values.p_res,
-          skey: values.skey,
+          p_res: `${values.profileR}${values.profileE}${values.profileS}` || '',
+          skey: values.skey || '',
+          links: values.links || [],
+          receiver: values.receiver || null,
         },
       };
       await configService.createMap(formattedValues);
       notify('success', t('success'), t('successSave'));
       setIsDataSaved(true);
     } catch (error) {
+      console.log(error);
       notify('error', t('error'), t('errorCreateMap'));
     }
   };

@@ -97,7 +97,7 @@ const MapForm = ({ form, onFinish, setIsDataSaved }: MapFormProps) => {
                     </Form.Item>
                   </Col>
                   <Col span={8}>
-                    <Form.Item label="Receiver">
+                    <Form.Item name="receiver" label="Receiver">
                       <Select disabled={!isCallableChecked} />
                     </Form.Item>
                   </Col>
@@ -120,7 +120,7 @@ const MapForm = ({ form, onFinish, setIsDataSaved }: MapFormProps) => {
                   <Select options={tipologiaOptions} disabled={!isCustomFeaturesChecked} />
                 </Form.Item>
 
-                <Form.Item label="SKey" name="skey" rules={[{ required: true, message: t('enterSkey') }]}>
+                <Form.Item label="SKey" name="skey">
                   <Input disabled={!isCustomFeaturesChecked} />
                 </Form.Item>
               </Col>
