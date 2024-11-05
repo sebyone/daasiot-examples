@@ -124,6 +124,7 @@ export interface DinLocalFormProps {
   showEnabledCheckBox: boolean;
   showAcceptAllCheckBox: boolean;
   showPowerActions: boolean;
+  showPowerActionsProcessor: boolean;
   showSaveButton: boolean;
   showStatus: boolean;
   statusData?: StatusDataType | null;

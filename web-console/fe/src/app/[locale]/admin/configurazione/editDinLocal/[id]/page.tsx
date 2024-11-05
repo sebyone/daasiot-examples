@@ -277,7 +277,7 @@ const EditDinLocal = () => {
   const items: TabsProps['items'] = [
     {
       key: '1',
-      label: 'Domotica',
+      label: 'Node',
       children: (
         <DinLocalForm
           form={form}
@@ -289,6 +289,7 @@ const EditDinLocal = () => {
           showEnabledCheckBox={true}
           showAcceptAllCheckBox={true}
           showPowerActions={true}
+          showPowerActionsProcessor={true}
           showSaveButton={false}
           showStatus={true}
           statusData={statusData}
