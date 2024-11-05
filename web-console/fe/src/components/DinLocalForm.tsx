@@ -14,7 +14,7 @@
 import { ConfigFormData, DinLocalFormProps } from '@/types';
 import { Button, Card, Checkbox, Col, Form, Input, List, Row, Select, Switch } from 'antd';
 import { useTranslations } from 'next-intl';
-import React from 'react';
+import React, { useState } from 'react';
 
 const DinLocalForm = ({
   form,
@@ -26,6 +26,7 @@ const DinLocalForm = ({
   showEnabledCheckBox,
   showAcceptAllCheckBox,
   showPowerActions,
+  showPowerActionsProcessor,
   showSaveButton,
   showStatus,
   statusData,
@@ -34,6 +35,16 @@ const DinLocalForm = ({
   const marginBottom = { marginBottom: -8 };
   const style = { minWidth: '550px', width: '100%', maxWidth: '680px', marginTop: -35 };
   const t = useTranslations('DinLocalForm');
+
+  const [processorAutoStart, setProcessorAutoStart] = useState(false);
+  const handleReceiverAutoStartChange = (checked: boolean) => {
+    if (setAutoStart) {
+      setAutoStart(checked);
+    }
+  };
+  const handleProcessorAutoStartChange = (checked: boolean) => {
+    setProcessorAutoStart(checked);
+  };
   const handleFinish = (values: ConfigFormData) => {
     if (onFinish) {
       onFinish(values);
@@ -50,12 +61,6 @@ const DinLocalForm = ({
   const handleStart = () => {
     if (onStart) {
       onStart();
-    }
-  };
-
-  const handleAutoStartChange = (checked: boolean) => {
-    if (setAutoStart) {
-      setAutoStart(checked);
     }
   };
 
@@ -97,12 +102,12 @@ const DinLocalForm = ({
         </Row>
         <Row gutter={16} style={marginBottom}>
           <Col span={10}>
-            <Form.Item label="SID" name="sid">
+            <Form.Item label="Network Identifier (SID)" name="sid">
               <Input />
             </Form.Item>
           </Col>
           <Col span={10}>
-            <Form.Item label="DIN" name="din">
+            <Form.Item label="Node Identifier (DIN)" name="din">
               <Input />
             </Form.Item>
           </Col>
@@ -128,11 +133,16 @@ const DinLocalForm = ({
             </Form.Item>
           </Col>
         </Row>
-        <Row gutter={16} style={marginBottom}>
-          <Col span={20}>
+        <Row gutter={24} style={marginBottom}>
+          <Col span={16}>
             <Form.Item label="SKey" name="skey">
               <Input />
             </Form.Item>
+          </Col>
+          <Col span={8}>
+            <Button style={{ marginTop: 20 }} type="primary">
+              Generate
+            </Button>
           </Col>
         </Row>
 
@@ -151,45 +161,85 @@ const DinLocalForm = ({
       </Form>
       <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', maxWidth: '400px', marginTop: -15 }}>
         {showPowerActions && (
-          <div style={{ height: 50, marginBottom: 30 }}>
-            <Card bordered={false} style={{ width: 400, backgroundColor: '#f0f0f0' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-around', gap: 15 }}>
-                <span>{t('autoStart')}</span>
-                <Switch checked={autoStart} onChange={handleAutoStartChange} />
-
-                <Button type="primary" onClick={handleStart}>
-                  {t('start')}
-                </Button>
-                <Button type="primary" onClick={() => {}}>
-                  {t('restart')}
-                </Button>
-              </div>
-            </Card>
-          </div>
+          <Card title="Receiver" bordered={false} style={{ width: 400, backgroundColor: '#f0f0f0' }} size="small">
+            <span style={{ marginRight: 10 }}>Avvio Automatico:</span>
+            <Switch checked={autoStart} onChange={handleReceiverAutoStartChange} />
+          </Card>
         )}
         {showStatus && (
-          <Card title="Status" bordered={false} style={{ width: '100%', backgroundColor: '#f0f0f0' }}>
-            {statusData ? (
-              <List
-                size="small"
-                dataSource={[
-                  { key: 'lasttime', label: 'Last Time', value: statusData.lasttime },
-                  { key: 'hwver', label: 'HW Version', value: statusData.hwver },
-                  { key: 'linked', label: 'Linked', value: statusData.linked },
-                  { key: 'sync', label: 'Sync', value: statusData.sync },
-                  { key: 'lock', label: 'Lock', value: statusData.lock },
-                ]}
-                renderItem={(item) => (
-                  <List.Item>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
-                      <span>{item.label}:</span>
-                      <span>{item.value}</span>
-                    </div>
-                  </List.Item>
-                )}
-              />
-            ) : null}
+          <>
+            <Card title="Status" bordered={false} style={{ width: '100%', backgroundColor: '#f0f0f0' }}>
+              {statusData ? (
+                <List
+                  size="small"
+                  dataSource={[
+                    { key: 'lasttime', label: 'Start Time', value: statusData.lasttime },
+                    { key: 'hwver', label: 'DaaS Version', value: statusData.hwver },
+                    { key: 'linked', label: 'Links', value: statusData.linked },
+                    { key: 'sync', label: 'Map Size', value: statusData.sync },
+                    { key: 'lock', label: 'Lock', value: statusData.lock },
+                  ]}
+                  renderItem={(item) => (
+                    <List.Item>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
+                        <span>{item.label}:</span>
+                        <span>{item.value}</span>
+                      </div>
+                    </List.Item>
+                  )}
+                />
+              ) : null}
+            </Card>
+            <Button style={{ width: '20%', marginTop: -10, marginLeft: 'auto', display: 'block' }} type="primary">
+              Restart
+            </Button>
+          </>
+        )}
+      </div>
+      <div
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '20px',
+          maxWidth: '400px',
+          marginTop: -15,
+          marginLeft: 15,
+        }}
+      >
+        {showPowerActionsProcessor && (
+          <Card title="Processor" bordered={false} style={{ width: 400, backgroundColor: '#f0f0f0' }} size="small">
+            <span style={{ marginRight: 10 }}>Avvio Automatico:</span>
+            <Switch checked={processorAutoStart} onChange={handleProcessorAutoStartChange} />
           </Card>
+        )}
+        {showStatus && (
+          <>
+            <Card title="Statistics" bordered={false} style={{ width: '100%', backgroundColor: '#f0f0f0' }}>
+              {statusData ? (
+                <List
+                  size="small"
+                  dataSource={[
+                    { key: 'lasttime', label: 'Zero Time', value: statusData.lasttime },
+                    { key: 'hwver', label: 'Received (DDO)', value: statusData.hwver },
+                    { key: 'linked', label: 'Processed', value: statusData.linked },
+                    { key: 'sync', label: 'Rate', value: statusData.sync },
+                    { key: 'lock', label: 'Free mem', value: statusData.lock },
+                  ]}
+                  renderItem={(item) => (
+                    <List.Item>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
+                        <span>{item.label}:</span>
+                        <span>{item.value}</span>
+                      </div>
+                    </List.Item>
+                  )}
+                />
+              ) : null}
+            </Card>
+            <Button style={{ width: '30%', marginTop: -10, marginLeft: 'auto', display: 'block' }} type="primary">
+              Reset statistics
+            </Button>
+          </>
         )}
       </div>
     </div>
