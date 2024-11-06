@@ -87,7 +87,13 @@ router.post('/send', async function (req, res) {
         daasNode.send(din, typeset, b64_payload);
 
         // TODO: add checks for din not found, etc.
-        const ddo = await createDDO(101, din, payload, timestampSeconds, typeset);
+        const sender = await db.DinLocal.findByPk(1, { include: ['din'] });
+        if (!sender) {
+            throw new Error("DinLocal not found");
+        }
+        const sender_din = sender.din.din;
+        console.log("sender_din", sender_din);
+        const ddo = await createDDO(sender_din, din, payload, timestampSeconds, typeset);
         res.send(ddo);
     } catch (err) {
         sendError(res, err);
