@@ -11,10 +11,11 @@
  * francescopantusa98@gmail.com - initial implementation
  *
  */
-import { DataDevice, Device, NodoFormProps } from '@/types';
+import ConfigService from '@/services/configService';
+import { ConfigData, DataDevice, Dev, Device, DinLocalDataType, NodoFormProps } from '@/types';
 import { Checkbox, Col, Form, Input, Row, Select } from 'antd';
 import { useTranslations } from 'next-intl';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 
 const NodoForm = ({ form, onFinish, setIsDataSaved }: NodoFormProps) => {
   const marginBottom = { marginBottom: -22 };
@@ -28,6 +29,9 @@ const NodoForm = ({ form, onFinish, setIsDataSaved }: NodoFormProps) => {
     transform: 'scale(0.9)',
     marginLeft: -30,
   };
+  const [deviceModels, setDeviceModels] = useState<Dev[]>([]);
+  const [receiversData, setReceiversData] = useState<ConfigData[]>([]);
+  const [selectedReceiverSid, setSelectedReceiverSid] = useState<string>('');
   const handleFinish = (values: DataDevice) => {
     onFinish(values);
     setIsDataSaved(true);
@@ -45,6 +49,48 @@ const NodoForm = ({ form, onFinish, setIsDataSaved }: NodoFormProps) => {
   const handleValuesChange = () => {
     if (form.isFieldsTouched()) {
       setIsDataSaved(false);
+    }
+  };
+
+  useEffect(() => {
+    const fetchDeviceModels = async () => {
+      try {
+        const response = await ConfigService.getDeviceModel(0, 100);
+        setDeviceModels([
+          {
+            id: 0,
+            device_group_id: 0,
+            description: 'Device Model Default',
+            serial: '',
+          },
+          ...response.data,
+        ]);
+      } catch (err) {
+        console.error('Errore nel caricamento dei modelli:', err);
+      }
+    };
+    fetchDeviceModels();
+  }, []);
+
+  useEffect(() => {
+    const fetchReceivers = async () => {
+      try {
+        const data = await ConfigService.getReceivers();
+
+        setReceiversData(data);
+      } catch (error) {}
+    };
+    fetchReceivers();
+  }, []);
+
+  const handleReceiverChange = (receiverId: number) => {
+    const selectedReceiver = receiversData.find((receiver) => receiver.id === receiverId);
+    if (selectedReceiver?.din?.sid) {
+      setSelectedReceiverSid(selectedReceiver.din.sid);
+      form.setFieldsValue({ sid: selectedReceiver.din.sid });
+    } else {
+      setSelectedReceiverSid('');
+      form.setFieldsValue({ sid: '' });
     }
   };
 
@@ -92,19 +138,32 @@ const NodoForm = ({ form, onFinish, setIsDataSaved }: NodoFormProps) => {
         <Row gutter={20} style={marginBottom}>
           <Col span={16}>
             <Form.Item label={t('model')} name="modello">
-              <Select />
+              <Select
+                placeholder="Modello"
+                options={deviceModels.map((model) => ({
+                  value: model.id,
+                  label: model.description,
+                }))}
+              />
             </Form.Item>
           </Col>
         </Row>
         <Row gutter={16} style={marginBottom}>
           <Col span={8}>
-            <Form.Item name="sid" label="SID">
-              <Input name="sid" placeholder="SID" />
+            <Form.Item name="receiver" label="Receivers">
+              <Select
+                placeholder="Receivers"
+                options={receiversData.map((receiver) => ({
+                  value: receiver.id,
+                  label: receiver.title,
+                }))}
+                onChange={handleReceiverChange}
+              />
             </Form.Item>
           </Col>
           <Col span={8}>
-            <Form.Item name="din" label="DIN">
-              <Input name="din" placeholder="DIN" />
+            <Form.Item name="sid" label="SID">
+              <Input name="sid" placeholder="SID" readOnly style={{ cursor: 'default' }} value={selectedReceiverSid} />
             </Form.Item>
           </Col>
         </Row>

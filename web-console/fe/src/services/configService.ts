@@ -34,6 +34,19 @@ import axiosInstance from '@/utils/api';
 const ConfigService = {
   /**
    * Recupera l'elenco di tutti i receivers
+   * Promise<ConfigData[]> - Array di oggetti ConfigData
+   */
+  getReceivers: async (): Promise<ConfigData[]> => {
+    try {
+      const response = await axiosInstance.get('/receivers');
+      return response.data;
+    } catch (error) {
+      console.error('Error:', error);
+      throw error;
+    }
+  },
+  /**
+   * Recupera l'elenco di tutti i receivers da visualizzare nella tabella
    * Promise<DinLocalDataType[]> - Array di oggetti DinLocalDataType
    */
   getAll: async (): Promise<DinLocalDataType[]> => {
