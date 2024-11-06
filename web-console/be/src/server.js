@@ -101,7 +101,15 @@ localNode.onDDOReceived((din) => {
         const secondsSinceMessageWasSent = currTimestamp - timestamp;
 
         try {
-            let decodedData = decode(data);
+            let decodedData;
+            try {
+                decodedData = decode(data);
+                decodedData = JSON.parse(decodedData);
+            }
+            catch (error) {
+                console.error(getTime(), "Failed to parse data as JSON");
+            }
+
             console.log(getTime(), `⬇⬇ Pulling data from DIN:`, origin, `| typeset: ${typeset} | ${secondsSinceMessageWasSent}s ago`);
             console.log(decodedData);
 

@@ -6,7 +6,7 @@
 function decode(data) {
     const utf8decoder = new TextDecoder();
     const decodedData = utf8decoder.decode(data);
-    return JSON.parse(decodedData);
+    return decodedData;
 }
 
 /**
