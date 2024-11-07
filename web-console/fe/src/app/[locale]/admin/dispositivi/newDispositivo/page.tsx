@@ -12,8 +12,10 @@
  *
  */
 'use client';
+import ModalMap from '@/components/ModalMap';
 import { useCustomNotification } from '@/hooks/useNotificationHook';
-import { Device } from '@/types';
+import ConfigService from '@/services/configService';
+import { ConfigData, CreateDevice, DataDevice, Dev, Device } from '@/types';
 import { Form, Modal } from 'antd';
 import { useLocale, useTranslations } from 'next-intl';
 import dynamic from 'next/dynamic';
@@ -30,22 +32,75 @@ const NewDispositivo = () => {
   const router = useRouter();
   const { notify, contextHolder } = useCustomNotification();
   const [isDataSaved, setIsDataSaved] = useState(true);
-  const t = useTranslations('NewDispositivo');
+  //const t = useTranslations('NewDispositivo');
   const tBack = useTranslations('handleGoBack');
   const locale = useLocale();
   const [, updateState] = useState<object>();
+  const [deviceModels, setDeviceModels] = useState<Dev[]>([]);
+  const [receiversData, setReceiversData] = useState<ConfigData[]>([]);
+  const [selectedReceiverSid, setSelectedReceiverSid] = useState<string>('');
+  const [selectedReceiver, setSelectedReceiver] = useState<ConfigData>();
+  const [openModal, setOpenModal] = useState(false);
 
   useEffect(() => {
     updateState({});
   }, [locale]);
 
-  const onFinish = async (values: Device) => {
-    /*try {
-      await configService.createLink(values);
-      notify('success', t('success'), t('successSave'));
-    } catch {
-      notify('error', t('error'), t('errorCreateLink'));
-    }*/
+  useEffect(() => {
+    const fetchDeviceModels = async () => {
+      try {
+        const response = await ConfigService.getDeviceModel(0, 100);
+        setDeviceModels([
+          {
+            id: 0,
+            device_group_id: 0,
+            description: 'Device Model Default',
+            serial: '',
+          },
+          ...response.data,
+        ]);
+      } catch (err) {
+        console.error('Errore nel caricamento dei modelli:', err);
+      }
+    };
+    fetchDeviceModels();
+  }, []);
+
+  useEffect(() => {
+    const fetchReceivers = async () => {
+      try {
+        const data = await ConfigService.getReceivers();
+
+        setReceiversData(data);
+      } catch (error) {}
+    };
+    fetchReceivers();
+  }, []);
+
+  const handleReceiverChange = (receiverId: number) => {
+    const selectedReceiver = receiversData.find((receiver) => receiver.id === receiverId);
+    setSelectedReceiver(selectedReceiver);
+    if (selectedReceiver?.din?.sid) {
+      setSelectedReceiverSid(selectedReceiver.din.sid);
+      form.setFieldsValue({ sid: selectedReceiver.din.sid });
+    } else {
+      setSelectedReceiverSid('');
+      form.setFieldsValue({ sid: '' });
+    }
+  };
+
+  const onFinish = async (values: CreateDevice) => {
+    console.log(values);
+    try {
+      const formattedValues = {
+        device_model_id: values.modello,
+        din_id: selectedReceiver?.din?.id,
+        name: values.denominazione,
+        latitude: values.latitudine ? parseFloat(values.latitudine) : null,
+        longitude: values.longitudine ? parseFloat(values.longitudine) : null,
+      };
+      await ConfigService.createDevice(formattedValues);
+    } catch {}
   };
 
   const handleGoBack = () => {
@@ -66,6 +121,14 @@ const NewDispositivo = () => {
     router.push(`/${locale}/admin/dispositivi`);
   };
 
+  const handleOpenModal = () => {
+    setOpenModal(true);
+  };
+
+  const handleCloseModal = () => {
+    setOpenModal(false);
+  };
+
   const handleSave = () => {
     form.submit();
   };
@@ -76,7 +139,17 @@ const NewDispositivo = () => {
       <DataPanel title={'New Dispositivo'} isEditing={isDataSaved} showSemaphore={true}>
         <Panel handleGoBack={handleGoBack} handleSave={handleSave} showSaveButtons={true} layoutStyle="singleTable">
           <PanelView layoutStyle="singleTable">
-            <NodoForm form={form} onFinish={onFinish} setIsDataSaved={setIsDataSaved} readOnly={false} />
+            <NodoForm
+              form={form}
+              onFinish={onFinish}
+              setIsDataSaved={setIsDataSaved}
+              deviceModels={deviceModels}
+              receiversData={receiversData}
+              selectedReceiverSid={selectedReceiverSid}
+              onReceiverChange={handleReceiverChange}
+              onOpenModal={handleOpenModal}
+            />
+            <ModalMap isVisible={openModal} onClose={handleCloseModal} sid={selectedReceiverSid} />
           </PanelView>
         </Panel>
       </DataPanel>

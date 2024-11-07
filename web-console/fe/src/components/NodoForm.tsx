@@ -11,13 +11,20 @@
  * francescopantusa98@gmail.com - initial implementation
  *
  */
-import ConfigService from '@/services/configService';
-import { ConfigData, DataDevice, Dev, Device, DinLocalDataType, NodoFormProps } from '@/types';
-import { Checkbox, Col, Form, Input, Row, Select } from 'antd';
+import { CreateDevice, DataDevice, NodoFormProps } from '@/types';
+import { Button, Checkbox, Col, Form, Input, Row, Select } from 'antd';
 import { useTranslations } from 'next-intl';
-import React, { useEffect, useState } from 'react';
 
-const NodoForm = ({ form, onFinish, setIsDataSaved }: NodoFormProps) => {
+const NodoForm = ({
+  form,
+  onFinish,
+  setIsDataSaved,
+  deviceModels,
+  receiversData,
+  selectedReceiverSid,
+  onReceiverChange,
+  onOpenModal,
+}: NodoFormProps) => {
   const marginBottom = { marginBottom: -22 };
 
   const t = useTranslations('NodoForm');
@@ -29,22 +36,11 @@ const NodoForm = ({ form, onFinish, setIsDataSaved }: NodoFormProps) => {
     transform: 'scale(0.9)',
     marginLeft: -30,
   };
-  const [deviceModels, setDeviceModels] = useState<Dev[]>([]);
-  const [receiversData, setReceiversData] = useState<ConfigData[]>([]);
-  const [selectedReceiverSid, setSelectedReceiverSid] = useState<string>('');
-  const handleFinish = (values: DataDevice) => {
+
+  const handleFinish = (values: CreateDevice) => {
     onFinish(values);
     setIsDataSaved(true);
   };
-
-  //const [maps, setMaps] = useState<DinDataType[]>([]);
-
-  /*useEffect(() => {
-    ConfigService
-      .getMaps()
-      .then((data) => setMaps(data))
-      .catch((error) => console.error('Errore nel caricamento dei maps:', error));
-  }, []);*/
 
   const handleValuesChange = () => {
     if (form.isFieldsTouched()) {
@@ -52,46 +48,8 @@ const NodoForm = ({ form, onFinish, setIsDataSaved }: NodoFormProps) => {
     }
   };
 
-  useEffect(() => {
-    const fetchDeviceModels = async () => {
-      try {
-        const response = await ConfigService.getDeviceModel(0, 100);
-        setDeviceModels([
-          {
-            id: 0,
-            device_group_id: 0,
-            description: 'Device Model Default',
-            serial: '',
-          },
-          ...response.data,
-        ]);
-      } catch (err) {
-        console.error('Errore nel caricamento dei modelli:', err);
-      }
-    };
-    fetchDeviceModels();
-  }, []);
-
-  useEffect(() => {
-    const fetchReceivers = async () => {
-      try {
-        const data = await ConfigService.getReceivers();
-
-        setReceiversData(data);
-      } catch (error) {}
-    };
-    fetchReceivers();
-  }, []);
-
-  const handleReceiverChange = (receiverId: number) => {
-    const selectedReceiver = receiversData.find((receiver) => receiver.id === receiverId);
-    if (selectedReceiver?.din?.sid) {
-      setSelectedReceiverSid(selectedReceiver.din.sid);
-      form.setFieldsValue({ sid: selectedReceiver.din.sid });
-    } else {
-      setSelectedReceiverSid('');
-      form.setFieldsValue({ sid: '' });
-    }
+  const handleOpenModal = () => {
+    onOpenModal();
   };
 
   return (
@@ -118,6 +76,12 @@ const NodoForm = ({ form, onFinish, setIsDataSaved }: NodoFormProps) => {
         </Form.Item>
         <Row gutter={32} style={marginBottom}>
           <Col span={16}>
+            <Form.Item name="id" noStyle>
+              <Input type="hidden" />
+            </Form.Item>
+            <Form.Item name="din_id" noStyle>
+              <Input type="hidden" />
+            </Form.Item>
             <Form.Item name="denominazione" label={t('name')}>
               <Input name="denominazione" placeholder={t('name')} />
             </Form.Item>
@@ -157,7 +121,7 @@ const NodoForm = ({ form, onFinish, setIsDataSaved }: NodoFormProps) => {
                   value: receiver.id,
                   label: receiver.title,
                 }))}
-                onChange={handleReceiverChange}
+                onChange={onReceiverChange}
               />
             </Form.Item>
           </Col>
@@ -167,7 +131,7 @@ const NodoForm = ({ form, onFinish, setIsDataSaved }: NodoFormProps) => {
             </Form.Item>
           </Col>
         </Row>
-        <Row gutter={16} style={marginBottom}>
+        <Row gutter={24} style={marginBottom}>
           <Col span={8}>
             <Form.Item name="latitudine" label={t('latitude')}>
               <Input name="latitudine" placeholder={t('latitude')} />
@@ -177,6 +141,11 @@ const NodoForm = ({ form, onFinish, setIsDataSaved }: NodoFormProps) => {
             <Form.Item name="longitudine" label={t('longitude')}>
               <Input name="longitudine" placeholder={t('longitude')} />
             </Form.Item>
+          </Col>
+          <Col span={8}>
+            <Button type="primary" style={{ marginTop: 20 }} onClick={onOpenModal}>
+              Map
+            </Button>
           </Col>
         </Row>
       </Form>

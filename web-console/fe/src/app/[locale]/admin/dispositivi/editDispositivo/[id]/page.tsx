@@ -12,9 +12,10 @@
  *
  */
 'use client';
+import ModalMap from '@/components/ModalMap';
 import { useCustomNotification } from '@/hooks/useNotificationHook';
 import ConfigService from '@/services/configService';
-import { DataDevice, Device, FormDataDevice } from '@/types';
+import { ConfigData, DataDevice, Device, FormDataDevice } from '@/types';
 import { Form, Modal } from 'antd';
 import { useLocale, useTranslations } from 'next-intl';
 import dynamic from 'next/dynamic';
@@ -32,6 +33,12 @@ const EditDispositivo = () => {
   const { notify, contextHolder } = useCustomNotification();
   const [isDataSaved, setIsDataSaved] = useState(true);
   const [device, setDevice] = useState<string>();
+  const [deviceModels, setDeviceModels] = useState<Dev[]>([]);
+  const [receiversData, setReceiversData] = useState<ConfigData[]>([]);
+  const [selectedReceiverSid, setSelectedReceiverSid] = useState<string>('');
+  const [selectedReceiver, setSelectedReceiver] = useState<ConfigData>();
+  const [openModal, setOpenModal] = useState(false);
+  const [sid, setSid] = useState('');
   const t = useTranslations('EditDispositivo');
   const tBack = useTranslations('handleGoBack');
   const locale = useLocale();
@@ -39,20 +46,77 @@ const EditDispositivo = () => {
   const id = Number(params.id);
 
   useEffect(() => {
-    ConfigService.getDeviceById(id).then((data) => {
-      form.setFieldsValue({
-        id: data.id,
-        denominazione: data.name,
-        matricola: data.device_model.serial,
-        modello: data.device_model.description,
-        sid: data.din.sid,
-        din: data.din.din,
-        latitudine: data.latitude,
-        longitudine: data.longitude,
-      });
-      setDevice(data.name);
-    });
+    const fetchData = async () => {
+      try {
+        const receivers = await ConfigService.getReceivers();
+        setReceiversData(receivers);
+
+        const deviceData = await ConfigService.getDeviceById(id);
+        const receiver = receivers.find((rec) => rec.id === deviceData.din.id);
+        console.log('Receiver trovato:', receiver);
+
+        form.setFieldsValue({
+          id: deviceData.id,
+          denominazione: deviceData.name,
+          matricola: deviceData.device_model.serial,
+          modello: deviceData.device_model.description,
+          receiver: receiver?.title,
+          sid: deviceData.din.sid,
+          latitudine: deviceData.latitude,
+          longitudine: deviceData.longitude,
+        });
+        setDevice(deviceData.name);
+        setSid(deviceData.din.sid);
+      } catch (error) {
+        console.error('Errore nel caricamento dei dati:', error);
+      }
+    };
+
+    fetchData();
+  }, [id]);
+
+  useEffect(() => {
+    const fetchDeviceModels = async () => {
+      try {
+        const response = await ConfigService.getDeviceModel(0, 100);
+        setDeviceModels([
+          {
+            id: 0,
+            device_group_id: 0,
+            description: 'Device Model Default',
+            serial: '',
+          },
+          ...response.data,
+        ]);
+      } catch (err) {
+        console.error('Errore nel caricamento dei modelli:', err);
+      }
+    };
+    fetchDeviceModels();
   }, []);
+
+  useEffect(() => {
+    const fetchReceivers = async () => {
+      try {
+        const data = await ConfigService.getReceivers();
+
+        setReceiversData(data);
+      } catch (error) {}
+    };
+    fetchReceivers();
+  }, []);
+
+  const handleReceiverChange = (receiverId: number) => {
+    const selectedReceiver = receiversData.find((receiver) => receiver.id === receiverId);
+    setSelectedReceiver(selectedReceiver);
+    if (selectedReceiver?.din?.sid) {
+      setSelectedReceiverSid(selectedReceiver.din.sid);
+      form.setFieldsValue({ sid: selectedReceiver.din.sid });
+    } else {
+      setSelectedReceiverSid('');
+      form.setFieldsValue({ sid: '' });
+    }
+  };
 
   const onFinish = async (values: any) => {
     try {
@@ -90,6 +154,14 @@ const EditDispositivo = () => {
     router.push(`/${locale}/admin/dispositivi`);
   };
 
+  const handleOpenModal = () => {
+    setOpenModal(true);
+  };
+
+  const handleCloseModal = () => {
+    setOpenModal(false);
+  };
+
   const handleSave = () => {
     form.submit();
   };
@@ -99,7 +171,17 @@ const EditDispositivo = () => {
       <DataPanel title={device} isEditing={isDataSaved} showSemaphore={true}>
         <Panel handleGoBack={handleGoBack} handleSave={handleSave} showSaveButtons={true} layoutStyle="singleTable">
           <PanelView layoutStyle="singleTable">
-            <NodoForm form={form} onFinish={onFinish} setIsDataSaved={setIsDataSaved} />
+            <NodoForm
+              form={form}
+              onFinish={onFinish}
+              setIsDataSaved={setIsDataSaved}
+              deviceModels={deviceModels}
+              receiversData={receiversData}
+              selectedReceiverSid={selectedReceiverSid}
+              onReceiverChange={handleReceiverChange}
+              onOpenModal={handleOpenModal}
+            />
+            <ModalMap isVisible={openModal} onClose={handleCloseModal} sid={sid} />
           </PanelView>
         </Panel>
       </DataPanel>

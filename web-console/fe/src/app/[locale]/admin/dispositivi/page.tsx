@@ -370,6 +370,7 @@ export default function Dispositivi() {
           <Table
             columns={columnsEvents}
             dataSource={ddos}
+            scroll={{ y: 150 }}
             pagination={{
               current: currentPage,
               pageSize: pageSize,

@@ -14,6 +14,7 @@
 import {
   ConfigData,
   ConfigFormData,
+  CreateDevice,
   DataDevice,
   Device,
   DeviceFunction,
@@ -340,6 +341,16 @@ const ConfigService = {
   updateMap: async (id: number, mapData: DinFormData): Promise<void> => {
     try {
       const response = await axiosInstance.post(`/receivers/1/remotes/${id}`, mapData);
+      return response.data;
+    } catch (error) {
+      console.error('Error:', error);
+      throw error;
+    }
+  },
+
+  createDevice: async (device: Omit<CreateDevice, 'id'>) => {
+    try {
+      const response = await axiosInstance.post<CreateDevice>('/devices', device);
       return response.data;
     } catch (error) {
       console.error('Error:', error);

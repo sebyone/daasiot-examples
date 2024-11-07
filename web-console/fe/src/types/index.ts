@@ -172,6 +172,7 @@ export interface MapFormProps {
   form: FormInstance;
   onFinish: (values: DinFormData) => void;
   setIsDataSaved: (status: boolean) => void;
+  disableSid: boolean;
 }
 
 export interface LinkDataType {
@@ -252,6 +253,12 @@ export interface ModalDispositivoProps {
   onSend: () => void;
 }
 
+export interface ModalMapProps {
+  isVisible: boolean;
+  onClose: () => void;
+  sid: string;
+}
+
 export interface FormDataDevice {
   name: string;
   din: {
@@ -287,6 +294,16 @@ export interface DataDevice {
   };
 }
 
+export interface CreateDevice {
+  modello: number;
+  receiver: number;
+  denominazione: string;
+  latitudine?: string;
+  longitudine?: string;
+  enable?: boolean;
+  id?: number;
+}
+
 export interface Device {
   data: DataDevice[];
   pagination: Pagination;
@@ -294,8 +311,13 @@ export interface Device {
 
 export interface NodoFormProps {
   form: FormInstance;
-  onFinish: (values: DataDevice) => void;
+  onFinish: (values: CreateDevice) => void;
   setIsDataSaved: (status: boolean) => void;
+  deviceModels: Dev[];
+  receiversData: ConfigData[];
+  selectedReceiverSid: string;
+  onReceiverChange: (receiverId: number) => void;
+  onOpenModal: () => void;
 }
 
 export interface BaseCardDispositivoProps {
