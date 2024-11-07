@@ -15,7 +15,7 @@
 import ModalMap from '@/components/ModalMap';
 import { useCustomNotification } from '@/hooks/useNotificationHook';
 import ConfigService from '@/services/configService';
-import { ConfigData, CreateDevice, DataDevice, Dev, Device } from '@/types';
+import { ConfigData, CreateDevice, DataDevice, Dev, Device, DinDataType } from '@/types';
 import { Form, Modal } from 'antd';
 import { useLocale, useTranslations } from 'next-intl';
 import dynamic from 'next/dynamic';
@@ -41,6 +41,46 @@ const NewDispositivo = () => {
   const [selectedReceiverSid, setSelectedReceiverSid] = useState<string>('');
   const [selectedReceiver, setSelectedReceiver] = useState<ConfigData>();
   const [openModal, setOpenModal] = useState(false);
+  const [dinValue, setDinValue] = useState<string>('');
+  const [dins, setDins] = useState<DinDataType[]>([]);
+
+  const fetchDins = async () => {
+    try {
+      const dinsData = await ConfigService.getDin();
+      setDins(dinsData);
+    } catch (error) {
+      console.error('Error fetching DINs:', error);
+    }
+  };
+
+  const handleMapCreated = async (din: string) => {
+    setDinValue(din);
+    await fetchDins();
+  };
+
+  const onFinish = async (values: CreateDevice) => {
+    await fetchDins();
+
+    const d = dins.find((din) => din.din === dinValue);
+    try {
+      const formattedValues = {
+        device_model_id: values.modello,
+        din_id: d?.id,
+        name: values.denominazione,
+        latitude: values.latitudine ? parseFloat(values.latitudine) : null,
+        longitude: values.longitudine ? parseFloat(values.longitudine) : null,
+      };
+
+      await ConfigService.createDevice(formattedValues);
+      notify('success', 'Successo', 'Dispositivo creato con successo');
+    } catch (error) {
+      notify('error', 'Errore', 'Errore nella creazione del dispositivo');
+    }
+  };
+
+  useEffect(() => {
+    fetchDins();
+  }, []);
 
   useEffect(() => {
     updateState({});
@@ -89,20 +129,6 @@ const NewDispositivo = () => {
     }
   };
 
-  const onFinish = async (values: CreateDevice) => {
-    console.log(values);
-    try {
-      const formattedValues = {
-        device_model_id: values.modello,
-        din_id: selectedReceiver?.din?.id,
-        name: values.denominazione,
-        latitude: values.latitudine ? parseFloat(values.latitudine) : null,
-        longitude: values.longitudine ? parseFloat(values.longitudine) : null,
-      };
-      await ConfigService.createDevice(formattedValues);
-    } catch {}
-  };
-
   const handleGoBack = () => {
     if (!isDataSaved) {
       notify('warning', tBack('warning'), tBack('warningContent'));
@@ -133,6 +159,19 @@ const NewDispositivo = () => {
     form.submit();
   };
 
+  useEffect(() => {
+    const fetchDins = async () => {
+      try {
+        const dins = await ConfigService.getDin();
+        setDins(dins);
+      } catch (error) {
+        console.error('Error fetching DINs:', error);
+      }
+    };
+
+    fetchDins();
+  }, []);
+
   return (
     <>
       {contextHolder}
@@ -149,7 +188,12 @@ const NewDispositivo = () => {
               onReceiverChange={handleReceiverChange}
               onOpenModal={handleOpenModal}
             />
-            <ModalMap isVisible={openModal} onClose={handleCloseModal} sid={selectedReceiverSid} />
+            <ModalMap
+              isVisible={openModal}
+              onClose={handleCloseModal}
+              sid={selectedReceiverSid}
+              onMapCreated={handleMapCreated}
+            />
           </PanelView>
         </Panel>
       </DataPanel>

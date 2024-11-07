@@ -143,7 +143,7 @@ const NodoForm = ({
             </Form.Item>
           </Col>
           <Col span={8}>
-            <Button type="primary" style={{ marginTop: 20 }} onClick={onOpenModal}>
+            <Button type="primary" style={{ marginTop: 20 }} onClick={handleOpenModal}>
               Map
             </Button>
           </Col>

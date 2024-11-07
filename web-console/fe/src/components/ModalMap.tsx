@@ -20,7 +20,7 @@ import { useParams } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
 import MapForm from './MapForm';
 
-const ModalMap: React.FC<ModalMapProps> = ({ isVisible, onClose, sid }) => {
+const ModalMap: React.FC<ModalMapProps> = ({ isVisible, onClose, sid, onMapCreated }) => {
   const [form] = Form.useForm();
   const { notify, contextHolder } = useCustomNotification();
   const [isDataSaved, setIsDataSaved] = useState(true);
@@ -64,16 +64,21 @@ const ModalMap: React.FC<ModalMapProps> = ({ isVisible, onClose, sid }) => {
         din: {
           sid: values.sid,
           din: values.din,
-          p_res: `${values.profileR}${values.profileE}${values.profileS}` || '',
+          p_res: `${values.profileR}${values.profileE}${values.profileS}` || null,
           skey: values.skey || '',
           links: values.links || [],
           receiver: values.receiver || null,
         },
       };
-      await configService.updateMap(id, formattedValues);
+      await configService.createMap(formattedValues);
       notify('success', t('success'), t('successSave'));
-    } catch {
-      notify('error', t('error'), t('errorUpdateMap'));
+      setIsDataSaved(true);
+      if (onMapCreated) {
+        onMapCreated(values.din);
+      }
+    } catch (error) {
+      console.log(error);
+      notify('error', t('error'), t('errorCreateMap'));
     }
   };
 

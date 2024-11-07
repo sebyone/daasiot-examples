@@ -15,7 +15,7 @@
 import ModalMap from '@/components/ModalMap';
 import { useCustomNotification } from '@/hooks/useNotificationHook';
 import ConfigService from '@/services/configService';
-import { ConfigData, DataDevice, Device, FormDataDevice } from '@/types';
+import { ConfigData, DataDevice, Dev, Device, FormDataDevice } from '@/types';
 import { Form, Modal } from 'antd';
 import { useLocale, useTranslations } from 'next-intl';
 import dynamic from 'next/dynamic';
@@ -53,8 +53,7 @@ const EditDispositivo = () => {
 
         const deviceData = await ConfigService.getDeviceById(id);
         const receiver = receivers.find((rec) => rec.id === deviceData.din.id);
-        console.log('Receiver trovato:', receiver);
-
+        console.log('Sono il receiver:' + receiver);
         form.setFieldsValue({
           id: deviceData.id,
           denominazione: deviceData.name,

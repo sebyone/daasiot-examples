@@ -257,6 +257,7 @@ export interface ModalMapProps {
   isVisible: boolean;
   onClose: () => void;
   sid: string;
+  onMapCreated?: (din: string) => void;
 }
 
 export interface FormDataDevice {
