@@ -258,6 +258,8 @@ export interface ModalMapProps {
   onClose: () => void;
   sid: string;
   onMapCreated?: (din: string) => void;
+  selectedMapId?: number | null;
+  mode?: 'create' | 'edit';
 }
 
 export interface FormDataDevice {

@@ -56,6 +56,8 @@ const NewDispositivo = () => {
   const handleMapCreated = async (din: string) => {
     setDinValue(din);
     await fetchDins();
+    setOpenModal(false);
+    notify('success', 'Successo', 'Map creato con successo');
   };
 
   const onFinish = async (values: CreateDevice) => {
@@ -67,12 +69,18 @@ const NewDispositivo = () => {
         device_model_id: values.modello,
         din_id: d?.id,
         name: values.denominazione,
-        latitude: values.latitudine ? parseFloat(values.latitudine) : null,
-        longitude: values.longitudine ? parseFloat(values.longitudine) : null,
+        latitude: '39.256',
+        longitude: '39.256',
       };
-
+      {
+        /*values.latitudine ? parseFloat(values.latitudine) : null*/
+      }
+      {
+        /*values.longitudine ? parseFloat(values.longitudine) : null*/
+      }
       await ConfigService.createDevice(formattedValues);
       notify('success', 'Successo', 'Dispositivo creato con successo');
+      router.push(`/${locale}/admin/dispositivi`);
     } catch (error) {
       notify('error', 'Errore', 'Errore nella creazione del dispositivo');
     }
@@ -131,7 +139,6 @@ const NewDispositivo = () => {
 
   const handleGoBack = () => {
     if (!isDataSaved) {
-      notify('warning', tBack('warning'), tBack('warningContent'));
       Modal.confirm({
         title: tBack('title'),
         content: tBack('content'),
@@ -148,6 +155,10 @@ const NewDispositivo = () => {
   };
 
   const handleOpenModal = () => {
+    if (!selectedReceiverSid) {
+      notify('warning', 'Attenzione', 'Seleziona prima un Receiver');
+      return;
+    }
     setOpenModal(true);
   };
 

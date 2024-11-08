@@ -133,17 +133,17 @@ const NodoForm = ({
         </Row>
         <Row gutter={24} style={marginBottom}>
           <Col span={8}>
-            <Form.Item name="latitudine" label={t('latitude')}>
-              <Input name="latitudine" placeholder={t('latitude')} />
+            <Form.Item name="latitudine" label={t('latitude')} noStyle>
+              <Input name="latitudine" placeholder={t('latitude')} type="hidden" />
             </Form.Item>
           </Col>
           <Col span={8}>
-            <Form.Item name="longitudine" label={t('longitude')}>
-              <Input name="longitudine" placeholder={t('longitude')} />
+            <Form.Item name="longitudine" label={t('longitude')} noStyle>
+              <Input name="longitudine" placeholder={t('longitude')} type="hidden" />
             </Form.Item>
           </Col>
           <Col span={8}>
-            <Button type="primary" style={{ marginTop: 20 }} onClick={handleOpenModal}>
+            <Button type="primary" style={{ marginTop: 20 }} onClick={onOpenModal}>
               Map
             </Button>
           </Col>

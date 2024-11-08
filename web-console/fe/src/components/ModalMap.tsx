@@ -16,18 +16,15 @@ import configService from '@/services/configService';
 import { DinFormData, ModalMapProps } from '@/types';
 import { Form, Modal } from 'antd';
 import { useTranslations } from 'next-intl';
-import { useParams } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
 import MapForm from './MapForm';
 
-const ModalMap: React.FC<ModalMapProps> = ({ isVisible, onClose, sid, onMapCreated }) => {
+const ModalMap: React.FC<ModalMapProps> = ({ isVisible, onClose, sid, onMapCreated, mode, selectedMapId }) => {
   const [form] = Form.useForm();
   const { notify, contextHolder } = useCustomNotification();
   const [isDataSaved, setIsDataSaved] = useState(true);
   const [disableSid, setDisableSid] = useState(false);
   const t = useTranslations('EditMap');
-  const params = useParams();
-  const id = Number(params.id);
 
   useEffect(() => {
     form.setFieldsValue({
@@ -35,50 +32,77 @@ const ModalMap: React.FC<ModalMapProps> = ({ isVisible, onClose, sid, onMapCreat
     });
     setDisableSid(true);
   });
-  /*useEffect(() => {
-    configService
-      .getMapById(id)
-      .then((data) => {
-        const firstLink = data.cdin.links?.[0];
-        form.setFieldsValue({
-          id: data.cdin.id,
-          sid: sid,
-          links: firstLink?.id || null,
-          address: firstLink?.url || null,
-          receiver: null,
-          profileR: data.cdin.p_res.charAt(0),
-          profileE: data.cdin.p_res.charAt(1),
-          profileS: data.cdin.p_res.charAt(2),
-          skey: data.cdin.skey,
-        });
-      })
-      .catch((error) => {
-        notify('error', t('error'), t('errorGetMap'));
-        console.error('Errore:', error);
-      });
-  }, []);*/
+  useEffect(() => {
+    if (!isVisible) {
+      form.resetFields();
+    }
+  }, [isVisible, form]);
+
+  useEffect(() => {
+    if (isVisible) {
+      if (mode === 'edit' && selectedMapId) {
+        configService
+          .getMapById(selectedMapId)
+          .then((data) => {
+            const firstLink = data.cdin.links?.[0];
+            form.setFieldsValue({
+              id: data.cdin.id,
+              sid: data.cdin.sid,
+              din: data.cdin.din,
+              links: firstLink?.id || null,
+              address: firstLink?.url || null,
+              receiver: null,
+              profileR: data.cdin.p_res.charAt(0),
+              profileE: data.cdin.p_res.charAt(1),
+              profileS: data.cdin.p_res.charAt(2),
+              skey: data.cdin.skey,
+            });
+          })
+          .catch((error) => {
+            notify('error', t('error'), t('errorGetMap'));
+            console.error('Errore:', error);
+          });
+      } else {
+        form.resetFields();
+        form.setFieldsValue({ sid });
+      }
+    }
+  }, [selectedMapId, mode, isVisible, sid]);
+
+  const handleCancel = () => {
+    form.resetFields();
+    onClose();
+  };
 
   const onFinish = async (values: DinFormData) => {
     try {
+      const profileR = values.profileR || '';
+      const profileE = values.profileE || '';
+      const profileS = values.profileS || '';
       const formattedValues: DinFormData = {
         din: {
           sid: values.sid,
           din: values.din,
-          p_res: `${values.profileR}${values.profileE}${values.profileS}` || null,
+          p_res: profileR || profileE || profileS ? `${profileR}${profileE}${profileS}` : '',
           skey: values.skey || '',
           links: values.links || [],
           receiver: values.receiver || null,
         },
       };
-      await configService.createMap(formattedValues);
-      notify('success', t('success'), t('successSave'));
-      setIsDataSaved(true);
+
+      if (mode === 'edit' && selectedMapId) {
+        await configService.updateMap(selectedMapId, formattedValues);
+        notify('success', t('success'), t('successUpdate'));
+      } else {
+        await configService.createMap(formattedValues);
+        notify('success', t('success'), t('successCreate'));
+      }
+
       if (onMapCreated) {
         onMapCreated(values.din);
       }
     } catch (error) {
-      console.log(error);
-      notify('error', t('error'), t('errorCreateMap'));
+      notify('error', t('error'), mode === 'edit' ? t('errorUpdateMap') : t('errorCreateMap'));
     }
   };
 
@@ -86,7 +110,16 @@ const ModalMap: React.FC<ModalMapProps> = ({ isVisible, onClose, sid, onMapCreat
     form.submit();
   };
   return (
-    <Modal open={isVisible} onOk={handleSave} onCancel={onClose} width={900}>
+    <Modal
+      open={isVisible}
+      onOk={handleSave}
+      onCancel={handleCancel}
+      title={mode === 'edit' ? 'Modifica Map' : 'Nuovo Map'}
+      maskClosable={true}
+      destroyOnClose={true}
+      width={900}
+      afterClose={() => form.resetFields()}
+    >
       <MapForm form={form} setIsDataSaved={setIsDataSaved} onFinish={onFinish} disableSid={disableSid} />
     </Modal>
   );

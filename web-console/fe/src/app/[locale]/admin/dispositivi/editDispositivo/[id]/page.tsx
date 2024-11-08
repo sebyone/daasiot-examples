@@ -15,7 +15,7 @@
 import ModalMap from '@/components/ModalMap';
 import { useCustomNotification } from '@/hooks/useNotificationHook';
 import ConfigService from '@/services/configService';
-import { ConfigData, DataDevice, Dev, Device, FormDataDevice } from '@/types';
+import { ConfigData, DataDevice, Dev, Device, DinDataType, FormDataDevice } from '@/types';
 import { Form, Modal } from 'antd';
 import { useLocale, useTranslations } from 'next-intl';
 import dynamic from 'next/dynamic';
@@ -44,6 +44,15 @@ const EditDispositivo = () => {
   const locale = useLocale();
   const params = useParams();
   const id = Number(params.id);
+  const [dinValue, setDinValue] = useState<string>('');
+  const [dins, setDins] = useState<DinDataType[]>([]);
+
+  const fetchDins = async () => {
+    try {
+      const dinsData = await ConfigService.getDin();
+      setDins(dinsData);
+    } catch (error) {}
+  };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -53,7 +62,7 @@ const EditDispositivo = () => {
 
         const deviceData = await ConfigService.getDeviceById(id);
         const receiver = receivers.find((rec) => rec.id === deviceData.din.id);
-        console.log('Sono il receiver:' + receiver);
+
         form.setFieldsValue({
           id: deviceData.id,
           denominazione: deviceData.name,
@@ -66,13 +75,23 @@ const EditDispositivo = () => {
         });
         setDevice(deviceData.name);
         setSid(deviceData.din.sid);
+        setDinValue(deviceData.din.din);
       } catch (error) {
         console.error('Errore nel caricamento dei dati:', error);
       }
     };
 
     fetchData();
+    fetchDins();
   }, [id]);
+
+  const handleMapCreated = async (din: string) => {
+    console.log('DIN creato:', din);
+    setDinValue(din);
+    await fetchDins();
+    setOpenModal(false);
+    notify('success', t('success'), 'Map creato con successo');
+  };
 
   useEffect(() => {
     const fetchDeviceModels = async () => {
@@ -123,13 +142,14 @@ const EditDispositivo = () => {
         name: values.denominazione,
         din: {
           sid: values.sid,
-          din: values.din,
+          din: dinValue || values.din,
         },
         latitude: values.latitudine,
         longitude: values.longitudine,
       };
       await ConfigService.updateDevice(id, deviceData);
       notify('success', t('success'), t('successSave'));
+      router.push(`/${locale}/admin/dispositivi`);
     } catch {
       notify('error', t('error'), t('errorUpdateMap'));
     }
@@ -137,7 +157,6 @@ const EditDispositivo = () => {
 
   const handleGoBack = () => {
     if (!isDataSaved) {
-      notify('warning', tBack('warning'), tBack('warningContent'));
       Modal.confirm({
         title: tBack('title'),
         content: tBack('content'),
@@ -180,7 +199,7 @@ const EditDispositivo = () => {
               onReceiverChange={handleReceiverChange}
               onOpenModal={handleOpenModal}
             />
-            <ModalMap isVisible={openModal} onClose={handleCloseModal} sid={sid} />
+            <ModalMap isVisible={openModal} onClose={handleCloseModal} sid={sid} onMapCreated={handleMapCreated} />
           </PanelView>
         </Panel>
       </DataPanel>

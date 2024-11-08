@@ -19,6 +19,7 @@ import { ESPLoader, Transport } from 'esptool-js';
 import dynamic from 'next/dynamic';
 import React, { useEffect, useRef, useState } from 'react';
 //import { ITerminalOptions, Terminal } from 'xterm';
+import FirmwareUpdaterExplanation from '@/components/FirmwareUpdaterExplanation';
 import { useTranslations } from 'next-intl';
 import Terminal from 'react-console-emulator';
 import styles from './Updater.module.css';
@@ -292,7 +293,7 @@ const DaaSUpdater = () => {
         </div>
         <div style={{ width: '65%' }}>
           {!updateComplete && (
-            <Terminal
+            /*<Terminal
               commands={{}}
               promptLabel={''}
               style={{
@@ -307,7 +308,8 @@ const DaaSUpdater = () => {
               }}
               noEchoBack
               readOnly
-            />
+            />*/
+            <FirmwareUpdaterExplanation />
           )}
 
           {progress > 0 && <Progress percent={progress} />}

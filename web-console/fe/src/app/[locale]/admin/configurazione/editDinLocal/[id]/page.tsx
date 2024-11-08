@@ -14,6 +14,7 @@
 'use client';
 import IPAddressIcon from '@/components/IPAddressIcon';
 import LTEIcon from '@/components/LTEIcon';
+import ModalMap from '@/components/ModalMap';
 import { useCustomNotification } from '@/hooks/useNotificationHook';
 import { default as ConfigService, default as configService } from '@/services/configService';
 import { ConfigFormData, LinkDataType, MapDataType, StatusDataType } from '@/types';
@@ -38,6 +39,7 @@ const EditDinLocal = () => {
   const [autoStart, setAutoStart] = useState(false);
   const [title, setTitle] = useState('');
   const [dinLocal, setDinLocal] = useState<string>();
+  const [SID, setSID] = useState<string>('');
   const { notify, contextHolder } = useCustomNotification();
   const [linksData, setLinksData] = useState<LinkDataType[]>([]);
   const [mapsData, setMapsData] = useState<MapDataType[]>([]);
@@ -63,10 +65,6 @@ const EditDinLocal = () => {
 
   const handleEditLink = (data: LinkDataType) => {
     router.push(`/${locale}/admin/configurazione/editLink/${data.id}`);
-  };
-
-  const handleEditMap = (data: MapDataType) => {
-    router.push(`/${locale}/admin/configurazione/editMap/${data.id}`);
   };
 
   const getIconForLinks = (tipologia: number): ReactNode => {
@@ -129,8 +127,37 @@ const EditDinLocal = () => {
     router.push(`/${locale}/admin/configurazione/newLink`);
   };
 
+  const [isAddMapModalVisible, setIsAddMapModalVisible] = useState(false);
+
+  const [editMode, setEditMode] = useState<'create' | 'edit'>('create');
+  const [selectedMapId, setSelectedMapId] = useState<number | null>(null);
+
+  const handleEditMap = (data: MapDataType) => {
+    setSelectedMapId(data.id);
+    setEditMode('edit');
+    setIsAddMapModalVisible(true);
+  };
+
   const handleAddMap = () => {
-    router.push(`/${locale}/admin/configurazione/newMap`);
+    setSelectedMapId(null);
+    setEditMode('create');
+    setIsAddMapModalVisible(true);
+  };
+
+  const handleCloseAddMapModal = () => {
+    setIsAddMapModalVisible(false);
+    setSelectedMapId(null);
+    setEditMode('create');
+  };
+
+  const handleMapCreated = async (din: string) => {
+    try {
+      await fetchMaps();
+      setIsAddMapModalVisible(false);
+      notify('success', t('success'), t('successCreateMap'));
+    } catch (error) {
+      notify('error', t('error'), t('errorGetLinksMap'));
+    }
   };
 
   const onFinish = async (values: ConfigFormData) => {
@@ -162,6 +189,7 @@ const EditDinLocal = () => {
           acpt_all: data.acpt_all || false,
         });
         setDinLocal(data.title);
+        setSID(data.din.sid);
       })
       .catch((error) => {
         console.error('Errore:', error);
@@ -181,7 +209,6 @@ const EditDinLocal = () => {
 
   const handleGoBack = () => {
     if (!isDataSaved) {
-      notify('warning', tBack('warning'), tBack('warningContent'));
       Modal.confirm({
         title: tBack('title'),
         content: tBack('content'),
@@ -341,6 +368,14 @@ const EditDinLocal = () => {
               onSend={onSend}
             />
           )}
+          <ModalMap
+            isVisible={isAddMapModalVisible}
+            onClose={handleCloseAddMapModal}
+            sid={SID}
+            onMapCreated={handleMapCreated}
+            selectedMapId={selectedMapId}
+            mode={editMode}
+          />
         </>
       ),
     },

@@ -62,6 +62,7 @@ const MapForm = ({ form, onFinish, setIsDataSaved, disableSid }: MapFormProps) =
             autoComplete="off"
             onFinish={handleFinish}
             onValuesChange={handleValuesChange}
+            style={{ marginTop: 10 }}
           >
             <Row gutter={24}>
               <Col span={12}>
