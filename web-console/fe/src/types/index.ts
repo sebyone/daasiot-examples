@@ -257,6 +257,7 @@ export interface ModalMapProps {
   isVisible: boolean;
   onClose: () => void;
   sid: string;
+  din?: string;
   onMapCreated?: (din: string) => void;
   selectedMapId?: number | null;
   mode?: 'create' | 'edit';

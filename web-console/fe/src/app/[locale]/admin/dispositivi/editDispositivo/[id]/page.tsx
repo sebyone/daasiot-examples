@@ -61,7 +61,7 @@ const EditDispositivo = () => {
         setReceiversData(receivers);
 
         const deviceData = await ConfigService.getDeviceById(id);
-        const receiver = receivers.find((rec) => rec.id === deviceData.din.id);
+        const receiver = receivers.find((rec) => rec.din.sid === deviceData.din.sid);
 
         form.setFieldsValue({
           id: deviceData.id,
@@ -199,7 +199,14 @@ const EditDispositivo = () => {
               onReceiverChange={handleReceiverChange}
               onOpenModal={handleOpenModal}
             />
-            <ModalMap isVisible={openModal} onClose={handleCloseModal} sid={sid} onMapCreated={handleMapCreated} />
+            <ModalMap
+              isVisible={openModal}
+              onClose={handleCloseModal}
+              sid={sid}
+              din={dinValue}
+              onMapCreated={handleMapCreated}
+              mode="edit"
+            />
           </PanelView>
         </Panel>
       </DataPanel>
