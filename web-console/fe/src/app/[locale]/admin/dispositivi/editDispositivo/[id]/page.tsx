@@ -15,7 +15,7 @@
 import ModalMap from '@/components/ModalMap';
 import { useCustomNotification } from '@/hooks/useNotificationHook';
 import ConfigService from '@/services/configService';
-import { ConfigData, DataDevice, Dev, Device, DinDataType, FormDataDevice } from '@/types';
+import { ConfigData, DataDevice, Dev, Device, DinDataType, FormDataDevice, MapDataType } from '@/types';
 import { Form, Modal } from 'antd';
 import { useLocale, useTranslations } from 'next-intl';
 import dynamic from 'next/dynamic';
@@ -46,6 +46,7 @@ const EditDispositivo = () => {
   const id = Number(params.id);
   const [dinValue, setDinValue] = useState<string>('');
   const [dins, setDins] = useState<DinDataType[]>([]);
+  const [map, setMap] = useState<MapDataType>();
 
   const fetchDins = async () => {
     try {
@@ -76,6 +77,7 @@ const EditDispositivo = () => {
         setDevice(deviceData.name);
         setSid(deviceData.din.sid);
         setDinValue(deviceData.din.din);
+        setMap(deviceData.din);
       } catch (error) {
         console.error('Errore nel caricamento dei dati:', error);
       }
@@ -206,6 +208,7 @@ const EditDispositivo = () => {
               din={dinValue}
               onMapCreated={handleMapCreated}
               mode="edit"
+              selectedMapId={map?.id}
             />
           </PanelView>
         </Panel>
