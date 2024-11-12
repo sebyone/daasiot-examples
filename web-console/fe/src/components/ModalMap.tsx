@@ -81,7 +81,6 @@ const ModalMap: React.FC<ModalMapProps> = ({ isVisible, onClose, sid, onMapCreat
       const profileS = values.profileS || '';
       const formattedValues: DinFormData = {
         din: {
-          id: selectedMapId,
           sid: values.sid,
           din: values.din,
           p_res: profileR || profileE || profileS ? `${profileR}${profileE}${profileS}` : '',
@@ -92,8 +91,7 @@ const ModalMap: React.FC<ModalMapProps> = ({ isVisible, onClose, sid, onMapCreat
       };
 
       if (mode === 'edit' && selectedMapId) {
-        console.log('selectedMapId: ' + selectedMapId + ' ' + 'formattedValues: ' + formattedValues);
-        await configService.updateMap(formattedValues);
+        await configService.updateMap(selectedMapId, formattedValues);
         notify('success', t('success'), t('successUpdate'));
       } else {
         await configService.createMap(formattedValues);

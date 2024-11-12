@@ -92,7 +92,7 @@ const EditDispositivo = () => {
     setDinValue(din);
     await fetchDins();
     setOpenModal(false);
-    notify('success', t('success'), 'Map creato con successo');
+    notify('success', 'Successo', 'Map aggiornato con successo');
   };
 
   useEffect(() => {
