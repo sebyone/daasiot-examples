@@ -200,6 +200,21 @@ const ConfigService = {
   },
 
   /**
+   * Aggiorna un nodo mappato esistente
+   * id - ID del nodo mappato da aggiornare
+   * mapData - Oggetto DinDataType con i nuovi dati del nodo mappato
+   */
+  updateMap: async (mapData: DinFormData): Promise<void> => {
+    try {
+      const response = await axiosInstance.post(`/receivers/1/remotes`, mapData);
+      return response.data;
+    } catch (error) {
+      console.error('Error:', error);
+      throw error;
+    }
+  },
+
+  /**
    * Recupera un link specifico tramite il suo ID
    * id - ID del link da recuperare
    * Promise<LinkDataType> - Oggetto LinkDataType del link richiesto
@@ -327,21 +342,6 @@ const ConfigService = {
   deleteFunction: async (deviceId: number, deviceFunctionId: number): Promise<void> => {
     try {
       await axiosInstance.delete(`/devices/${deviceId}/functions/${deviceFunctionId}`);
-    } catch (error) {
-      console.error('Error:', error);
-      throw error;
-    }
-  },
-
-  /**
-   * Aggiorna un nodo mappato esistente
-   * id - ID del nodo mappato da aggiornare
-   * mapData - Oggetto DinDataType con i nuovi dati del nodo mappato
-   */
-  updateMap: async (id: number, mapData: DinFormData): Promise<void> => {
-    try {
-      const response = await axiosInstance.post(`/receivers/1/remotes/${id}`, mapData);
-      return response.data;
     } catch (error) {
       console.error('Error:', error);
       throw error;
