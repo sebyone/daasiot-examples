@@ -15,17 +15,23 @@
 import {
   DeploymentUnitOutlined,
   DesktopOutlined,
-  SettingOutlined,
+  HddOutlined,
   ShoppingOutlined,
   SyncOutlined,
 } from '@ant-design/icons';
-import { Menu, MenuProps } from 'antd';
+import { Menu, MenuProps, Tooltip } from 'antd';
 import { useLocale, useTranslations } from 'next-intl';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useEffect, useMemo, useState } from 'react';
 
-type MenuItem = Required<MenuProps>['items'][number] & { roles?: string[] };
+type MenuItem = {
+  key: string;
+  icon: React.ReactNode;
+  label: string;
+  href: string;
+  roles?: string[];
+};
 
 const getPathMap = (locale: string) => ({
   [`/${locale}/admin/configurazione`]: '/admin/configurazione',
@@ -45,6 +51,22 @@ const getSelectedKey = (pathname: string, locale: string): string => {
   return '';
 };
 
+const menuItemStyle = {
+  display: 'flex',
+  justifyContent: 'center',
+  alignItems: 'center',
+  height: '4vh',
+  padding: '0',
+};
+
+const iconStyle = {
+  fontSize: '20px',
+  lineHeight: '32px',
+  display: 'flex',
+  justifyContent: 'center',
+  width: '100%',
+};
+
 export default function NavMenu({ role }: { role: string }) {
   const pathname = usePathname();
   const t = useTranslations('NavMenu');
@@ -55,28 +77,33 @@ export default function NavMenu({ role }: { role: string }) {
   const allMenuItems: MenuItem[] = [
     {
       key: '/admin',
-      icon: <DesktopOutlined />,
-      label: <Link href={`/${locale}/admin`}>{t('dashboard')}</Link>,
+      icon: <DesktopOutlined style={iconStyle} />,
+      label: t('dashboard'),
+      href: `/${locale}/admin`,
     },
     {
       key: '/admin/configurazione',
-      icon: <SettingOutlined />,
-      label: <Link href={`/${locale}/admin/configurazione`}>{t('configuration')}</Link>,
+      icon: <DeploymentUnitOutlined style={iconStyle} />,
+      label: t('system'),
+      href: `/${locale}/admin/configurazione`,
     },
     {
       key: '/admin/dispositivi',
-      icon: <DeploymentUnitOutlined />,
-      label: <Link href={`/${locale}/admin/dispositivi`}>{t('devices')}</Link>,
+      icon: <HddOutlined style={iconStyle} />,
+      label: t('devices'),
+      href: `/${locale}/admin/dispositivi`,
     },
     {
       key: '/admin/catalogo',
-      icon: <ShoppingOutlined />,
-      label: <Link href={`/${locale}/admin/catalogo`}>{t('catalog')}</Link>,
+      icon: <ShoppingOutlined style={iconStyle} />,
+      label: t('catalog'),
+      href: `/${locale}/admin/catalogo`,
     },
     {
       key: '/admin/updater-Esp32',
-      icon: <SyncOutlined />,
-      label: <Link href={`/${locale}/admin/updater-Esp32`}>Updater Esp32</Link>,
+      icon: <SyncOutlined style={iconStyle} />,
+      label: 'Updater',
+      href: `/${locale}/admin/updater-Esp32`,
     },
   ];
 
@@ -93,12 +120,16 @@ export default function NavMenu({ role }: { role: string }) {
   }, [role]);
 
   return (
-    <Menu
-      theme="dark"
-      mode="inline"
-      selectedKeys={[selectedKey]}
-      style={{ height: '100%', borderRight: 0 }}
-      items={menuItems}
-    />
+    <Menu theme="dark" mode="inline" selectedKeys={[selectedKey]} style={{ height: '100%' }}>
+      {menuItems.map((item) => (
+        <Menu.Item key={item.key} icon={item.icon} style={menuItemStyle}>
+          <Tooltip placement="right" title={item.label} mouseEnterDelay={0.1}>
+            <Link href={item.href} style={{ color: 'inherit' }}>
+              <span className="sr-only">{item.label}</span>
+            </Link>
+          </Tooltip>
+        </Menu.Item>
+      ))}
+    </Menu>
   );
 }

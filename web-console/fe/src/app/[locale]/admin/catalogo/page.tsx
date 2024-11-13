@@ -139,6 +139,10 @@ export default function Catalogo() {
       ?.link;
   };
 
+  const getFirmware = (model: Dev): string | undefined => {
+    return model.resources?.find((resource) => resource.resource_type === 5 && resource.name == 'firmware')?.link;
+  };
+
   return (
     <>
       {contextHolder}
@@ -212,10 +216,7 @@ export default function Catalogo() {
                 </Card>
               </Col>
               <Col span={8}>
-                <Card
-                  title={isSearchActive ? searchTerm : selectedGroup?.title || t('modelsGroup')}
-                  style={{ height: '100%' }}
-                >
+                <Card title={t('modelsGroup')} style={{ height: '100%' }}>
                   {isLoading ? (
                     <div style={{ textAlign: 'center', padding: '20px' }}>
                       <Spin size="large" />
@@ -275,7 +276,20 @@ export default function Catalogo() {
               </Col>
               <Col span={8}>
                 {selectedModel && (
-                  <Card title={selectedModel.description}>
+                  <Card
+                    title={
+                      <div
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 15,
+                        }}
+                      >
+                        <span>Template:</span>
+                        <span>{selectedModel.description}</span>
+                      </div>
+                    }
+                  >
                     <div
                       style={{
                         display: 'flex',
@@ -302,10 +316,10 @@ export default function Catalogo() {
                     <div style={{ display: 'flex', flexDirection: 'row' }}>
                       <section style={{ width: '50%' }}>
                         <p>
-                          {t('serialNumber')} {selectedModel.serial}
+                          {t('description')} {'descrizione'}
                         </p>
                         <p>
-                          {t('ModelGroupID')} {selectedModel.device_group_id}
+                          {'Firmware:'} {getFirmware(selectedModel)}
                         </p>
                         {selectedModel.device_group && <p>{selectedModel.device_group.title}</p>}
                       </section>

@@ -18,6 +18,7 @@ import { Layout } from 'antd';
 const { Header, Sider, Content } = Layout;
 
 import NavMenu from '@/components/base/NavMenu';
+import Settings from '@/components/base/Settings';
 import DaaSIoTLogo from '@/components/DaaSIoTLogo';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
 import { Footer } from 'antd/es/layout/layout';
@@ -26,13 +27,13 @@ import version from '../../../../version';
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   return (
     <Layout style={{ minHeight: '100vh' }}>
-      <Sider width={200} style={{ height: '100vh', position: 'fixed', left: 0, background: '#001529' }}>
+      <Sider width={175} style={{ height: '100vh', position: 'fixed', left: 0, background: '#001529' }}>
         <div style={{ padding: '16px' }}>
           <DaaSIoTLogo />
         </div>
         <NavMenu role="" />
       </Sider>
-      <Layout style={{ marginLeft: 200, background: '#001529' }}>
+      <Layout style={{ marginLeft: 155, background: '#001529' }}>
         <Header
           style={{
             position: 'sticky',
@@ -47,6 +48,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             height: '20px',
           }}
         >
+          <Settings />
           <LanguageSwitcher />
         </Header>
         <Content

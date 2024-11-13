@@ -8,7 +8,7 @@
   },
   "NavMenu": {
     "dashboard": "Dashboard",
-    "configuration": "Configuration",
+    "system": "System",
     "devices": "Devices",
     "catalog": "Catalog"
   },
@@ -125,17 +125,17 @@
     "errorGetReceivers": "Error loading receivers"
   },
   "Catalogo": {
-    "selectGroupModel": "Select a model group to view models or search the bar",
+    "selectGroupModel": "Select a group to view models or search the bar",
     "mobileMessage": "This content is not available on mobile devices.",
     "order": "Order",
     "loadFW": "Load FW",
     "deselectGroup": "Deselect group",
-    "devicesGroup": "Models group",
+    "devicesGroup": "Group",
     "modelsGroup": "Models",
     "searchDevice": "Search model ...",
     "noGroupsAvailable": "No groups available",
     "noModelsAvailable": "No models available",
-    "serialNumber": "Serial number:",
+    "description": "Description:",
     "ModelGroupID": "Model group ID:",
     "documents": "Documents:"
   },

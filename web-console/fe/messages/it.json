@@ -8,7 +8,7 @@
   },
   "NavMenu": {
     "dashboard": "Dashboard",
-    "configuration": "Configurazione",
+    "system": "Sistema",
     "devices": "Dispositivi",
 
     "catalog": "Catalogo"
@@ -126,17 +126,17 @@
     "errorGetReceivers": "Errore nel caricamento dei receivers"
   },
   "Catalogo": {
-    "selectGroupModel": "Seleziona un gruppo di modelli per visualizzare i modelli o cerca nella barra",
+    "selectGroupModel": "Seleziona un gruppo per visualizzare i modelli o cerca nella barra",
     "mobileMessage": "Questo contenuto non è disponibile sui dispositivi mobile.",
     "order": "Ordina",
     "loadFW": "Carica FW",
     "deselectGroup": "Deseleziona gruppo",
-    "devicesGroup": "Gruppo modelli",
+    "devicesGroup": "Gruppo",
     "modelsGroup": "Modelli",
     "searchDevice": "Cerca modello ...",
     "noGroupsAvailable": "Nessun gruppo disponibile",
     "noModelsAvailable": "Nessun modello disponibile",
-    "serialNumber": "Matricola:",
+    "description": "Descrizione:",
     "ModelGroupID": "ID gruppo modello:",
     "documents": "Documenti:"
   },
