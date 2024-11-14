@@ -15,8 +15,14 @@ router.get('/device_models', async function (req, res) {
     try {
         const { limit, offset } = getPaginationParams(req);
         const q = getQuery(req);
-        const where = q ? { description: { [Op.like]: `%${q}%` } } : {};
-        const rowsAndCount = await DeviceModel.findAndCountAll({ where, limit, offset, include: ['device_group'] });
+        // the query is contained in the description or name
+        const where = q ? {
+            [Op.or]: [
+                { description: { [Op.like]: `%${q}%` } },
+                { name: { [Op.like]: `%${q}%` } }
+            ]
+        } : {};
+        const rowsAndCount = await DeviceModel.findAndCountAll({ where, limit, offset, include: ['device_group', 'resources'] });
 
         res.send(addQuery(toPaginationData(rowsAndCount, limit, offset), q));
     }
@@ -52,7 +58,7 @@ router.post('/device_models', async function (req, res) {
             throw new Error("Il body della richiesta non può essere vuoto.");
         }
 
-        for (const field of ['description', 'serial']) {
+        for (const field of ['description', 'name']) {
             if (!deviceModel[field]) {
                 res.status(400);
                 throw new Error(`Il campo ${field} è obbligatorio.`);
@@ -60,6 +66,7 @@ router.post('/device_models', async function (req, res) {
         }
 
         let deviceGroup = null;
+        // se il device_group_id è specificato, lo uso per cercare il device_group
         if (deviceModel.device_group_id != undefined) {
             deviceGroup = await DeviceModelGroup.findByPk(parseInt(deviceModel.device_group_id), { transaction: t });
         }
@@ -69,6 +76,7 @@ router.post('/device_models', async function (req, res) {
                 throw new Error("Il device model deve avere un device_group, specificato come nuovo oggetto o come id.");
             }
 
+            // se il device_group.id è specificato, lo uso per cercare il device_group
             if (deviceModel.device_group.id) {
                 deviceGroup = await DeviceModelGroup.findByPk(parseInt(deviceModel.device_group.id), { transaction: t });
             }
@@ -77,6 +85,7 @@ router.post('/device_models', async function (req, res) {
                     res.status(400);
                     throw new Error("Il campo title è obbligatorio, non può essere vuoto e deve essere diverso da gli altri title già presenti.");
                 }
+                // cerco se esiste già un device_group con lo stesso title, se non esiste lo creo
                 deviceGroup = await DeviceModelGroup.findOne({ where: { title: deviceModel.device_group.title }, transaction: t });
 
                 if (deviceGroup === null) {

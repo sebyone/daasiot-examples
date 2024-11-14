@@ -193,12 +193,9 @@ components:
         cdin:
           $ref: "#/components/schemas/DinWithLinksAndReceiver"
 
-    Device:
+    DeviceCreationObject:
       type: object
       properties:
-        id:
-          type: integer
-          description: ID del device
         device_model_id:
           type: integer
           description: ID del modello del device
@@ -208,7 +205,9 @@ components:
         name:
           type: string
           description: Nome del device
-          maxLength: 45
+        serial:
+          type: string
+          description: Seriale del device
         latitude:
           type: number
           description: latitudine
@@ -217,6 +216,20 @@ components:
           type: number
           description: longitudine
           example: 16.2536
+      required:
+        - device_model_id
+        - din_id
+        - name
+        - serial
+
+    Device:
+      allOf:
+        - $ref: "#/components/schemas/DeviceCreationObject"
+        - type: object
+          properties:
+            id:
+              type: integer
+              description: ID del Device
 
     DeviceFull:
       allOf:
@@ -228,24 +241,28 @@ components:
             din:
               $ref: "#/components/schemas/Din"
 
-    DeviceModel:
+    DeviceModelCreationObject:
       type: object
       properties:
-        id:
-          type: integer
-          description: ID del modello del device
-          nullable: false
         device_group_id:
           type: integer
           description: ID del gruppo del modello
-          nullable: false
         description:
           type: string
           description: descrizione del modello
-        serial:
+        name:
           type: string
-          description: seriale del modello
-          maxLength: 20
+          description: nome del modello
+
+    DeviceModel:
+      allOf:
+        - $ref: "#/components/schemas/DeviceModelCreationObject"
+        - type: object
+          properties:
+            id:
+              type: integer
+              description: ID del modello del device
+              nullable: false
 
     DeviceModelWithResources:
       allOf:
@@ -383,16 +400,12 @@ components:
           description: valore sicuro della property, usato in caso di errore
           maxLength: 45
 
-    DeviceModelFunction:
+    DeviceModelFunctionBase:
       type: object
       description: >
         Funzione di un modello di device
         Interpretabile come definizione per le funzioni di un device che sono istanze di questa funzione
       properties:
-        id:
-          type: integer
-          description: ID della funzione
-          nullable: false
         name:
           type: string
           description: nome della funzione
@@ -421,6 +434,27 @@ components:
           items:
             $ref: "#/components/schemas/DeviceModelFunctionProperty"
           description: lista delle notifiche della funzione
+
+    DeviceModelFunctionCreationObject:
+      allOf:
+        - $ref: "#/components/schemas/DeviceModelFunctionBase"
+        - type: object
+          properties:
+            properties:
+              type: array
+              items:
+                $ref: "#/components/schemas/DeviceModelFunctionProperty"
+              description: lista delle properties della funzione
+
+    DeviceModelFunction:
+      allOf:
+        - $ref: "#/components/schemas/DeviceModelFunctionBase"
+        - type: object
+          properties:
+            id:
+              type: integer
+              description: ID della funzione
+              nullable: false
 
     DeviceFunctionProperty:
       type: object
@@ -1545,30 +1579,7 @@ paths:
         content:
           application/json:
             schema:
-              type: object
-              properties:
-                device_model_id:
-                  type: integer
-                  description: ID del modello del device
-                din_id:
-                  type: integer
-                  description: ID del DIN associato al device
-                name:
-                  type: string
-                  description: Nome del device
-                  maxLength: 45
-                latitude:
-                  type: number
-                  description: latitudine
-                  example: 39.3015
-                longitude:
-                  type: number
-                  description: longitudine
-                  example: 16.2536
-              required:
-                - device_model_id
-                - din_id
-                - name
+              $ref: "#/components/schemas/DeviceCreationObject"
               example:
                 device_model_id: 1
                 din_id: 1
@@ -1640,30 +1651,12 @@ paths:
         content:
           application/json:
             schema:
-              type: object
-              properties:
-                device_model:
-                  $ref: "#/components/schemas/DeviceModel"
-                device_model_id:
-                  type: integer
-                  description: ID del modello del device
-                din_id:
-                  type: integer
-                  description: ID del DIN associato al device
-                name:
-                  type: string
-                  description: Nome del device
-                  maxLength: 45
-                latitude:
-                  type: number
-                  description: latitudine
-                  example: 39.3015
-                longitude:
-                  type: number
-                  description: longitudine
-                  example: 16.2536
-                din:
-                  $ref: "#/components/schemas/Din"
+              allOf:
+                - $ref: "#/components/schemas/DeviceCreationObject"
+                - type: object
+                  properties:
+                    din:
+                      $ref: "#/components/schemas/Din"
               example:
                 name: "device 2024"
                 din: { "sid": "100", "din": "87" }
@@ -1822,40 +1815,28 @@ paths:
         content:
           application/json:
             schema:
-              type: object
-              properties:
-                device_group_id:
-                  type: integer
-                  description: ID del gruppo del modello
-                description:
-                  type: string
-                  description: Descrizione del modello
-                serial:
-                  type: string
-                  description: Seriale del modello
-                  maxLength: 20
-
-                resources:
-                  type: array
-                  items:
-                    $ref: "#/components/schemas/DeviceModelResource"
-                    example:
-                      name: "cover"
-                      link: "https://m.media-amazon.com/images/I/71D4E5DS-qL.jpg"
-                      resource_type: 1
-
-                functions:
-                  type: array
-                  items:
-                    $ref: "#/components/schemas/DeviceModelFunction"
+              allOf:
+                - $ref: "#/components/schemas/DeviceModelCreationObject"
+                - type: object
+                  properties:
+                    device_group:
+                      $ref: "#/components/schemas/DeviceModelGroup"
+                    resources:
+                      type: array
+                      items:
+                        $ref: "#/components/schemas/DeviceModelResource"
+                    functions:
+                      type: array
+                      items:
+                        $ref: "#/components/schemas/DeviceModelFunction"
 
               required:
                 - device_group_id
                 - description
                 - serial
             example:
-              description: ESP32
-              serial: "1234567890"
+              name: ESP32
+              description: ESP32 DIY Modules
               device_group:
                 title: ESP32 DIY Modules
                 description: ESP32 DIY Modules
@@ -1961,22 +1942,11 @@ paths:
         content:
           application/json:
             schema:
-              type: object
-              properties:
-                device_group_id:
-                  type: integer
-                  description: ID del gruppo del modello
-                description:
-                  type: string
-                  description: Descrizione del modello
-                serial:
-                  type: string
-                  description: Seriale del modello
-                  maxLength: 20
+              $ref: "#/components/schemas/DeviceModelCreationObject"
               example:
                 device_group_id: 1
-                description: "Modello di device 1"
-                serial: "1234567890"
+                name: "Modello 1"
+                description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas egestas sed felis eu blandit. Nullam maximus id arcu malesuada ultricies. In varius odio ac tempus condimentum. "
       responses:
         "200":
           description: Modello di device aggiornato con successo.

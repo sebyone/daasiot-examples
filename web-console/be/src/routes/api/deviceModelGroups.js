@@ -116,7 +116,13 @@ router.get('/device_model_groups/:deviceModelGroupId/device_models', async funct
             res.status(404);
             throw new Error(`DeviceModelGroup con id=${deviceModelGroupId} non trovato.`);
         }
-        const where = q ? { description: { [Op.like]: `%${q}%` } } : {};
+        // the query is contained in the description or name
+        const where = q ? {
+            [Op.or]: [
+                { description: { [Op.like]: `%${q}%` } },
+                { name: { [Op.like]: `%${q}%` } }
+            ]
+        } : {};
         where.device_group_id = deviceModelGroupId;
 
         const rowsAndCount = await DeviceModel.findAndCountAll({ where, limit, offset, include: ['resources'], subQuery: true });

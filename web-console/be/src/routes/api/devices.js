@@ -47,7 +47,7 @@ router.post('/devices', async function (req, res) {
     try {
         const device = req.body;
 
-        for (const field of ['device_model_id', 'din_id', 'name']) {
+        for (const field of ['device_model_id', 'din_id', 'name', 'serial']) {
             if (!device[field]) {
                 res.status(400);
                 throw new Error(`Il campo ${field} è obbligatorio.`);

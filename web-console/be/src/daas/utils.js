@@ -1,5 +1,4 @@
 /**
- * parses the Json object coming in into a Javascript object
  * @param {object} data
  * @returns {object}
  */

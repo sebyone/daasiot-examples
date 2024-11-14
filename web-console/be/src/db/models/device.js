@@ -26,7 +26,13 @@ module.exports = (sequelize, DataTypes) => {
     },
     name: {
       type: DataTypes.STRING,
-      maxLength: 45,
+      allowNull: false,
+      validate: {
+        notEmpty: true,
+      },
+    },
+    serial: {
+      type: DataTypes.STRING,
       allowNull: false,
       validate: {
         notEmpty: true,

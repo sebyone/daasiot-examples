@@ -553,6 +553,12 @@ function validateWithPropertyValueType(property, value) {
 }
 
 async function createDeviceModelFunctionProperty(res, property, deviceModelFunction, property_type, t) {
+  property_type = parseInt(property_type);
+  if (property_type < 1 || property_type > 4) {
+    res.status(400);
+    throw new Error(`Il campo property_type deve essere compreso tra 1 e 4.`);
+  }
+
   property.property_type = property_type;
   property.function_id = deviceModelFunction.id;
 
@@ -733,6 +739,7 @@ async function createDeviceModelFunction(req, res, deviceModelId, deviceModelFun
 
   const newDeviceModelFunction = await DeviceModelFunction.create(deviceModelFunction, { transaction: t });
 
+  // per ogni tipo di property (parameters, inputs, outputs, notifications)
   for (const property_list of DEV_MOD_PROPERTY_TYPE_LIST) {
     const property_type = DEV_MOD_PROPERTY_TYPE_MAP_REVERSE[property_list];
 
@@ -742,6 +749,19 @@ async function createDeviceModelFunction(req, res, deviceModelId, deviceModelFun
       }
     }
   }
+
+  // se la device model function ha una lista 'properties' la uso per creare le properties
+  if (deviceModelFunction.properties) {
+    for (const property of deviceModelFunction.properties) {
+      if (!property.property_type) {
+        res.status(400);
+        throw new Error(`Il campo property_type è obbligatorio per le properties dentro la lista 'properties'.`);
+      }
+
+      await createDeviceModelFunctionProperty(res, property, newDeviceModelFunction, property.property_type, t);
+    }
+  }
+
 
   const deviceModelFunctionWithProperties = await DeviceModelFunction.findByPk(newDeviceModelFunction.id, {
     include: DEV_MOD_PROPERTY_TYPE_LIST,
