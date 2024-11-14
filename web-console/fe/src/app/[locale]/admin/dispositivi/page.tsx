@@ -57,7 +57,7 @@ const NodoFormHeader = dynamic(() => import('@/components/NodoFormHeader'), { ss
 const Panel = dynamic(() => import('@/components/Panel'), { ssr: false });
 const PanelView = dynamic(() => import('@/components/PanelView'), { ssr: false });
 const PayloadContentViewer = dynamic(() => import('@/components/PayloadContentView'), { ssr: false });
-const CardDispositivoFactory = dynamic(() => import('@/components/CardDispositivoFactory'), { ssr: false });
+
 const ParametersTab = dynamic(() => import('@/components/ParametersTab'), { ssr: false });
 
 export default function Dispositivi() {
@@ -70,13 +70,7 @@ export default function Dispositivi() {
   const [devicesData, setDevicesData] = useState<DataDevice[]>([]);
   const { notify, contextHolder } = useCustomNotification();
   const [selectedDevice, setSelectedDevice] = useState<DataDevice | null>(null);
-  const [showTestComponent, setShowTestComponent] = useState(false);
-  const [status, setStatus] = useState<boolean>(false);
-  const [value, setValue] = useState<number>(0);
-  const [ws, setSocket] = useState<WebSocket | null>(null);
-  const [dinOptions, setDinOptions] = useState<number[]>([]);
-  const [selectedDin, setSelectedDin] = useState<number | null>(null);
-  const [showTestControl, setShowTestControl] = useState<boolean>(false);
+
   const [isDeviceSelected, setIsDeviceSelected] = useState(false);
   const [isModalInfoEventVisible, setIsModalInfoEventVisible] = useState(false);
   const [selectedRow, setSelectedRow] = useState(null);
@@ -260,60 +254,6 @@ export default function Dispositivi() {
     []
   );
 
-  const handleTest = () => {
-    setShowTestComponent((prevState) => !prevState);
-  };
-
-  useEffect(() => {
-    const socket = new WebSocket(`${process.env.NEXT_PUBLIC_API_BASE_URL}`);
-
-    socket.onmessage = (event) => {
-      console.log('Ricevuto messaggio', event.data);
-      const data = JSON.parse(event.data);
-
-      if (data.event === 'ddo') {
-        setStatus(data.status);
-        setValue(data.value);
-      }
-    };
-
-    socket.onopen = () => {
-      console.log('Connesso al server');
-    };
-
-    socket.onclose = () => {
-      console.log('Disconnesso dal server');
-    };
-
-    setSocket(socket);
-
-    return () => {
-      if (socket && socket.readyState === WebSocket.OPEN) {
-        socket.close();
-      }
-    };
-  }, []);
-
-  const onChangeComplete = (value: number) => {
-    setValue(value);
-  };
-
-  const onChange = (status: boolean) => {
-    setStatus(status);
-  };
-
-  const onSend = async () => {
-    if (selectedDevice) {
-      try {
-        const device = await configService.getDeviceById(selectedDevice.id);
-        const response = await configService.sendPayload(Number(device.din.din), status, value);
-        console.log(response);
-      } catch (error) {
-        console.error('Errore:', error);
-      }
-    }
-  };
-
   const items: TabsProps['items'] = [
     {
       key: '1',
@@ -325,27 +265,6 @@ export default function Dispositivi() {
       children: (
         <div>
           <NodoFormGenerali form={formGenerali} />
-          <Button type="primary" onClick={handleTest} style={{ marginLeft: 20, marginBottom: 20 }}>
-            Test
-          </Button>
-          {showTestComponent && (
-            <div style={{ marginTop: -53, marginLeft: 90 }}>
-              <CardDispositivoFactory
-                deviceType="UPL"
-                deviceName="UPL Modello XX"
-                dinOptions={dinOptions}
-                selectedDin={selectedDin}
-                setSelectedDin={setSelectedDin}
-                onTest={handleTest}
-                onSend={onSend}
-                status={status}
-                setStatus={onChange}
-                value={value}
-                setValue={onChangeComplete}
-                showTestControl={showTestControl}
-              />
-            </div>
-          )}
         </div>
       ),
     },

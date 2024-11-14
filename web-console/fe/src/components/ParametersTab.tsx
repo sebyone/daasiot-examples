@@ -15,6 +15,7 @@ import ConfigService from '@/services/configService';
 import { DataDevice, DeviceFunction, Function, FunctionParameter } from '@/types';
 import {
   BellOutlined,
+  BulbOutlined,
   CloudDownloadOutlined,
   CloudUploadOutlined,
   ControlOutlined,
@@ -26,7 +27,9 @@ import {
 } from '@ant-design/icons';
 import { Button, Checkbox, Descriptions, Input, List, message, Modal, Select, Space, Table } from 'antd';
 import { useTranslations } from 'next-intl';
+import dynamic from 'next/dynamic';
 import React, { useCallback, useEffect, useState } from 'react';
+const CardDispositivoFactory = dynamic(() => import('@/components/CardDispositivoFactory'), { ssr: false });
 
 export default function ParametersTab({ device }: { device: DataDevice | null }) {
   const t = useTranslations('ParametersTab');
@@ -41,6 +44,67 @@ export default function ParametersTab({ device }: { device: DataDevice | null })
   const [tempInputs, setTempInputs] = useState<{ [key: number]: any }>({});
   const [tempOutputs, setTempOutputs] = useState<{ [key: number]: any }>({});
   const [isDeleteConfirmVisible, setIsDeleteConfirmVisible] = useState<boolean>(false);
+  const [showTestComponent, setShowTestComponent] = useState(false);
+  const [status, setStatus] = useState<boolean>(false);
+  const [value, setValue] = useState<number>(0);
+  const [ws, setSocket] = useState<WebSocket | null>(null);
+  const [selectedDin, setSelectedDin] = useState<number | null>(null);
+  const [showTestControl, setShowTestControl] = useState<boolean>(false);
+  const [dinOptions, setDinOptions] = useState<number[]>([]);
+
+  const handleTest = () => {
+    setShowTestComponent((prevState) => !prevState);
+  };
+
+  useEffect(() => {
+    const socket = new WebSocket(`${process.env.NEXT_PUBLIC_API_BASE_URL}`);
+
+    socket.onmessage = (event) => {
+      console.log('Ricevuto messaggio', event.data);
+      const data = JSON.parse(event.data);
+
+      if (data.event === 'ddo') {
+        setStatus(data.status);
+        setValue(data.value);
+      }
+    };
+
+    socket.onopen = () => {
+      console.log('Connesso al server');
+    };
+
+    socket.onclose = () => {
+      console.log('Disconnesso dal server');
+    };
+
+    setSocket(socket);
+
+    return () => {
+      if (socket && socket.readyState === WebSocket.OPEN) {
+        socket.close();
+      }
+    };
+  }, []);
+
+  const onChangeComplete = (value: number) => {
+    setValue(value);
+  };
+
+  const onChange = (status: boolean) => {
+    setStatus(status);
+  };
+
+  const onSend = async () => {
+    if (device) {
+      try {
+        const dev = await ConfigService.getDeviceById(device.id);
+        const response = await ConfigService.sendPayload(Number(dev.din.din), status, value);
+        console.log(response);
+      } catch (error) {
+        console.error('Errore:', error);
+      }
+    }
+  };
 
   const fetchFunctions = useCallback(async () => {
     if (!device?.id) return;
@@ -552,6 +616,9 @@ export default function ParametersTab({ device }: { device: DataDevice | null })
           >
             {t('addFunction')}
           </Button>
+          <Button type="primary" onClick={handleTest} icon={<BulbOutlined style={{ fontSize: '1.2rem' }} />}>
+            Test
+          </Button>
         </Space>
         <Space>
           <Button type="primary" icon={<CloudDownloadOutlined style={{ fontSize: '1.2rem' }} />}>
@@ -603,6 +670,24 @@ export default function ParametersTab({ device }: { device: DataDevice | null })
           ?
         </p>
       </Modal>
+      {showTestComponent && (
+        <div style={{ marginLeft: 250 }}>
+          <CardDispositivoFactory
+            deviceType="UPL"
+            deviceName="UPL Modello XX"
+            dinOptions={dinOptions}
+            selectedDin={selectedDin}
+            setSelectedDin={setSelectedDin}
+            onTest={handleTest}
+            onSend={onSend}
+            status={status}
+            setStatus={onChange}
+            value={value}
+            setValue={onChangeComplete}
+            showTestControl={showTestControl}
+          />
+        </div>
+      )}
     </Space>
   );
 }
