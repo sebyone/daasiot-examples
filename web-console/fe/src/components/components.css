@@ -51,7 +51,7 @@
   padding: 20px;
 }
 
-@media (max-width: 600px) {
+/*@media (max-width: 600px) {
   .panel-content-view {
     display: none;
   }
@@ -73,3 +73,4 @@
 label {
   font-size: 5px;
 }
+*/

@@ -12,35 +12,39 @@
  *
  */
 import { SettingOutlined } from '@ant-design/icons';
-import { Button, Dropdown, MenuProps, Space } from 'antd';
-import React from 'react';
-
-const items: MenuProps['items'] = [
-  {
-    label: <div>Riordina periodicamente map-entries dei receivers</div>,
-    key: '0',
-  },
-];
+import { Button, Modal, Space } from 'antd';
+import React, { useState } from 'react';
 
 export default function Settings() {
+  const [isVisible, setIsVisible] = useState(false);
+
+  const handleOpenModal = () => {
+    setIsVisible(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsVisible(false);
+  };
   return (
     <Space size="middle">
-      <Dropdown menu={{ items }} trigger={['click']} placement="bottomRight">
-        <Button
-          type="text"
-          icon={<SettingOutlined />}
-          style={{
-            backgroundColor: 'transparent',
-            border: 'none',
-            color: 'white',
-            marginTop: 20,
-            marginRight: 20,
-            padding: '4px 8px',
-            display: 'flex',
-            alignItems: 'center',
-          }}
-        />
-      </Dropdown>
+      <Button
+        type="text"
+        icon={<SettingOutlined />}
+        style={{
+          backgroundColor: 'transparent',
+          border: 'none',
+          color: 'white',
+          marginTop: 20,
+          marginRight: 20,
+          padding: '4px 8px',
+          display: 'flex',
+          alignItems: 'center',
+        }}
+        onClick={handleOpenModal}
+      />
+      <Modal open={isVisible} onOk={handleCloseModal} onCancel={handleCloseModal} title={'Setting'} width={900}>
+        <div>Riordina periodicamente map-entries dei receivers</div>
+      </Modal>
     </Space>
   );
 }

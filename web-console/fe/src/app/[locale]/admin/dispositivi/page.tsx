@@ -343,7 +343,7 @@ export default function Dispositivi() {
       ),
       children: (
         <div style={{ height: '55vh', marginTop: -40 }}>
-          <MapComponent device={selectedDevice} />
+          <MapComponent device={selectedDevice} form={formGenerali} />
         </div>
       ),
     },

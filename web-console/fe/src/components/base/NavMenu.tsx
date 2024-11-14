@@ -13,9 +13,9 @@
  */
 'use client';
 import {
+  BoxPlotOutlined,
   DeploymentUnitOutlined,
   DesktopOutlined,
-  HddOutlined,
   ShoppingOutlined,
   SyncOutlined,
 } from '@ant-design/icons';
@@ -89,7 +89,7 @@ export default function NavMenu({ role }: { role: string }) {
     },
     {
       key: '/admin/dispositivi',
-      icon: <HddOutlined style={iconStyle} />,
+      icon: <BoxPlotOutlined style={iconStyle} />,
       label: t('devices'),
       href: `/${locale}/admin/dispositivi`,
     },

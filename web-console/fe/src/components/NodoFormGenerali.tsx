@@ -73,19 +73,7 @@ const NodoFormGenerali = ({ form }: { form: FormInstance }) => {
           </Col>
         </Row>
         <Divider style={{ margin: '12px 0' }} />
-        <Row gutter={16} style={marginBottom}>
-          <Col span={8}>
-            <Form.Item name="latitudine" label={t('latitude')}>
-              {renderField(form.getFieldValue('latitudine'))}
-            </Form.Item>
-          </Col>
-          <Col span={8}>
-            <Form.Item name="longitudine" label={t('longitude')}>
-              {renderField(form.getFieldValue('longitudine'))}
-            </Form.Item>
-          </Col>
-        </Row>
-        <Divider style={{ margin: '12px 0' }} />
+
         <Row gutter={8}>
           <Col span={8}>
             <Form.Item name="enable">{renderEnableField(form.getFieldValue('enable'))}</Form.Item>
