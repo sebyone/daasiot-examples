@@ -51,7 +51,7 @@ const DataPanel = ({
       }
       bordered={false}
       size="small"
-      style={{ width: '100%', marginTop: 55, height: '100%' }}
+      style={{ width: '100%', marginTop: 55 }}
     >
       {children}
     </Card>

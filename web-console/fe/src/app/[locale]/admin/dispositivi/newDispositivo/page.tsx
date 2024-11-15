@@ -68,6 +68,7 @@ const NewDispositivo = () => {
       const formattedValues = {
         device_model_id: values.modello,
         din_id: d?.id,
+        serial: values.serial,
         name: values.denominazione,
         latitude: '39.256',
         longitude: '39.256',
@@ -102,7 +103,8 @@ const NewDispositivo = () => {
           {
             id: 0,
             device_group_id: 0,
-            description: 'Device Model Default',
+            name: 'Device Model Default',
+            description: '',
             serial: '',
           },
           ...response.data,

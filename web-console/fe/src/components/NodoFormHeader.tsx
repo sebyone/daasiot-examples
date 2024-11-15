@@ -48,8 +48,8 @@ const NodoFormHeader = ({ form }: { form: FormInstance }) => {
             </Form.Item>
           </Col>
           <Col span={12}>
-            <Form.Item name="matricola" label={t('serialNumber')}>
-              {renderField(form.getFieldValue('matricola'))}
+            <Form.Item name="serial" label={t('serialNumber')}>
+              {renderField(form.getFieldValue('serial'))}
             </Form.Item>
           </Col>
         </Row>

@@ -94,8 +94,8 @@ const NodoForm = ({
         </Row>
         <Row gutter={20} style={marginBottom}>
           <Col span={16}>
-            <Form.Item name="matricola" label={t('serialNumber')}>
-              <Input name="matricola" placeholder={t('serialNumber')} />
+            <Form.Item name="serial" label={t('serialNumber')}>
+              <Input name="serial" placeholder={t('serialNumber')} />
             </Form.Item>
           </Col>
         </Row>
@@ -106,7 +106,7 @@ const NodoForm = ({
                 placeholder="Modello"
                 options={deviceModels.map((model) => ({
                   value: model.id,
-                  label: model.description,
+                  label: model.name,
                 }))}
               />
             </Form.Item>

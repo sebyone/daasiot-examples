@@ -278,16 +278,15 @@ export interface DataDevice {
   device_model_id: number;
   din_id: number;
   name: string;
+  serial: string;
   latitude: number;
   longitude: number;
   device_model: {
     id: number;
     device_group_id: number;
     description: string;
-    serial: string;
+    name: string;
     link_image: string;
-    link_datasheet: string;
-    link_userguide: string;
   };
   din: {
     id?: number;
@@ -301,6 +300,7 @@ export interface DataDevice {
 export interface CreateDevice {
   modello: number;
   receiver: number;
+  serial: string;
   denominazione: string;
   latitudine?: string;
   longitudine?: string;
@@ -414,6 +414,7 @@ export interface Dev {
   id: number;
   device_group_id: number;
   description: string;
+  name: string;
   serial: string;
   device_group?: DeviceGroup;
   resources?: Resource[];

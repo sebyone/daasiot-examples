@@ -45,7 +45,7 @@ export default function Catalogo() {
   const [groups, setGroups] = useState<DeviceGroup | null>(null);
   const [deviceModels, setDeviceModels] = useState<DeviceModel | null>(null);
   const [groupsPagination, setGroupsPagination] = useState({ current: 1, pageSize: 10, total: 0 });
-  const [modelsPagination, setModelsPagination] = useState({ current: 1, pageSize: 10, total: 0 });
+  const [modelsPagination, setModelsPagination] = useState({ current: 1, pageSize: 5, total: 0 });
   const fetchDeviceModelGroups = async (page: number, pageSize: number, search: string = '') => {
     try {
       const offset = (page - 1) * pageSize;
@@ -115,28 +115,24 @@ export default function Catalogo() {
   };
 
   const getCoverModelImage = (model: Dev): string | undefined => {
-    return model.resources?.find((resource) => resource.resource_type === 4 && resource.name == 'copertina')?.link;
+    return model.resources?.find((resource) => resource.resource_type === 4)?.link;
   };
 
-  const getPinoutModelImage = (model: Dev): string | undefined => {
+  /*const getPinoutModelImage = (model: Dev): string | undefined => {
     return model.resources?.find(
       (resource) => resource.resource_type === 4 && resource.name == 'ESP32 pinout reference'
     )?.link;
-  };
+  };*/
 
-  const getDatasheetModelDocuments = (model: Dev): string | undefined => {
-    return model.resources?.find((resource) => resource.resource_type === 2 && resource.name == 'datasheet')?.link;
-  };
-
-  const getHardwareDesignGuideLinesModelDocuments = (model: Dev): string | undefined => {
-    return model.resources?.find(
-      (resource) => resource.resource_type === 2 && resource.name == 'hardware design guidelines'
-    )?.link;
-  };
-
-  const getProgrammingGuideModelDocuments = (model: Dev): string | undefined => {
-    return model.resources?.find((resource) => resource.resource_type === 1 && resource.name == 'programming guide')
-      ?.link;
+  const getDatasheetModelDocuments = (model: Dev): Array<{ name: string; link: string }> => {
+    return (
+      model.resources
+        ?.filter((resource) => resource.resource_type === 2)
+        .map((resource) => ({
+          name: resource.name,
+          link: resource.link,
+        })) || []
+    );
   };
 
   const getFirmware = (model: Dev): string | undefined => {
@@ -249,7 +245,7 @@ export default function Catalogo() {
                                   style={{ width: '20%', height: '20%' }}
                                 />
                               )}
-                              <span>{model.description}</span>
+                              <span>{model.name}</span>
                             </div>
                           </Card>
                         </List.Item>
@@ -286,7 +282,7 @@ export default function Catalogo() {
                         }}
                       >
                         <span>Template:</span>
-                        <span>{selectedModel.description}</span>
+                        <span>{selectedModel.name}</span>
                       </div>
                     }
                   >
@@ -298,14 +294,14 @@ export default function Catalogo() {
                         marginBottom: '20px',
                       }}
                     >
-                      <div style={{ width: '50%', height: '150px', backgroundColor: '#f0f0f0' }}>
-                        {getPinoutModelImage(selectedModel) && (
+                      <div style={{ width: '50%', height: '200px', backgroundColor: '#f0f0f0' }}>
+                        {getCoverModelImage(selectedModel) && (
                           // eslint-disable-next-line @next/next/no-img-element
                           <img
-                            key={getPinoutModelImage(selectedModel)}
-                            src={getPinoutModelImage(selectedModel)}
+                            key={getCoverModelImage(selectedModel)}
+                            src={getCoverModelImage(selectedModel)}
                             alt={selectedModel.description}
-                            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                            style={{ width: '100%', height: '100%' }}
                           />
                         )}
                       </div>
@@ -316,7 +312,7 @@ export default function Catalogo() {
                     <div style={{ display: 'flex', flexDirection: 'row' }}>
                       <section style={{ width: '50%' }}>
                         <p>
-                          {t('description')} {'descrizione'}
+                          {t('description')} {selectedModel.description}
                         </p>
                         <p>
                           {'Firmware:'} {getFirmware(selectedModel)}
@@ -328,42 +324,13 @@ export default function Catalogo() {
                       <section style={{ marginLeft: 10 }}>
                         <Title level={5}>{t('documents')}</Title>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                          {getDatasheetModelDocuments(selectedModel) && (
-                            <Text key={`datasheet-${selectedModel.id}`}>
-                              <a
-                                href={getDatasheetModelDocuments(selectedModel)}
-                                title={getDatasheetModelDocuments(selectedModel)}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                              >
-                                Datasheet
+                          {getDatasheetModelDocuments(selectedModel).map((doc, index) => (
+                            <Text key={`datasheet-${selectedModel.id}-${index}`}>
+                              <a href={doc.link} title={doc.name} target="_blank" rel="noopener noreferrer">
+                                {doc.name}
                               </a>
                             </Text>
-                          )}
-                          {getHardwareDesignGuideLinesModelDocuments(selectedModel) && (
-                            <Text key={`hardware-${selectedModel.id}`}>
-                              <a
-                                href={getHardwareDesignGuideLinesModelDocuments(selectedModel)}
-                                title={getHardwareDesignGuideLinesModelDocuments(selectedModel)}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                              >
-                                Hardware Design Guide Lines
-                              </a>
-                            </Text>
-                          )}
-                          {getProgrammingGuideModelDocuments(selectedModel) && (
-                            <Text key={`programming-${selectedModel.id}`}>
-                              <a
-                                href={getProgrammingGuideModelDocuments(selectedModel)}
-                                title={getProgrammingGuideModelDocuments(selectedModel)}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                              >
-                                Programming Guide
-                              </a>
-                            </Text>
-                          )}
+                          ))}
                         </div>
                       </section>
                     </div>
