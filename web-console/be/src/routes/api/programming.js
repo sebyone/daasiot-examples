@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 
 const { sendError, getPaginationParams, toPaginationData } = require('./utilities');
-const { DeviceModel, DeviceModelFunction, DeviceModelFunctionProperty, DeviceFunction, DeviceFunctionProperty } = require('../../db/models');
+const { DeviceModel, DeviceModelFunction, DeviceModelFunctionProperty, DeviceFunction, DeviceFunctionProperty, Device } = require('../../db/models');
 const db = require('../../db/models');
 
 module.exports = {
@@ -369,9 +369,11 @@ router.post('/devices/:deviceId/functions/', async function (req, res) {
       throw new Error(`DeviceModelFunction con id=${deviceFunction.device_model_function_id} non trovato.`);
     }
 
-    if (deviceModelFunction.device_model_id !== deviceId) {
+    const device = await Device.findByPk(deviceId, { transaction: t });
+
+    if (deviceModelFunction.device_model_id !== device.device_model_id) {
       res.status(404);
-      throw new Error(`DeviceModelFunction con id=${deviceFunction.device_model_function_id} non appartiene al DeviceModel con id=${deviceId}.`);
+      throw new Error(`DeviceModelFunction con id=${deviceFunction.device_model_function_id} appartiene al DeviceModel con id=${deviceModelFunction.device_model_id} e non al Device con device_model_id=${device.device_model_id}.`);
     }
 
     const newDeviceFunction = await DeviceFunction.create({
