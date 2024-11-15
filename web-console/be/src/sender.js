@@ -43,8 +43,15 @@ localNode.onDDOReceived((din) => {
             console.log(`⬇⬇ Pulling data from DIN: ${origin} | sent ${readableTimestamp} | typeset: ${typeset} | data:`);
 
             let decodedData = decode(data);
-            let parsedData = JSON.parse(decodedData);
-            console.log(parsedData);
+            decodedData = Buffer.from(decodedData, 'base64').toString('ascii');
+
+            try {
+                let parsedData = JSON.parse(decodedData);
+                console.log(JSON.stringify(parsedData, null, 2));
+            }
+            catch (error) {
+                console.log(decodedData);
+            }
 
         } catch (error) {
             console.error(error);
