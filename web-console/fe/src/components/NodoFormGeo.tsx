@@ -11,7 +11,7 @@
  * francescopantusa98@gmail.com - initial implementation
  *
  */
-import { Badge, Col, Divider, Form, FormInstance, Row, Space, Typography } from 'antd';
+import { Badge, Col, Descriptions, Divider, Form, FormInstance, Row, Space, Typography } from 'antd';
 import { useTranslations } from 'next-intl';
 import React from 'react';
 
@@ -24,7 +24,7 @@ const NodoFormGeo = ({ form }: { form: FormInstance }) => {
     minWidth: '550px',
     width: '100%',
     maxWidth: '680px',
-    marginTop: 25,
+    marginTop: 30,
   };
 
   const renderField = (value: string | number | boolean | undefined) => (
@@ -38,14 +38,34 @@ const NodoFormGeo = ({ form }: { form: FormInstance }) => {
       <Form form={form} layout="vertical" style={style}>
         <Row gutter={16} style={marginBottom}>
           <Col span={8}>
-            <Form.Item name="latitudine" label={t('latitude')}>
-              {renderField(form.getFieldValue('latitudine'))}
-            </Form.Item>
+            <Space>
+              <Descriptions
+                column={1}
+                bordered
+                className="custom-descriptions"
+                size="small"
+                style={{ marginBottom: 25 }}
+              >
+                <Descriptions.Item label={t('latitude')} labelStyle={{ fontWeight: 'bold' }}>
+                  {renderField(form.getFieldValue('latitudine'))}
+                </Descriptions.Item>
+              </Descriptions>
+            </Space>
           </Col>
           <Col span={8}>
-            <Form.Item name="longitudine" label={t('longitude')}>
-              {renderField(form.getFieldValue('longitudine'))}
-            </Form.Item>
+            <Space>
+              <Descriptions
+                column={1}
+                bordered
+                className="custom-descriptions"
+                size="small"
+                style={{ marginBottom: 25 }}
+              >
+                <Descriptions.Item label={t('longitude')} labelStyle={{ fontWeight: 'bold' }}>
+                  {renderField(form.getFieldValue('longitudine'))}
+                </Descriptions.Item>
+              </Descriptions>
+            </Space>
           </Col>
         </Row>
         <Divider style={{ margin: '12px 0', width: '100%' }} />

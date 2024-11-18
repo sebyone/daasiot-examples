@@ -13,6 +13,7 @@
  */
 'use client';
 import { useCustomNotification } from '@/hooks/useNotificationHook';
+import { useWindowSize } from '@/hooks/useWindowSize';
 import ConfigService from '@/services/configService';
 import { Dev, DeviceGroup, DeviceModel, DeviceModelGroup, Resource } from '@/types';
 import { SearchOutlined, UnorderedListOutlined } from '@ant-design/icons';
@@ -41,6 +42,9 @@ export default function Catalogo() {
   const router = useRouter();
   const [isSearchActive, setIsSearchActive] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const { width } = useWindowSize();
+  const isMobile = width < 768;
+  const isTablet = width >= 768 && width < 1200;
 
   const [groups, setGroups] = useState<DeviceGroup | null>(null);
   const [deviceModels, setDeviceModels] = useState<DeviceModel | null>(null);
@@ -144,8 +148,8 @@ export default function Catalogo() {
       {contextHolder}
       <div className={styles.container}>
         <Layout style={{ minHeight: '85vh' }}>
-          <Content style={{ padding: '24px', backgroundColor: 'white' }}>
-            <Row gutter={24}>
+          <Content style={{ padding: isMobile ? '12px' : '24px', backgroundColor: 'white' }}>
+            <Row gutter={isMobile ? 12 : 24}>
               <Col span={24} style={{ marginBottom: '20px' }}>
                 <Input
                   placeholder={t('searchDevice')}
@@ -155,8 +159,8 @@ export default function Catalogo() {
                 />
               </Col>
             </Row>
-            <Row gutter={24}>
-              <Col span={8}>
+            <Row gutter={isMobile ? 12 : 24}>
+              <Col xs={24} md={12} lg={8} style={{ marginBottom: isMobile ? '20px' : 0 }}>
                 <Card
                   title={t('devicesGroup')}
                   style={{ marginBottom: '20px' }}
@@ -180,7 +184,7 @@ export default function Catalogo() {
                       }}
                     >
                       {groups.data.map((group) => (
-                        <Menu.Item key={group.title}>
+                        <Menu.Item key={group.title} style={{ marginTop: -1 }} className={styles.menuItem}>
                           <div style={{ display: 'flex', alignItems: 'center' }}>
                             <div>
                               {group.link_image && (
@@ -203,15 +207,15 @@ export default function Catalogo() {
                   <Pagination
                     current={groupsPagination.current}
                     pageSize={groupsPagination.pageSize}
-                    pageSizeOptions={['10', '20', '50', '100']}
+                    pageSizeOptions={['5', '10']}
                     total={groupsPagination.total}
                     onChange={handleGroupsPaginationChange}
-                    showSizeChanger
-                    showQuickJumper
+                    showSizeChanger={!isMobile}
+                    size={'small'}
                   />
                 </Card>
               </Col>
-              <Col span={8}>
+              <Col xs={24} md={12} lg={8} style={{ marginBottom: isMobile ? '20px' : 0 }}>
                 <Card title={t('modelsGroup')} style={{ height: '100%' }}>
                   {isLoading ? (
                     <div style={{ textAlign: 'center', padding: '20px' }}>
@@ -234,6 +238,7 @@ export default function Catalogo() {
                               backgroundColor: selectedModel?.id === model.id ? '#e6f7ff' : undefined,
                               color: selectedModel?.id === model.id ? '#1890ff' : undefined,
                             }}
+                            size="small"
                           >
                             <div style={{ display: 'flex', alignItems: 'center', gap: 50 }}>
                               {getCoverModelImage(model) && (
@@ -245,11 +250,18 @@ export default function Catalogo() {
                                   style={{ width: '20%', height: '20%' }}
                                 />
                               )}
-                              <span>{model.name}</span>
+                              <span
+                                style={{
+                                  fontWeight: selectedModel?.id === model.id ? 'bold' : 'normal',
+                                }}
+                              >
+                                {model.name}
+                              </span>
                             </div>
                           </Card>
                         </List.Item>
                       )}
+                      size="small"
                     />
                   ) : (
                     <Empty
@@ -261,16 +273,16 @@ export default function Catalogo() {
                     <Pagination
                       current={modelsPagination.current}
                       pageSize={modelsPagination.pageSize}
-                      pageSizeOptions={['10', '20', '50', '100']}
+                      pageSizeOptions={['5', '10']}
                       total={modelsPagination.total}
                       onChange={handleModelsPaginationChange}
-                      showSizeChanger
-                      showQuickJumper
+                      showSizeChanger={!isMobile}
+                      size={'small'}
                     />
                   )}
                 </Card>
               </Col>
-              <Col span={8}>
+              <Col xs={24} md={24} lg={8}>
                 {selectedModel && (
                   <Card
                     title={
@@ -279,22 +291,26 @@ export default function Catalogo() {
                           display: 'flex',
                           alignItems: 'center',
                           gap: 15,
+                          flexWrap: isMobile ? 'wrap' : 'nowrap',
                         }}
                       >
                         <span>Template:</span>
-                        <span>{selectedModel.name}</span>
+                        <span>
+                          <strong>{selectedModel.name}</strong>
+                        </span>
                       </div>
                     }
                   >
                     <div
                       style={{
                         display: 'flex',
-                        flexDirection: 'row',
+                        flexDirection: isMobile ? 'column' : 'row',
                         justifyContent: 'space-between',
                         marginBottom: '20px',
+                        gap: isMobile ? '20px' : 0,
                       }}
                     >
-                      <div style={{ width: '50%', height: '200px', backgroundColor: '#f0f0f0' }}>
+                      <div style={{ width: isMobile ? '100%' : '50%', height: '200px', backgroundColor: '#f0f0f0' }}>
                         {getCoverModelImage(selectedModel) && (
                           // eslint-disable-next-line @next/next/no-img-element
                           <img
@@ -305,11 +321,17 @@ export default function Catalogo() {
                           />
                         )}
                       </div>
-                      <Button type="primary" style={{ marginRight: '8px' }}>
+                      <Button type="primary" style={{ width: isMobile ? '100%' : 'auto', marginRight: '8px' }}>
                         {t('order')}
                       </Button>
                     </div>
-                    <div style={{ display: 'flex', flexDirection: 'row' }}>
+                    <div
+                      style={{
+                        display: 'flex',
+                        flexDirection: isMobile ? 'column' : 'row',
+                        gap: isMobile ? '20px' : 0,
+                      }}
+                    >
                       <section style={{ width: '50%' }}>
                         <p>
                           {t('description')} {selectedModel.description}
@@ -342,7 +364,7 @@ export default function Catalogo() {
                         marginTop: '20px',
                       }}
                     >
-                      <Button type="primary" onClick={handleLoadFW}>
+                      <Button type="primary" onClick={handleLoadFW} style={{ width: isMobile ? '100%' : 'auto' }}>
                         {t('loadFW')}
                       </Button>
                     </div>
@@ -353,7 +375,6 @@ export default function Catalogo() {
           </Content>
         </Layout>
       </div>
-      <div className={styles.mobileMessage}>{t('mobileMessage')}</div>
     </>
   );
 }

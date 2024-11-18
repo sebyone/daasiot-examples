@@ -184,11 +184,13 @@ export default function Dispositivi() {
           id: data.id,
           sid: data.din.sid,
           din: data.din.din,
+          latitudine: data.latitude,
+          longitudine: data.longitude,
         });
 
         formHeader.setFieldsValue({
           id: data.id,
-          modello: data.device_model.description,
+          modello: data.device_model.name,
           serial: data.serial,
         });
       } catch (error) {

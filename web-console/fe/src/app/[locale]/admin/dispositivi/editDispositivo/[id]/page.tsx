@@ -67,8 +67,8 @@ const EditDispositivo = () => {
         form.setFieldsValue({
           id: deviceData.id,
           denominazione: deviceData.name,
-          matricola: deviceData.device_model.serial,
-          modello: deviceData.device_model.description,
+          serial: deviceData.serial,
+          modello: deviceData.device_model.name,
           receiver: receiver?.title,
           sid: deviceData.din.sid,
           latitudine: deviceData.latitude,
@@ -103,7 +103,7 @@ const EditDispositivo = () => {
           {
             id: 0,
             device_group_id: 0,
-            description: 'Device Model Default',
+            name: 'Device Model Default',
             serial: '',
           },
           ...response.data,

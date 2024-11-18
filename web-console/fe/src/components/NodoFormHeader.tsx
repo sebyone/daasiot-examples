@@ -11,7 +11,7 @@
  * francescopantusa98@gmail.com - initial implementation
  *
  */
-import { Col, Form, FormInstance, Input, Row, Typography } from 'antd';
+import { Col, Descriptions, Form, FormInstance, Input, Row, Space, Typography } from 'antd';
 import { useTranslations } from 'next-intl';
 import React from 'react';
 
@@ -24,7 +24,7 @@ const NodoFormHeader = ({ form }: { form: FormInstance }) => {
     minWidth: '550px',
     width: '100%',
     maxWidth: '680px',
-    marginTop: -50,
+    marginTop: -55,
     marginLeft: 25,
     marginBottom: -20,
   };
@@ -43,14 +43,34 @@ const NodoFormHeader = ({ form }: { form: FormInstance }) => {
         </Form.Item>
         <Row gutter={24} style={marginBottom}>
           <Col span={12}>
-            <Form.Item label={t('model')} name="modello">
-              {renderField(form.getFieldValue('modello'))}
-            </Form.Item>
+            <Space>
+              <Descriptions
+                column={1}
+                bordered
+                className="custom-descriptions"
+                size="small"
+                style={{ marginBottom: 25 }}
+              >
+                <Descriptions.Item label={t('model')} labelStyle={{ fontWeight: 'bold' }}>
+                  {renderField(form.getFieldValue('modello'))}
+                </Descriptions.Item>
+              </Descriptions>
+            </Space>
           </Col>
           <Col span={12}>
-            <Form.Item name="serial" label={t('serialNumber')}>
-              {renderField(form.getFieldValue('serial'))}
-            </Form.Item>
+            <Space>
+              <Descriptions
+                column={1}
+                bordered
+                className="custom-descriptions"
+                size="small"
+                style={{ marginBottom: 25 }}
+              >
+                <Descriptions.Item label={t('serialNumber')} labelStyle={{ fontWeight: 'bold' }}>
+                  {renderField(form.getFieldValue('serial'))}
+                </Descriptions.Item>
+              </Descriptions>
+            </Space>
           </Col>
         </Row>
       </Form>
