@@ -1,0 +1,41 @@
+.container {
+  height: 100%;
+}
+
+.loadingContainer {
+  text-align: center;
+  padding: 20px;
+}
+
+.listItem {
+  cursor: pointer;
+}
+
+.modelCard {
+  width: 100%;
+}
+
+.selectedCard {
+  background-color: #e6f7ff;
+  color: #1890ff;
+}
+
+.modelContent {
+  display: flex;
+  align-items: center;
+  gap: 50px;
+}
+
+.modelImage {
+  width: 20%;
+  height: 20%;
+}
+
+.selectedText {
+  font-weight: bold;
+}
+
+.emptyIcon {
+  font-size: 60px;
+  color: #1890ff;
+}

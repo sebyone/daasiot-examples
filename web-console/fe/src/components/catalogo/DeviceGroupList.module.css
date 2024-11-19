@@ -1,0 +1,20 @@
+.menuItem {
+  margin-top: -1px;
+}
+
+.menuItemContent {
+  display: flex;
+  align-items: center;
+}
+
+.imageContainer {
+  margin-right: 30px;
+}
+
+.groupImage {
+  object-fit: cover;
+}
+
+.groupTitle {
+  margin-top: -13px;
+}

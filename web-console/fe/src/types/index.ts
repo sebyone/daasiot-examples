@@ -464,3 +464,111 @@ export interface DeviceFunctionParameter {
   value: any;
   parameter_template: FunctionParameter;
 }
+
+/* CATALOGO */
+
+export interface DeviceGroupListProps {
+  /** Lista dei gruppi di dispositivi */
+  groups: DeviceGroup | null;
+  /** Gruppo attualmente selezionato */
+  selectedGroup: { id: number; title: string | null } | null;
+  /** Configurazione della paginazione */
+  pagination: { current: number; pageSize: number; total: number };
+  /** Flag per la visualizzazione mobile */
+  isMobile: boolean;
+  /** Callback per la selezione di un gruppo */
+  onGroupSelect: (groupId: number | null, groupTitle: string | null) => void;
+  /** Callback per il cambio pagina */
+  onPaginationChange: (page: number, pageSize?: number) => void;
+  /** Testi tradotti */
+  translations: {
+    devicesGroup: string;
+    deselectGroup: string;
+    noGroupsAvailable: string;
+  };
+}
+
+export interface ModelListProps {
+  /** Lista dei modelli di dispositivi */
+  deviceModels: { data: Dev[] } | null;
+  /** Flag per lo stato di caricamento */
+  isLoading: boolean;
+  /** Modello attualmente selezionato */
+  selectedModel: Dev | null;
+  /** Flag per indicare se la ricerca è attiva */
+  isSearchActive: boolean;
+  /** Configurazione della paginazione */
+  pagination: {
+    current: number;
+    pageSize: number;
+    total: number;
+  };
+  /** Flag per la visualizzazione mobile */
+  isMobile: boolean;
+  /** Callback per la selezione di un modello */
+  onModelSelect: (model: Dev) => void;
+  /** Callback per il cambio pagina */
+  onPaginationChange: (page: number, pageSize?: number) => void;
+  /** Testi tradotti */
+  translations: {
+    modelsGroup: string;
+    noModelsAvailable: string;
+    selectGroupModel: string;
+  };
+  /** Funzione per ottenere l'immagine di copertina del modello */
+  getCoverModelImage: (model: Dev) => string | undefined;
+}
+
+export interface ModelDetailsProps {
+  /** Modello da visualizzare */
+  model: Dev;
+  /** Flag per la visualizzazione mobile */
+  isMobile: boolean;
+  /** Testi tradotti */
+  translations: {
+    order: string;
+    description: string;
+    documents: string;
+    loadFW: string;
+  };
+  /** Callback per l'apertura della pagina relativa al caricamento firmware */
+  onLoadFW: () => void;
+  /** Funzione per ottenere l'immagine di copertina dalla chiamata API*/
+  getCoverModelImage: (model: Dev) => string | undefined;
+  /** Funzione per ottenere i documenti del modello dalla chiamata API*/
+  getDatasheetModelDocuments: (model: Dev) => Array<{ name: string; link: string }>;
+  /** Funzione per ottenere il link del firmware dalla chiamata API*/
+  getFirmware: (model: Dev) => string | undefined;
+}
+
+/** Interfaccia per lo stato della paginazione */
+export interface UsePaginationState {
+  current: number;
+  pageSize: number;
+  total: number;
+}
+
+/** Interfaccia per il risultato dell'hook useDeviceGroups */
+export interface UseDeviceGroupsResult {
+  groups: DeviceGroup | null;
+  groupsPagination: UsePaginationState;
+  handleGroupsPaginationChange: (page: number, pageSize?: number) => void;
+}
+
+/** Interfaccia per il risultato dell'hook useDeviceModels */
+export interface UseDeviceModelsResult {
+  deviceModels: DeviceModel | null;
+  isLoading: boolean;
+  modelsPagination: UsePaginationState;
+  searchTerm: string;
+  isSearchActive: boolean;
+  handleSearchChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  handleModelsPaginationChange: (page: number, pageSize?: number) => void;
+  fetchDeviceModels: (groupId: number | null, page: number, pageSize: number, search?: string) => Promise<void>;
+}
+
+/** Interfaccia per info del gruppo selezionato */
+export interface SelectedGroup {
+  id: number;
+  title: string | null;
+}
