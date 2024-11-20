@@ -83,15 +83,18 @@ const ModelList = React.memo(
           />
         )}
         {deviceModels?.data && (
-          <Pagination
-            current={pagination.current}
-            pageSize={pagination.pageSize}
-            pageSizeOptions={['5', '10']}
-            total={pagination.total}
-            onChange={onPaginationChange}
-            showSizeChanger={!isMobile}
-            size="small"
-          />
+          <div className={styles.paginationWrapper} style={{ transform: 'scale(0.8)' }}>
+            <Pagination
+              current={pagination.current}
+              pageSize={pagination.pageSize}
+              pageSizeOptions={['5', '10']}
+              total={pagination.total}
+              onChange={onPaginationChange}
+              showSizeChanger={true}
+              size="small"
+              className={styles.pagination}
+            />
+          </div>
         )}
       </Card>
     );

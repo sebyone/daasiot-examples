@@ -17,7 +17,6 @@
 
 .imageSection {
   height: 200px;
-  background-color: #f0f0f0;
 }
 
 .modelImage {
@@ -57,4 +56,25 @@
   flex-direction: row;
   justify-content: right;
   margin-top: 20px;
+}
+
+@media screen and (max-width: 1295px) and (min-width: 992px) {
+  .imageSection {
+    height: 120px;
+  }
+
+  .modelName {
+    font-weight: bold;
+    font-size: 11px;
+  }
+
+  .titleContainer {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .template {
+    font-size: 11px;
+  }
 }

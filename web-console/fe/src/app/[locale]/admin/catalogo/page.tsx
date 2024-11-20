@@ -57,10 +57,12 @@ export default function Catalogo() {
   const { width } = useWindowSize();
   const [isMobile, setIsMobile] = useState(false);
   const [isTablet, setIsTablet] = useState(false);
+  const [isLaptop, setIsLaptop] = useState(false);
 
   useEffect(() => {
     setIsMobile(width < 768);
     setIsTablet(width >= 768 && width < 1200);
+    setIsLaptop(width >= 992 && width < 1295);
   }, [width]);
 
   // Custom hooks
@@ -111,7 +113,7 @@ export default function Catalogo() {
           <Content style={{ padding: isMobile ? '12px' : '24px', backgroundColor: 'white' }}>
             {/* Barra di ricerca */}
             <Row gutter={isMobile ? 12 : 24}>
-              <Col span={24} style={{ marginBottom: '20px' }}>
+              <Col xs={7} sm={24} md={24} lg={24} style={{ marginBottom: isMobile ? '20px' : '20px' }}>
                 <Input
                   placeholder={t('searchDevice')}
                   prefix={<SearchOutlined />}
@@ -122,9 +124,9 @@ export default function Catalogo() {
             </Row>
 
             {/* Layout principale a tre colonne */}
-            <Row gutter={isMobile ? 12 : 24}>
+            <Row gutter={[24, 24]}>
               {/* Colonna gruppi */}
-              <Col xs={24} md={12} lg={8} style={{ marginBottom: isMobile ? '20px' : 0 }}>
+              <Col xs={24} sm={24} md={24} lg={10} xl={10} style={{ marginBottom: '20px' }}>
                 <DeviceGroupList
                   groups={groups}
                   selectedGroup={selectedGroup}
@@ -137,11 +139,12 @@ export default function Catalogo() {
                     deselectGroup: t('deselectGroup'),
                     noGroupsAvailable: t('noGroupsAvailable'),
                   }}
+                  isLaptop={isLaptop}
                 />
               </Col>
 
               {/* Colonna modelli */}
-              <Col xs={24} md={12} lg={8} style={{ marginBottom: isMobile ? '20px' : 0 }}>
+              <Col xs={24} sm={24} md={24} lg={6} xl={6} style={{ marginBottom: '20px' }}>
                 <ModelList
                   deviceModels={deviceModels}
                   isLoading={isLoading}
@@ -161,7 +164,7 @@ export default function Catalogo() {
               </Col>
 
               {/* Colonna dettagli */}
-              <Col xs={24} md={24} lg={8}>
+              <Col xs={24} sm={24} md={24} lg={8} xl={8} style={{ marginBottom: '20px' }}>
                 {selectedModel && (
                   <ModelDetails
                     model={selectedModel}

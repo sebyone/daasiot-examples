@@ -32,6 +32,7 @@ const DeviceGroupList = React.memo(
     selectedGroup,
     pagination,
     isMobile,
+    isLaptop,
     onGroupSelect,
     onPaginationChange,
     translations,
@@ -58,6 +59,7 @@ const DeviceGroupList = React.memo(
                 onGroupSelect(group.id, group.title);
               }
             }}
+            style={{ marginTop: -20 }}
           >
             {groups.data.map((group) => (
               <Menu.Item key={group.title} className={styles.menuItem}>
@@ -81,15 +83,18 @@ const DeviceGroupList = React.memo(
         ) : (
           <Empty description={translations.noGroupsAvailable} />
         )}
-        <Pagination
-          current={pagination.current}
-          pageSize={pagination.pageSize}
-          pageSizeOptions={['5', '10']}
-          total={pagination.total}
-          onChange={onPaginationChange}
-          showSizeChanger={!isMobile}
-          size="small"
-        />
+        <div className={styles.paginationWrapper} style={{ transform: 'scale(0.8)' }}>
+          <Pagination
+            current={pagination.current}
+            pageSize={pagination.pageSize}
+            pageSizeOptions={['5', '10']}
+            total={pagination.total}
+            onChange={onPaginationChange}
+            showSizeChanger={true}
+            size="small"
+            className={styles.pagination}
+          />
+        </div>
       </Card>
     );
   }

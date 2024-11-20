@@ -46,7 +46,7 @@ const ModelDetails = React.memo(
       <Card
         title={
           <div className={styles.titleContainer} style={{ flexWrap: isMobile ? 'wrap' : 'nowrap' }}>
-            <span>Template:</span>
+            <span className={styles.template}>Template:</span>
             <span className={styles.modelName}>{model.name}</span>
           </div>
         }

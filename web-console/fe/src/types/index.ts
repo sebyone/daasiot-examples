@@ -476,6 +476,8 @@ export interface DeviceGroupListProps {
   pagination: { current: number; pageSize: number; total: number };
   /** Flag per la visualizzazione mobile */
   isMobile: boolean;
+  /** Flag per la visualizzazione laptop */
+  isLaptop: boolean;
   /** Callback per la selezione di un gruppo */
   onGroupSelect: (groupId: number | null, groupTitle: string | null) => void;
   /** Callback per il cambio pagina */
