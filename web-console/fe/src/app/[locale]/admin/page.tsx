@@ -54,40 +54,39 @@ export default function Dashboard() {
     <>
       {contextHolder}
       <div className={styles.container}>
-        <Row gutter={[16, 16]}>
-          <Col xs={24} md={8}>
-            <Card hoverable>
+        <Row gutter={[30, 30]} style={{ width: '100%' }}>
+          <Col xs={24} sm={24} md={8}>
+            <Card hoverable style={{ width: '100%' }}>
               <Statistic
                 title="Receivers"
                 value={receiversCount}
-                prefix={<WifiOutlined style={{ fontSize: '24px', color: '#1890ff', marginRight: 290 }} />}
+                prefix={<WifiOutlined style={{ color: '#1890ff' }} />}
                 className={styles.customStatistic}
               />
             </Card>
           </Col>
-          <Col xs={24} md={8}>
-            <Card hoverable>
+          <Col xs={24} sm={24} md={8}>
+            <Card hoverable style={{ width: '100%' }}>
               <Statistic
                 title={t('managedNodes')}
                 value={remotesCount}
-                prefix={<ApiOutlined style={{ fontSize: '24px', color: '#52c41a', marginRight: 290 }} />}
+                prefix={<ApiOutlined style={{ color: '#52c41a' }} />}
                 className={styles.customStatistic}
               />
             </Card>
           </Col>
-          <Col xs={24} md={8}>
-            <Card hoverable>
+          <Col xs={24} sm={24} md={8}>
+            <Card hoverable style={{ width: '100%' }}>
               <Statistic
                 title={t('messagesExchanged')}
                 value={0}
-                prefix={<MessageOutlined style={{ fontSize: '24px', color: '#faad14', marginRight: 290 }} />}
+                prefix={<MessageOutlined style={{ color: '#faad14' }} />}
                 className={styles.customStatistic}
               />
             </Card>
           </Col>
         </Row>
       </div>
-      <div className={styles.mobileMessage}>Questo contenuto non è disponibile sui dispositivi mobile.</div>
     </>
   );
 }

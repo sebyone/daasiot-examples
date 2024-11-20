@@ -34,9 +34,9 @@ const DinLocalForm = ({
 }: DinLocalFormProps) => {
   const { width } = useWindowSize();
   const isMobile = width < 768;
-  const isTablet = width >= 768 && width < 1200;
+  const is4K = width >= 2560;
 
-  const marginBottom = { marginBottom: -8 };
+  const marginBottom = { marginBottom: isMobile ? 10 : -8 };
 
   const optionsReliability = [
     { value: '0', label: 'Asynchronous' },
@@ -93,11 +93,11 @@ const DinLocalForm = ({
   return (
     <div
       style={{
-        width: '100%',
+        width: is4K ? '70%' : '100%',
         display: 'flex',
         flexDirection: isMobile ? 'column' : 'row',
-        gap: isMobile ? 0 : '0',
-        padding: isMobile ? '5px' : '20px',
+        gap: '10px',
+        padding: isMobile ? '10px' : '20px',
         paddingBottom: '50px',
       }}
     >
@@ -109,14 +109,14 @@ const DinLocalForm = ({
         onValuesChange={handleValuesChange}
         style={{
           width: '100%',
-          maxWidth: isMobile ? '100%' : '680px',
-          marginTop: isMobile ? 0 : -35,
-          transform: 'scale(0.9)',
+          maxWidth: isMobile ? '100%' : '700px',
+          marginTop: isMobile ? 10 : -35,
+          transform: isMobile ? 'none' : 'scale(0.9)',
           marginBottom: '30px',
         }}
       >
         <Row gutter={[16, isMobile ? 16 : 8]} style={marginBottom}>
-          <Col xs={24} md={24}>
+          <Col span={24}>
             <Form.Item name="id" noStyle>
               <Input type="hidden" />
             </Form.Item>
@@ -134,12 +134,12 @@ const DinLocalForm = ({
         </Row>
 
         <Row gutter={[16, isMobile ? 16 : 8]} style={marginBottom}>
-          <Col xs={24} md={12}>
+          <Col xs={24} sm={24} md={24} lg={12}>
             <Form.Item label="Network Identifier (SID)" name="sid">
               <Input />
             </Form.Item>
           </Col>
-          <Col xs={24} md={12}>
+          <Col xs={24} sm={24} md={24} lg={12}>
             <Form.Item label="Node Identifier (DIN)" name="din">
               <Input />
             </Form.Item>
@@ -147,12 +147,12 @@ const DinLocalForm = ({
         </Row>
 
         <Row gutter={[16, isMobile ? 16 : 8]} style={marginBottom}>
-          <Col xs={24} md={15}>
+          <Col xs={24} lg={15}>
             <Form.Item label="Profile R (Realability)" name="profileR">
               <Select options={optionsReliability} />
             </Form.Item>
           </Col>
-          <Col xs={24} md={9}>
+          <Col xs={24} lg={9}>
             <Form.Item label="Packets/Errors" name="packetsErrors">
               <Input placeholder="(%)" />
             </Form.Item>
@@ -160,12 +160,12 @@ const DinLocalForm = ({
         </Row>
 
         <Row gutter={[16, isMobile ? 16 : 8]} style={marginBottom}>
-          <Col xs={24} md={15}>
+          <Col xs={24} lg={15}>
             <Form.Item label="Profile E (Efficiency)" name="profileE">
               <Select options={optionsEfficiency} />
             </Form.Item>
           </Col>
-          <Col xs={24} md={9}>
+          <Col xs={24} lg={9}>
             <Form.Item label="Traffic/Energy" name="trafficEnergy">
               <Input placeholder="(Byte/W)" />
             </Form.Item>
@@ -173,12 +173,12 @@ const DinLocalForm = ({
         </Row>
 
         <Row gutter={[16, isMobile ? 16 : 8]} style={marginBottom}>
-          <Col xs={24} md={15}>
+          <Col xs={24} lg={15}>
             <Form.Item label="Profile S (Privacy)" name="profileS">
               <Select options={optionsPrivacy} />
             </Form.Item>
           </Col>
-          <Col xs={24} md={9}>
+          <Col xs={24} lg={9}>
             <Form.Item label="Requests/Faults" name="requestsFault">
               <Input placeholder="(%)" />
             </Form.Item>
@@ -186,12 +186,12 @@ const DinLocalForm = ({
         </Row>
 
         <Row gutter={[16, isMobile ? 16 : 8]} style={marginBottom}>
-          <Col xs={24} md={16}>
+          <Col xs={24} lg={16}>
             <Form.Item label="SKey" name="skey">
               <Input />
             </Form.Item>
           </Col>
-          <Col xs={24} md={8}>
+          <Col xs={24} lg={8}>
             <Button style={{ marginTop: isMobile ? 0 : 20, width: isMobile ? '100%' : 'auto' }} type="primary">
               Generate
             </Button>
@@ -221,22 +221,22 @@ const DinLocalForm = ({
           display: 'flex',
           flexDirection: isMobile ? 'column' : 'row',
           gap: '20px',
-          width: isMobile ? '100%' : 'auto',
+          width: '100%',
           marginTop: isMobile ? '20px' : '-15px',
         }}
       >
-        <div style={{ width: isMobile ? '100%' : 'auto' }}>
+        <div style={{ width: '100%' }}>
           {showPowerActions && (
             <Card
               title="Receiver"
               bordered={false}
               style={{
-                width: isMobile ? '100%' : 400,
+                width: '100%',
                 backgroundColor: '#f0f0f0',
               }}
               size="small"
             >
-              <span style={{ marginRight: 10 }}>Avvio Automatico:</span>
+              <span style={{ marginRight: 10, whiteSpace: 'nowrap' }}>Avvio Automatico:</span>
               <Switch checked={autoStart} onChange={handleReceiverAutoStartChange} />
             </Card>
           )}
@@ -246,7 +246,7 @@ const DinLocalForm = ({
                 title="Status"
                 bordered={false}
                 style={{
-                  width: isMobile ? '100%' : 400,
+                  width: '100%',
                   backgroundColor: '#f0f0f0',
                   marginTop: '20px',
                 }}
@@ -274,7 +274,7 @@ const DinLocalForm = ({
               </Card>
               <Button
                 style={{
-                  width: isMobile ? '100%' : '20%',
+                  width: isMobile ? '100%' : '120px',
                   marginTop: '10px',
                   marginLeft: isMobile ? '0' : 'auto',
                   display: 'block',
@@ -287,13 +287,13 @@ const DinLocalForm = ({
           )}
         </div>
 
-        <div style={{ width: isMobile ? '100%' : 'auto' }}>
+        <div style={{ width: '100%' }}>
           {showPowerActionsProcessor && (
             <Card
               title="Processor"
               bordered={false}
               style={{
-                width: isMobile ? '100%' : 400,
+                width: '100%',
                 backgroundColor: '#f0f0f0',
               }}
               size="small"
@@ -308,7 +308,7 @@ const DinLocalForm = ({
                 title="Statistics"
                 bordered={false}
                 style={{
-                  width: isMobile ? '100%' : 400,
+                  width: '100%',
                   backgroundColor: '#f0f0f0',
                   marginTop: '20px',
                 }}
@@ -336,7 +336,7 @@ const DinLocalForm = ({
               </Card>
               <Button
                 style={{
-                  width: isMobile ? '100%' : '30%',
+                  width: isMobile ? '100%' : '150px',
                   marginTop: '10px',
                   marginLeft: isMobile ? '0' : 'auto',
                   display: 'block',
