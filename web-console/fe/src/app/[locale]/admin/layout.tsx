@@ -21,12 +21,78 @@ import NavMenu from '@/components/base/NavMenu';
 import Settings from '@/components/base/Settings';
 import DaaSIoTLogo from '@/components/DaaSIoTLogo';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
+import { useWindowSize } from '@/hooks/useWindowSize';
 import { Footer } from 'antd/es/layout/layout';
 import version from '../../../../version';
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
+  const { width } = useWindowSize();
+  const wh = width < 1024;
   return (
-    <Layout style={{ minHeight: '100vh' }}>
+    <Layout style={{ height: '100vh', overflow: wh ? 'visible' : 'hidden' }}>
+      <Sider
+        breakpoint="lg"
+        collapsedWidth="0"
+        style={{
+          backgroundColor: '#001529',
+        }}
+      >
+        <div style={{ padding: '16px' }}>
+          <DaaSIoTLogo />
+        </div>
+        <NavMenu />
+      </Sider>
+      <Layout>
+        <Header
+          style={{
+            padding: '0 24px',
+            background: '#001529',
+            display: 'flex',
+            justifyContent: 'flex-end',
+            alignItems: 'center',
+            position: 'sticky',
+          }}
+        >
+          <div
+            style={{
+              display: 'flex',
+              gap: '16px',
+              alignItems: 'center',
+            }}
+          >
+            <Settings />
+            <LanguageSwitcher />
+          </div>
+        </Header>
+        <Content
+          style={{
+            padding: 24,
+            background: 'white',
+            borderRadius: '4px',
+          }}
+        >
+          <div id="form-menu-portal" style={{ marginTop: -20 }}></div>
+          {children}
+        </Content>
+        <Footer
+          style={{
+            textAlign: 'left',
+            backgroundColor: '#002140',
+            height: '25px',
+            position: 'fixed',
+            bottom: '0',
+            width: '100%',
+            padding: '0 1rem',
+            zIndex: 1000,
+          }}
+        >
+          <div style={{ color: '#fff', fontSize: '0.8rem' }}>DaaS-IoT NodeJs ver {version}</div>
+        </Footer>
+      </Layout>
+    </Layout>
+  );
+}
+/*<Layout style={{ minHeight: '100vh' }}>
       <Sider width={175} style={{ height: '100vh', position: 'fixed', left: 0, background: '#001529' }}>
         <div style={{ padding: '16px' }}>
           <DaaSIoTLogo />
@@ -56,7 +122,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             margin: '24px',
             padding: 24,
             minHeight: 380,
-            maxHeight: '90vh',
             background: 'white',
             borderRadius: '4px',
           }}
@@ -86,4 +151,4 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       </Footer>
     </Layout>
   );
-}
+}*/

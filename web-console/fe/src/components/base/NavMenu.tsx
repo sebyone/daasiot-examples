@@ -67,7 +67,7 @@ const iconStyle = {
   width: '100%',
 };
 
-export default function NavMenu({ role }: { role: string }) {
+export default function NavMenu({ role }: { role?: string }) {
   const pathname = usePathname();
   const t = useTranslations('NavMenu');
   const locale = useLocale();
