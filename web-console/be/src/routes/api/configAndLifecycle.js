@@ -80,7 +80,13 @@ router.post('/send', async function (req, res) {
 
         const din = parseInt(req.body.din);
         const typeset = parseInt(req.body.typeset);
-        const payload = req.body.payload.toString() || '';
+        let payload;
+        if (typeof req.body.payload === 'object') {
+            payload = JSON.stringify(req.body.payload);
+        }
+        else {
+            payload = req.body.payload.toString() || '';
+        }
         const b64_payload = Buffer.from(payload).toString('base64');
         const timestampSeconds = Math.floor(new Date().getTime() / 1000);
 

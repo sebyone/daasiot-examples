@@ -1,11 +1,11 @@
 openapi: "3.0.3"
 info:
-  title: DaaS-NodeJS
-  version: "1.1"
+  title: daasiot-dccs
+  version: "1.2"
 
   contact:
     name: API Support
-    email: alessio.farfaglia@gmail.com
+    email: a.farfaglia@sebyone.it
 
   license:
     name: MPL-2.0
@@ -20,7 +20,7 @@ servers:
         description: default port for the development server
 
 externalDocs:
-  url: "https://github.com/sebyone/daas-nodejs"
+  url: "https://github.com/sebyone/daasiot-examples-dccs"
 
 tags:
   - name: configuration
