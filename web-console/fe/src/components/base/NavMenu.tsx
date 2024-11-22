@@ -12,6 +12,7 @@
  *
  */
 'use client';
+import { useWindowSize } from '@/hooks/useWindowSize';
 import {
   BoxPlotOutlined,
   DeploymentUnitOutlined,
@@ -59,18 +60,22 @@ const menuItemStyle = {
   padding: '0',
 };
 
-const iconStyle = {
-  fontSize: '20px',
-  lineHeight: '32px',
-  display: 'flex',
-  justifyContent: 'center',
-  width: '100%',
-};
-
 export default function NavMenu({ role }: { role?: string }) {
   const pathname = usePathname();
   const t = useTranslations('NavMenu');
   const locale = useLocale();
+  const { width } = useWindowSize();
+
+  const wh = width < 768;
+
+  const iconStyle = {
+    fontSize: '20px',
+    lineHeight: '32px',
+    display: 'flex',
+    justifyContent: 'center',
+    marginLeft: wh ? 5 : 7,
+    width: '100%',
+  };
 
   const [selectedKey, setSelectedKey] = useState<string>(getSelectedKey(pathname, locale));
 

@@ -35,6 +35,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         collapsedWidth="0"
         style={{
           backgroundColor: '#001529',
+          display: 'flex',
+          justifyContent: 'center',
         }}
       >
         <div style={{ padding: '16px' }}>
