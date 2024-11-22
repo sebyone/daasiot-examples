@@ -24,17 +24,16 @@ const NodoForm = ({
   selectedReceiverSid,
   onReceiverChange,
   onOpenModal,
+  dins,
+  onDinChange,
+  mode,
 }: NodoFormProps) => {
-  const marginBottom = { marginBottom: -22 };
-
   const t = useTranslations('NodoForm');
+  const marginBottom = { marginBottom: '1rem' };
   const style = {
-    minWidth: '550px',
     width: '100%',
-    maxWidth: '680px',
-    marginTop: -50,
+    maxWidth: '60rem',
     transform: 'scale(0.9)',
-    marginLeft: -30,
   };
 
   const handleFinish = (values: CreateDevice) => {
@@ -55,12 +54,9 @@ const NodoForm = ({
   return (
     <div
       style={{
-        minWidth: '250px',
         width: '100%',
-        display: 'flex',
-        justifyItems: 'center',
-        justifyContent: 'left',
-        marginTop: '20px',
+
+        marginTop: '1rem',
       }}
     >
       <Form
@@ -74,8 +70,8 @@ const NodoForm = ({
         <Form.Item name="id" noStyle>
           <Input type="hidden" />
         </Form.Item>
-        <Row gutter={32} style={marginBottom}>
-          <Col span={16}>
+        <Row gutter={[16, 16]} style={marginBottom}>
+          <Col xs={24} sm={24} md={12} lg={12}>
             <Form.Item name="id" noStyle>
               <Input type="hidden" />
             </Form.Item>
@@ -86,21 +82,21 @@ const NodoForm = ({
               <Input name="denominazione" placeholder={t('name')} />
             </Form.Item>
           </Col>
-          <Col span={8}>
+          <Col xs={24} sm={24} md={12} lg={12}>
             <Form.Item name="enable" valuePropName="checked">
-              <Checkbox style={{ marginTop: 26 }}>{t('enabled')}</Checkbox>
+              <Checkbox>{t('enabled')}</Checkbox>
             </Form.Item>
           </Col>
         </Row>
-        <Row gutter={20} style={marginBottom}>
-          <Col span={16}>
+        <Row gutter={[16, 16]} style={marginBottom}>
+          <Col xs={24} sm={24} md={12} lg={12}>
             <Form.Item name="serial" label={t('serialNumber')}>
               <Input name="serial" placeholder={t('serialNumber')} />
             </Form.Item>
           </Col>
         </Row>
-        <Row gutter={20} style={marginBottom}>
-          <Col span={16}>
+        <Row gutter={[16, 16]} style={marginBottom}>
+          <Col xs={24} sm={24} md={12} lg={12}>
             <Form.Item label={t('model')} name="modello">
               <Select
                 placeholder="Modello"
@@ -112,8 +108,8 @@ const NodoForm = ({
             </Form.Item>
           </Col>
         </Row>
-        <Row gutter={16} style={marginBottom}>
-          <Col span={8}>
+        <Row gutter={[16, 16]} style={marginBottom}>
+          <Col xs={24} sm={24} md={4} lg={4}>
             <Form.Item name="receiver" label="Receivers">
               <Select
                 placeholder="Receivers"
@@ -125,26 +121,36 @@ const NodoForm = ({
               />
             </Form.Item>
           </Col>
-          <Col span={8}>
+          <Col xs={24} sm={12} md={4} lg={4}>
             <Form.Item name="sid" label="SID">
               <Input name="sid" placeholder="SID" readOnly style={{ cursor: 'default' }} value={selectedReceiverSid} />
             </Form.Item>
           </Col>
+          <Col xs={24} sm={12} md={4} lg={4}>
+            <Form.Item name="din" label="DIN">
+              <Select
+                placeholder="Seleziona DIN"
+                onChange={onDinChange}
+                options={dins?.map((din) => ({
+                  value: din.id,
+                  label: din.din,
+                }))}
+              />
+            </Form.Item>
+          </Col>
         </Row>
-        <Row gutter={24} style={marginBottom}>
-          <Col span={8}>
+        <Row gutter={[16, 16]} style={marginBottom}>
+          <Col xs={24} sm={24} md={12} lg={12}>
             <Form.Item name="latitudine" label={t('latitude')} noStyle>
               <Input name="latitudine" placeholder={t('latitude')} type="hidden" />
             </Form.Item>
-          </Col>
-          <Col span={8}>
             <Form.Item name="longitudine" label={t('longitude')} noStyle>
               <Input name="longitudine" placeholder={t('longitude')} type="hidden" />
             </Form.Item>
           </Col>
-          <Col span={8}>
-            <Button type="primary" style={{ marginTop: 20 }} onClick={onOpenModal}>
-              Map
+          <Col xs={24} sm={24} md={4} lg={4}>
+            <Button type="primary" style={{ width: '100%' }} onClick={onOpenModal}>
+              {mode === 'edit' ? 'Aggiorna Map' : 'Map'}
             </Button>
           </Col>
         </Row>

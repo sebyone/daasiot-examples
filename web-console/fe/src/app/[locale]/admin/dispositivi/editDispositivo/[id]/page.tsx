@@ -47,12 +47,17 @@ const EditDispositivo = () => {
   const [dinValue, setDinValue] = useState<string>('');
   const [dins, setDins] = useState<DinDataType[]>([]);
   const [map, setMap] = useState<MapDataType>();
+  const [din, setDin] = useState<number>();
 
   const fetchDins = async () => {
     try {
       const dinsData = await ConfigService.getDin();
       setDins(dinsData);
     } catch (error) {}
+  };
+
+  const handleDinChange = (value: number) => {
+    setDin(value);
   };
 
   useEffect(() => {
@@ -71,6 +76,7 @@ const EditDispositivo = () => {
           modello: deviceData.device_model.name,
           receiver: receiver?.title,
           sid: deviceData.din.sid,
+          din: deviceData.din.din,
           latitudine: deviceData.latitude,
           longitudine: deviceData.longitude,
         });
@@ -200,6 +206,9 @@ const EditDispositivo = () => {
               selectedReceiverSid={selectedReceiverSid}
               onReceiverChange={handleReceiverChange}
               onOpenModal={handleOpenModal}
+              mode="edit"
+              dins={dins}
+              onDinChange={handleDinChange}
             />
             <ModalMap
               isVisible={openModal}

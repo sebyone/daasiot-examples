@@ -301,6 +301,7 @@ export interface CreateDevice {
   modello: number;
   receiver: number;
   serial: string;
+  din: number;
   denominazione: string;
   latitudine?: string;
   longitudine?: string;
@@ -322,6 +323,9 @@ export interface NodoFormProps {
   selectedReceiverSid: string;
   onReceiverChange: (receiverId: number) => void;
   onOpenModal: () => void;
+  dins?: DinDataType[];
+  onDinChange?: (value: number) => void;
+  mode?: 'create' | 'edit';
 }
 
 export interface BaseCardDispositivoProps {

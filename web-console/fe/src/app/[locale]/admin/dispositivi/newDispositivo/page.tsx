@@ -43,6 +43,7 @@ const NewDispositivo = () => {
   const [openModal, setOpenModal] = useState(false);
   const [dinValue, setDinValue] = useState<string>('');
   const [dins, setDins] = useState<DinDataType[]>([]);
+  const [din, setDin] = useState<number>();
 
   const fetchDins = async () => {
     try {
@@ -55,19 +56,26 @@ const NewDispositivo = () => {
 
   const handleMapCreated = async (din: string) => {
     setDinValue(din);
+    form.setFieldValue('din', din);
     await fetchDins();
     setOpenModal(false);
     notify('success', 'Successo', 'Map creato con successo');
+  };
+
+  const handleDinChange = (value: number) => {
+    setDin(value);
   };
 
   const onFinish = async (values: CreateDevice) => {
     await fetchDins();
 
     const d = dins.find((din) => din.din === dinValue);
+    console.log(d);
     try {
       const formattedValues = {
         device_model_id: values.modello,
-        din_id: d?.id,
+        din_id: d?.id || din,
+        din: din,
         serial: values.serial,
         name: values.denominazione,
         latitude: '39.256',
@@ -200,6 +208,8 @@ const NewDispositivo = () => {
               selectedReceiverSid={selectedReceiverSid}
               onReceiverChange={handleReceiverChange}
               onOpenModal={handleOpenModal}
+              dins={dins}
+              onDinChange={handleDinChange}
             />
             <ModalMap
               isVisible={openModal}

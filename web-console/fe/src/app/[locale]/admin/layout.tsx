@@ -70,7 +70,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           style={{
             padding: 24,
             background: 'white',
-            borderRadius: '4px',
           }}
         >
           <div id="form-menu-portal" style={{ marginTop: -20 }}></div>
