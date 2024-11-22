@@ -11,26 +11,35 @@
  * francescopantusa98@gmail.com - initial implementation
  *
  */
-import { Badge, Col, Descriptions, Divider, Form, FormInstance, Row, Space, Typography } from 'antd';
+import { Badge, Col, Descriptions, Divider, Form, FormInstance, Row, Typography } from 'antd';
 import { useTranslations } from 'next-intl';
 import React from 'react';
 import './NodoFormGenerali.css';
-
 const { Text } = Typography;
-
 const NodoFormGenerali = ({ form }: { form: FormInstance }) => {
-  const marginBottom = { marginBottom: -22 };
   const t = useTranslations('NodoForm');
+
   const style = {
-    minWidth: '550px',
-    width: '50%',
+    width: '100%',
     maxWidth: '680px',
-    marginLeft: 30,
-    marginTop: -30,
+    margin: '0 auto',
+    padding: '0 15px',
+  };
+
+  const containerStyle = {
+    width: '100%',
+    display: 'flex',
+    justifyContent: 'center',
+    marginTop: '1.5rem',
+  };
+
+  const descriptionsStyle = {
+    marginBottom: '1.5rem',
+    width: '100%',
   };
 
   const renderField = (value: string | number | boolean | undefined) => (
-    <Text strong style={{ fontSize: '0.8rem' }}>
+    <Text strong className="description-text">
       {value !== undefined ? String(value) : '-'}
     </Text>
   );
@@ -38,75 +47,42 @@ const NodoFormGenerali = ({ form }: { form: FormInstance }) => {
   const renderEnableField = (value: boolean | undefined) => {
     const isEnabled = value === true;
     return (
-      <Space>
-        <Descriptions column={1} bordered size="small" className="custom-descriptions">
-          <Descriptions.Item
-            label={
-              <Text strong style={{ fontSize: '0.8rem' }}>
-                {isEnabled ? t('enabled') : t('disabled')}
-              </Text>
-            }
-            labelStyle={{ fontWeight: 'bold', width: '200px' }}
-          >
-            <Badge status={isEnabled ? 'success' : 'error'} />
-          </Descriptions.Item>
-        </Descriptions>
-      </Space>
+      <Descriptions column={1} bordered size="small" className="custom-descriptions">
+        <Descriptions.Item
+          label={
+            <Text strong className="description-label">
+              {isEnabled ? t('enabled') : t('disabled')}
+            </Text>
+          }
+        >
+          <Badge status={isEnabled ? 'success' : 'error'} />
+        </Descriptions.Item>
+      </Descriptions>
     );
   };
+
   return (
-    <div
-      style={{
-        minWidth: '250px',
-        width: '100%',
-        display: 'flex',
-        justifyItems: 'center',
-        justifyContent: 'left',
-        marginTop: '25px',
-      }}
-    >
+    <div style={containerStyle}>
       <Form form={form} layout="vertical" style={style}>
         <Form.Item name="id" noStyle>
           <input type="hidden" />
         </Form.Item>
-        <Row gutter={16} style={marginBottom}>
-          <Col span={8}>
-            <Space>
-              <Descriptions
-                column={1}
-                bordered
-                size="small"
-                className="custom-descriptions"
-                style={{
-                  marginBottom: 25,
-                }}
-              >
-                <Descriptions.Item label={'SID'} labelStyle={{ fontWeight: 'bold' }}>
-                  {renderField(form.getFieldValue('sid'))}
-                </Descriptions.Item>
-              </Descriptions>
-            </Space>
+        <Row gutter={[16, 16]}>
+          <Col xs={24} sm={24} md={12}>
+            <Descriptions column={1} bordered size="small" className="custom-descriptions" style={descriptionsStyle}>
+              <Descriptions.Item label={'SID'}>{renderField(form.getFieldValue('sid'))}</Descriptions.Item>
+            </Descriptions>
           </Col>
-          <Col span={8}>
-            <Space>
-              <Descriptions
-                column={1}
-                bordered
-                size="small"
-                className="custom-descriptions"
-                style={{ marginBottom: 25 }}
-              >
-                <Descriptions.Item label={'DIN'} labelStyle={{ fontWeight: 'bold' }}>
-                  {renderField(form.getFieldValue('din'))}
-                </Descriptions.Item>
-              </Descriptions>
-            </Space>
+          <Col xs={24} sm={24} md={12}>
+            <Descriptions column={1} bordered size="small" className="custom-descriptions" style={descriptionsStyle}>
+              <Descriptions.Item label={'DIN'}>{renderField(form.getFieldValue('din'))}</Descriptions.Item>
+            </Descriptions>
           </Col>
         </Row>
-        <Divider style={{ margin: '12px 0' }} />
+        <Divider style={{ margin: '0.75rem 0' }} />
 
-        <Row gutter={8}>
-          <Col span={8}>
+        <Row gutter={[8, 8]}>
+          <Col xs={24} sm={24} md={12}>
             <Form.Item name="enable">{renderEnableField(form.getFieldValue('enable'))}</Form.Item>
           </Col>
         </Row>
@@ -114,5 +90,4 @@ const NodoFormGenerali = ({ form }: { form: FormInstance }) => {
     </div>
   );
 };
-
 export default NodoFormGenerali;

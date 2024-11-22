@@ -37,6 +37,7 @@ import {
   Modal,
   Pagination,
   Space,
+  Switch,
   Table,
   Tabs,
   TabsProps,
@@ -81,6 +82,7 @@ export default function Dispositivi() {
   const [activeTabKey, setActiveTabKey] = useState('1');
   const [ddos, setDdos] = useState<Event[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [filterEnabled, setFilterEnabled] = useState(false);
 
   const MapComponent = dynamic(() => import('@/components/Map'), {
     ssr: false,
@@ -155,7 +157,7 @@ export default function Dispositivi() {
     setIsLoading(true);
     try {
       const offset = (currentPage - 1) * pageSize;
-      const response = await ConfigService.getDDOByDeviceId(selectedDevice.id, offset, pageSize, false);
+      const response = await ConfigService.getDDOByDeviceId(selectedDevice.id, offset, pageSize, filterEnabled);
       const ddos = response.data.map((ddo) => ({
         timestamp: ddo.timestamp,
         typeset: ddo.typeset_id,
@@ -170,6 +172,15 @@ export default function Dispositivi() {
       setIsLoading(false);
     }
   };
+
+  const handleSwitchChange = (checked: boolean) => {
+    setFilterEnabled(checked);
+    setCurrentPage(1);
+  };
+
+  useEffect(() => {
+    fetchDdo();
+  }, [filterEnabled, currentPage, pageSize, selectedDevice]);
 
   const handleDeviceClick = useCallback(
     async (device: DataDevice) => {
@@ -286,6 +297,10 @@ export default function Dispositivi() {
       ),
       children: (
         <>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
+            <Switch checked={filterEnabled} onChange={handleSwitchChange} />
+            <span>{filterEnabled ? 'Messaggi inviati' : 'Messaggi ricevuti'}</span>
+          </div>
           <Table
             columns={columnsEvents}
             dataSource={ddos}
@@ -302,8 +317,9 @@ export default function Dispositivi() {
               },
             }}
           />
-          <div style={{ display: 'flex', justifyContent: 'center', marginTop: '20px' }}>
+          <div style={{ display: 'flex', justifyContent: 'center', marginTop: '20px', gap: '8px' }}>
             <Button type="primary">{t('clearLog')}</Button>
+            <Button type="primary">Report</Button>
           </div>
           <Modal
             title={<span style={{ fontSize: '1.2rem', fontWeight: 'bold' }}>{t('details')}</span>}
@@ -380,16 +396,19 @@ export default function Dispositivi() {
     <>
       {contextHolder}
       <div className={styles.container}>
-        <Layout style={{ height: '100%' }}>
+        <Layout style={{ height: '92vh' }}>
           <Sider
+            breakpoint="lg"
+            collapsedWidth="0"
             width={250}
             theme="dark"
             style={{
               marginLeft: '-22px',
-              marginTop: -2,
+              marginTop: 2,
               maxHeight: '101%',
               display: 'flex',
               flexDirection: 'column',
+              borderRadius: '4px',
             }}
           >
             <div style={{ padding: '12px', borderBottom: '1px solid #303030' }}>
@@ -469,7 +488,7 @@ export default function Dispositivi() {
                       <Tabs
                         type="card"
                         items={items}
-                        style={{ padding: 10, marginTop: -30 }}
+                        style={{ padding: 10 }}
                         activeKey={activeTabKey}
                         onChange={handleTabChange}
                       />
@@ -489,7 +508,6 @@ export default function Dispositivi() {
           </Layout>
         </Layout>
       </div>
-      <div className={styles.mobileMessage}>{t('mobileMessage')}</div>
     </>
   );
 }

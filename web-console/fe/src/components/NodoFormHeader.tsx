@@ -11,71 +11,43 @@
  * francescopantusa98@gmail.com - initial implementation
  *
  */
-import { Col, Descriptions, Form, FormInstance, Input, Row, Space, Typography } from 'antd';
+import { Col, Descriptions, Form, FormInstance, Input, Row, Typography } from 'antd';
 import { useTranslations } from 'next-intl';
 import React from 'react';
-
+import './NodoFormHeader.css';
 const { Text } = Typography;
-
 const NodoFormHeader = ({ form }: { form: FormInstance }) => {
-  const marginBottom = { marginBottom: -22 };
   const t = useTranslations('NodoForm');
   const style = {
-    minWidth: '550px',
     width: '100%',
     maxWidth: '680px',
-    marginTop: -55,
-    marginLeft: 25,
-    marginBottom: -20,
+    marginTop: '-55px',
+    marginLeft: '25px',
+    padding: '0 15px',
   };
-
   const renderField = (value: string | number | boolean | undefined) => (
-    <Text strong style={{ fontSize: '0.8rem' }}>
+    <Text strong className="header-field">
       {value !== undefined ? String(value) : '-'}
     </Text>
   );
-
   return (
-    <>
-      <Form form={form} layout="vertical" style={style}>
-        <Form.Item name="id" noStyle>
-          <Input type="hidden" />
-        </Form.Item>
-        <Row gutter={24} style={marginBottom}>
-          <Col span={12}>
-            <Space>
-              <Descriptions
-                column={1}
-                bordered
-                className="custom-descriptions"
-                size="small"
-                style={{ marginBottom: 25 }}
-              >
-                <Descriptions.Item label={t('model')} labelStyle={{ fontWeight: 'bold' }}>
-                  {renderField(form.getFieldValue('modello'))}
-                </Descriptions.Item>
-              </Descriptions>
-            </Space>
-          </Col>
-          <Col span={12}>
-            <Space>
-              <Descriptions
-                column={1}
-                bordered
-                className="custom-descriptions"
-                size="small"
-                style={{ marginBottom: 25 }}
-              >
-                <Descriptions.Item label={t('serialNumber')} labelStyle={{ fontWeight: 'bold' }}>
-                  {renderField(form.getFieldValue('serial'))}
-                </Descriptions.Item>
-              </Descriptions>
-            </Space>
-          </Col>
-        </Row>
-      </Form>
-    </>
+    <Form form={form} layout="vertical" style={style}>
+      <Form.Item name="id" noStyle>
+        <Input type="hidden" />
+      </Form.Item>
+      <Row gutter={[16, 16]}>
+        <Col xs={24} sm={24} md={12}>
+          <Descriptions column={1} bordered className="custom-descriptions header-descriptions" size="small">
+            <Descriptions.Item label={t('model')}>{renderField(form.getFieldValue('modello'))}</Descriptions.Item>
+          </Descriptions>
+        </Col>
+        <Col xs={24} sm={24} md={12}>
+          <Descriptions column={1} bordered className="custom-descriptions header-descriptions" size="small">
+            <Descriptions.Item label={t('serialNumber')}>{renderField(form.getFieldValue('serial'))}</Descriptions.Item>
+          </Descriptions>
+        </Col>
+      </Row>
+    </Form>
   );
 };
-
 export default NodoFormHeader;

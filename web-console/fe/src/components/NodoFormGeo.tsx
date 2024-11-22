@@ -11,67 +11,46 @@
  * francescopantusa98@gmail.com - initial implementation
  *
  */
-import { Badge, Col, Descriptions, Divider, Form, FormInstance, Row, Space, Typography } from 'antd';
+import { Col, Descriptions, Divider, Form, FormInstance, Row, Typography } from 'antd';
 import { useTranslations } from 'next-intl';
 import React from 'react';
-
+import './NodoFormGeo.css';
 const { Text } = Typography;
-
 const NodoFormGeo = ({ form }: { form: FormInstance }) => {
-  const marginBottom = { marginBottom: -30 };
   const t = useTranslations('NodoForm');
   const style = {
-    minWidth: '550px',
     width: '100%',
     maxWidth: '680px',
-    marginTop: 30,
+    marginTop: '30px',
+    padding: '0 15px',
   };
-
   const renderField = (value: string | number | boolean | undefined) => (
-    <Text strong style={{ fontSize: '0.8rem' }}>
+    <Text strong className="geo-field">
       {value !== undefined ? String(value) : '-'}
     </Text>
   );
-
   return (
-    <div>
+    <div className="form-geo-container">
       <Form form={form} layout="vertical" style={style}>
-        <Row gutter={16} style={marginBottom}>
-          <Col span={8}>
-            <Space>
-              <Descriptions
-                column={1}
-                bordered
-                className="custom-descriptions"
-                size="small"
-                style={{ marginBottom: 25 }}
-              >
-                <Descriptions.Item label={t('latitude')} labelStyle={{ fontWeight: 'bold' }}>
-                  {renderField(form.getFieldValue('latitudine'))}
-                </Descriptions.Item>
-              </Descriptions>
-            </Space>
+        <Row gutter={[16, 16]}>
+          <Col xs={24} sm={24} md={8}>
+            <Descriptions column={1} bordered className="custom-descriptions geo-descriptions" size="small">
+              <Descriptions.Item label={t('latitude')}>
+                {renderField(form.getFieldValue('latitudine'))}
+              </Descriptions.Item>
+            </Descriptions>
           </Col>
-          <Col span={8}>
-            <Space>
-              <Descriptions
-                column={1}
-                bordered
-                className="custom-descriptions"
-                size="small"
-                style={{ marginBottom: 25 }}
-              >
-                <Descriptions.Item label={t('longitude')} labelStyle={{ fontWeight: 'bold' }}>
-                  {renderField(form.getFieldValue('longitudine'))}
-                </Descriptions.Item>
-              </Descriptions>
-            </Space>
+          <Col xs={24} sm={24} md={8}>
+            <Descriptions column={1} bordered className="custom-descriptions geo-descriptions" size="small">
+              <Descriptions.Item label={t('longitude')}>
+                {renderField(form.getFieldValue('longitudine'))}
+              </Descriptions.Item>
+            </Descriptions>
           </Col>
         </Row>
-        <Divider style={{ margin: '12px 0', width: '100%' }} />
+        <Divider className="geo-divider" />
       </Form>
     </div>
   );
 };
-
 export default NodoFormGeo;

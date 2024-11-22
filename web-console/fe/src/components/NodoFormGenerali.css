@@ -8,3 +8,29 @@
   transition: background-color 0.3s ease;
   cursor: default;
 }
+
+.custom-descriptions {
+  width: 100%;
+}
+
+.description-text {
+  font-size: 0.8rem;
+  padding: 8px;
+  word-break: break-word;
+}
+
+.description-label {
+  font-size: 0.8rem;
+  font-weight: bold;
+}
+
+@media (max-width: 576px) {
+  .custom-descriptions .ant-descriptions-item-label,
+  .custom-descriptions .ant-descriptions-item-content {
+    padding: 8px 4px;
+  }
+
+  .description-text {
+    padding: 4px;
+  }
+}
