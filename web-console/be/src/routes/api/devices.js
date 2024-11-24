@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { Op } = require("sequelize");
+const carbone = require('carbone');
 const { Device, DeviceModel, Din, DDO } = require('../../db/models');
 const db = require('../../db/models');
 const { getPaginationParams, getQuery, sendError, toPaginationData, addQuery } = require('./utilities');
@@ -189,6 +190,66 @@ router.get('/devices/:id/ddos', async function (req, res) {
         await t.commit();
 
         res.send(toPaginationData(countAndData, limit, offset));
+    }
+    catch (err) {
+        await t.rollback();
+        sendError(res, err);
+    }
+});
+
+router.get('/devices/:id/reports', async function (req, res) {
+    const t = await db.sequelize.transaction();
+    try {
+        //CHIEDERE AD ALESSIO E A FRANCESCO PAGINATION
+        //const { limit, offset } = getPaginationParams(req);
+        const validExtensions = ['pdf', 'xlsx'];
+        if (!validExtensions.includes(req.query.extension)) {
+            return res.status(415).json({ error: 'Estensione del file non valida.' });
+        }
+        var extension = req.query.extension;
+        var options = {
+            convertTo : extension ,
+            lang : 'it',
+            timezone : 'Europe/Paris'
+          };
+        const deviceId = parseInt(req.params.id);
+        const device = await Device.findByPk(deviceId, { transaction: t });
+        if (device === null) {
+            res.status(404);
+            throw new Error(`Dispositivo con id=${deviceId} non trovato.`);
+        }
+
+        const where = {
+            [Op.or]: [
+                { din_id_src: device.din_id },
+                { din_id_dst: device.din_id }
+            ]
+        };        
+        let data = await DDO.findAll({where,include: ['din_dst','din_src'],raw: true,nest:true});
+        data[0].nodo=device.name;
+        console.log(data[0]);
+        if (extension === 'pdf'){
+        carbone.render('static/public/img/reporting_templates/template_ddo_documenti.docx',data,options, function(err, result){
+            if (err) {
+                res.status(500);
+                throw new Error('Abbiamo avuto un problema con la generazione del report');
+            }
+            res.setHeader('Content-Type', 'application/pdf');
+            res.setHeader('Content-Disposition', `attachment; filename="report${device.din_id}.pdf"`);
+            res.send(result);
+          });
+        }
+        else{
+            carbone.render('static/public/img/reporting_templates/template_ddo_tabelle.ods',data,options, function(err, result){
+                if (err) {
+                    res.status(500);
+                    throw new Error('Abbiamo avuto un problema con la generazione del report');
+                }
+                res.setHeader('Content-Type', 'application/xlsx');
+                res.setHeader('Content-Disposition', `attachment; filename="report${device.din_id}.xlsx"`);
+                res.send(result);
+              });
+        }
     }
     catch (err) {
         await t.rollback();

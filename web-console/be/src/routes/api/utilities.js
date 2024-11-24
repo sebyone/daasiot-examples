@@ -38,7 +38,6 @@ function getPaginationParams(req) {
         offset = Math.max(offset, 0);
         // offset >= 0
     }
-
     return { limit, offset };
 }
 

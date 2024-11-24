@@ -1764,6 +1764,57 @@ paths:
         default:
           $ref: "#/components/responses/InternalError"
 
+  /devices/{deviceId}/reports/:
+    parameters:
+      - name: deviceId
+        in: path
+        description: ID del device che ha ricevuto o inviato i DDO
+        required: true
+        schema:
+          type: integer
+          minimum: 0
+          example: 1
+    get:
+      description: Ritorna i ddo ricevuti o inviati da un device sotto formato di pdf o excel.
+      tags:
+        - devices
+        - DDOs
+      parameters:
+        - name: extension
+          required: true
+          in: query
+          description: definisce l'estensione del file, se pdf o xlsx
+      responses:
+        "200":
+          description: Pagina di DDO e informazioni sulla paginazione
+          content:
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+              examples:
+                sampleFile:
+                  summary: Un esempio di file PDF
+                  externalValue: "../../static/public/img/reporting_templates/esempio_report.pdf"
+        "404":
+          description: Device non trovato.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "415":
+          description: Estensione non valida o non supportata.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: problema nella generazione del report.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
   #region Device Models
 
   /device_models:

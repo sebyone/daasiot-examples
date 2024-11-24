@@ -19,6 +19,10 @@ Avviare il server:
 
 ```npm run start:server```
 
+Avviare il server in modalità sviluppo:
+
+```npm run start:dev:server```
+
 Avviare il nodo sender:
 
 ```npm run start:sender```
