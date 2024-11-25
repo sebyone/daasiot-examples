@@ -240,8 +240,8 @@ router.get('/devices/:id/reports', async function (req, res) {
         }
 
         const template = extension === 'pdf'
-            ? 'static/public/img/reporting_templates/template_ddo_documenti.docx'
-            : 'static/public/img/reporting_templates/template_ddo_tabelle.ods';
+            ? 'static/public/reporting_templates/template_ddo_documenti.docx'
+            : 'static/public/reporting_templates/template_ddo_tabelle.ods';
 
         // we transform the call to carbone.render into a promise so we can use async/await and better error handling
         const carboneRender = (template, data, options) => {
