@@ -204,3 +204,9 @@ function onListening() {
         : 'port ' + addr.port;
     debug('Listening on ' + bind);
 }
+
+process.on('SIGINT', () => {
+    console.log(getTime(), 'SIGINT signal received.');
+    // localNode.stop();
+    process.exit(0);
+});

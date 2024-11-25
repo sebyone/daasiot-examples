@@ -198,22 +198,23 @@ router.get('/devices/:id/ddos', async function (req, res) {
 });
 
 router.get('/devices/:id/reports', async function (req, res) {
-    const t = await db.sequelize.transaction();
     try {
-        //CHIEDERE AD ALESSIO E A FRANCESCO PAGINATION
-        //const { limit, offset } = getPaginationParams(req);
-        const validExtensions = ['pdf', 'xlsx'];
-        if (!validExtensions.includes(req.query.extension)) {
-            return res.status(415).json({ error: 'Estensione del file non valida.' });
-        }
-        var extension = req.query.extension;
-        var options = {
-            convertTo : extension ,
-            lang : 'it',
-            timezone : 'Europe/Paris'
-          };
+        const extension = req.query.extension || 'pdf';
         const deviceId = parseInt(req.params.id);
-        const device = await Device.findByPk(deviceId, { transaction: t });
+
+        const validExtensions = ['pdf', 'xlsx'];
+        if (!validExtensions.includes(extension)) {
+            res.status(415);
+            throw new Error(`Estensione non valida. Le estensioni valide sono: ${validExtensions.join(', ')}.`);
+        }
+
+        const options = {
+            convertTo: extension,
+            lang: 'it',
+            timezone: 'Europe/Rome'
+        };
+
+        const device = await Device.findByPk(deviceId);
         if (device === null) {
             res.status(404);
             throw new Error(`Dispositivo con id=${deviceId} non trovato.`);
@@ -224,35 +225,44 @@ router.get('/devices/:id/reports', async function (req, res) {
                 { din_id_src: device.din_id },
                 { din_id_dst: device.din_id }
             ]
-        };        
-        let data = await DDO.findAll({where,include: ['din_dst','din_src'],raw: true,nest:true});
-        data[0].nodo=device.name;
+        };
+        let data = await DDO.findAll({ where, include: ['din_dst', 'din_src'], raw: true, nest: true });
+        if (data.length === 0) {
+            res.status(404);
+            throw new Error(`Non ci sono DDO per il dispositivo con id=${deviceId}.`);
+        }
+
+        data[0].nodo = device.name;
         console.log(data[0]);
-        if (extension === 'pdf'){
-        carbone.render('static/public/img/reporting_templates/template_ddo_documenti.docx',data,options, function(err, result){
-            if (err) {
-                res.status(500);
-                throw new Error('Abbiamo avuto un problema con la generazione del report');
-            }
-            res.setHeader('Content-Type', 'application/pdf');
-            res.setHeader('Content-Disposition', `attachment; filename="report${device.din_id}.pdf"`);
-            res.send(result);
-          });
+
+        for (let i = 0; i < data.length; i++) {
+            data[i].payload = Buffer.from(data[i].payload, 'base64').toString('utf-8');
         }
-        else{
-            carbone.render('static/public/img/reporting_templates/template_ddo_tabelle.ods',data,options, function(err, result){
-                if (err) {
-                    res.status(500);
-                    throw new Error('Abbiamo avuto un problema con la generazione del report');
-                }
-                res.setHeader('Content-Type', 'application/xlsx');
-                res.setHeader('Content-Disposition', `attachment; filename="report${device.din_id}.xlsx"`);
-                res.send(result);
-              });
-        }
+
+        const template = extension === 'pdf'
+            ? 'static/public/img/reporting_templates/template_ddo_documenti.docx'
+            : 'static/public/img/reporting_templates/template_ddo_tabelle.ods';
+
+        // we transform the call to carbone.render into a promise so we can use async/await and better error handling
+        const carboneRender = (template, data, options) => {
+            return new Promise((resolve, reject) => {
+                carbone.render(template, data, options, (err, result) => {
+                    if (err) return reject(err);
+                    resolve(result);
+                });
+            });
+        };
+
+
+        const result = await carboneRender(template, data, options).catch(err => {
+            res.status(500);
+            throw new Error(`Errore durante la generazione del report: ${err}`);
+        });
+        res.setHeader('Content-Type', extension === 'pdf' ? 'application/pdf' : 'application/xlsx');
+        res.setHeader('Content-Disposition', `attachment; filename="report${device.din_id}.${extension}"`);
+        res.send(result);
     }
     catch (err) {
-        await t.rollback();
         sendError(res, err);
     }
 });
