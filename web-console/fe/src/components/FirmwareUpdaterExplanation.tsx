@@ -14,7 +14,7 @@ const { Step } = Steps;
 export default function FirmwareUpdaterExplanation() {
   return (
     <Card style={{ width: '100%', maxWidth: '800px', margin: '0 auto' }}>
-      <Space direction="vertical" size="large" style={{ width: '100%' }}>
+      <Space direction="vertical" style={{ width: '100%' }}>
         <Typography>
           <Title level={2}>{"Come funziona l'aggiornamento del firmware"}</Title>
           <Paragraph>Una guida passo-passo al processo di aggiornamento del firmware del dispositivo</Paragraph>

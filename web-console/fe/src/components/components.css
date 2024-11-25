@@ -27,6 +27,7 @@
 .flex-container.singleTable {
   width: 100%;
   margin-top: 50px;
+  max-height: auto;
 }
 
 .flex-container.devices {

@@ -230,101 +230,91 @@ const DaaSUpdater = () => {
   }
 
   return (
-    <>
-      <div className={styles.container}>
-        <div style={{ display: 'flex', justifyContent: 'center' }}>
-          <Title level={2} style={{ fontWeight: 'bold' }}>
-            Devices Firmware Updater (Esp32)
-          </Title>
-        </div>
-        <div style={{ padding: '20px' }}>
-          <div style={{ width: '20%', display: 'flex', flexDirection: 'column', justifyContent: 'left' }}>
-            <Button
-              icon={<UsbOutlined />}
-              onClick={isConnected ? disconnectDevice : connectDevice}
-              type="primary"
-              style={{ marginBottom: '20px', width: '50%' }}
-            >
-              {isConnected ? 'Disconnetti dispositivo' : 'Connetti dispositivo'}
-            </Button>
+    <div className={styles.container}>
+      <div className={styles.title}>
+        <Title level={2} style={{ fontWeight: 'bold' }}>
+          Devices Firmware Updater (Esp32)
+        </Title>
+      </div>
 
-            {isConnected && (
-              <Space direction="vertical" style={{ width: '100%' }}>
-                <Descriptions column={1} size="small" bordered>
-                  <Descriptions.Item
-                    label={
-                      <>
-                        <UsbOutlined /> Port
-                      </>
-                    }
-                    labelStyle={{ fontWeight: 'bold' }}
-                  >
-                    {portInfo}
-                  </Descriptions.Item>
-                  <Descriptions.Item
-                    label={
-                      <>
-                        <InfoCircleOutlined /> Device
-                      </>
-                    }
-                    labelStyle={{ fontWeight: 'bold' }}
-                  >
-                    {chip || 'Unknown'}
-                  </Descriptions.Item>
-                </Descriptions>
-                <div style={{ display: 'flex', gap: 20, marginTop: 20 }}>
-                  <Select
-                    style={{ width: '50%' }}
-                    placeholder="Seleziona Firmware"
-                    onChange={(value) => setSelectedFirmware(value)}
-                    value={selectedFirmware}
-                  >
-                    <Select.Option value="firmware1">Firmware 1</Select.Option>
-                    <Select.Option value="firmware2">Firmware 2</Select.Option>
-                  </Select>
+      <div className={styles.content}>
+        {/* Control Panel */}
+        <div className={styles.controlPanel}>
+          <Button
+            icon={<UsbOutlined />}
+            onClick={isConnected ? disconnectDevice : connectDevice}
+            type="primary"
+            style={{ marginBottom: '20px', width: '100%' }}
+          >
+            {isConnected ? 'Disconnetti dispositivo' : 'Connetti dispositivo'}
+          </Button>
 
-                  <Button onClick={uploadFirmware} type="primary" icon={<SyncOutlined />} style={{ width: '50%' }}>
-                    Start Update
-                  </Button>
-                </div>
-              </Space>
-            )}
-          </div>
+          {isConnected && (
+            <Space direction="vertical" style={{ width: '100%' }}>
+              <Descriptions column={1} size="small" bordered>
+                <Descriptions.Item
+                  label={
+                    <>
+                      <UsbOutlined /> Port
+                    </>
+                  }
+                  labelStyle={{ fontWeight: 'bold' }}
+                >
+                  {portInfo}
+                </Descriptions.Item>
+                <Descriptions.Item
+                  label={
+                    <>
+                      <InfoCircleOutlined /> Device
+                    </>
+                  }
+                  labelStyle={{ fontWeight: 'bold' }}
+                >
+                  {chip || 'Unknown'}
+                </Descriptions.Item>
+              </Descriptions>
+
+              <div className={styles.selectGroup}>
+                <Select
+                  style={{ flex: 1 }}
+                  placeholder="Seleziona Firmware"
+                  onChange={(value) => setSelectedFirmware(value)}
+                  value={selectedFirmware}
+                >
+                  <Select.Option value="firmware1">Firmware 1</Select.Option>
+                  <Select.Option value="firmware2">Firmware 2</Select.Option>
+                </Select>
+
+                <Button onClick={uploadFirmware} type="primary" icon={<SyncOutlined />} style={{ flex: 1 }}>
+                  Start Update
+                </Button>
+              </div>
+            </Space>
+          )}
         </div>
-        <div style={{ width: '65%' }}>
-          {!updateComplete && (
-            /*<Terminal
-              commands={{}}
-              promptLabel={''}
-              style={{
-                height: '300px',
-                width: '50%',
-                marginBottom: '20px',
-                backgroundColor: '#000',
-                color: '#00ff00',
-                fontFamily: 'monospace',
-                fontSize: '14px',
-                overflow: 'auto',
-              }}
-              noEchoBack
-              readOnly
-            />*/
-            <FirmwareUpdaterExplanation />
+
+        {/* Terminal Section */}
+        <div className={styles.terminal}>
+          {!updateComplete && <FirmwareUpdaterExplanation />}
+
+          {progress > 0 && (
+            <div style={{ marginTop: '1rem' }}>
+              <Progress percent={progress} />
+            </div>
           )}
 
-          {progress > 0 && <Progress percent={progress} />}
           {updateComplete && (
             <Alert
               message="Aggiornamento completato!"
               description="Scollegare il dispositivo e riavviarlo!"
               type="success"
               showIcon
+              style={{ marginTop: '1rem' }}
             />
           )}
         </div>
       </div>
-      <div className={styles.mobileMessage}>{t('mobileMessage')}</div>
-    </>
+    </div>
   );
 };
 

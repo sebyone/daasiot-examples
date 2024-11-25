@@ -1,22 +1,60 @@
-.mobileMessage {
-  display: none;
-  padding: 24px;
-  font-size: 1.2em;
-  text-align: center;
-}
-
 .container {
+  padding: 5px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  max-width: 1200px;
+  overflow: auto;
+  margin: 0 auto;
 }
 
-@media (max-width: 600px) {
-  .container {
-    display: none;
+.title {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.content {
+  display: flex;
+  width: 100%;
+  gap: 2rem;
+  flex-wrap: wrap;
+}
+
+.controlPanel {
+  flex: 1;
+  min-width: 250px;
+  max-width: 400px;
+}
+
+.terminal {
+  flex: 2;
+  min-width: 300px;
+}
+
+.selectGroup {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1rem;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 768px) {
+  .content {
+    flex-direction: column;
   }
 
-  .mobileMessage {
-    display: flex;
+  .controlPanel,
+  .terminal {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .selectGroup {
     flex-direction: column;
-    justify-content: center;
-    align-items: center;
+  }
+
+  .selectGroup > * {
+    width: 100% !important;
   }
 }

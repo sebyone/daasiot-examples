@@ -24,15 +24,17 @@ import LanguageSwitcher from '@/components/LanguageSwitcher';
 import { useWindowSize } from '@/hooks/useWindowSize';
 import { Footer } from 'antd/es/layout/layout';
 import version from '../../../../version';
+import styles from './Layout.module.css';
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const { width } = useWindowSize();
   const wh = width < 1024;
   return (
-    <Layout style={{ height: '100vh', overflow: wh ? 'visible' : 'hidden' }}>
+    <Layout style={{ height: '100vh', overflow: wh ? '' : 'hidden' }}>
       <Sider
         breakpoint="lg"
         collapsedWidth="0"
+        className={styles.siderCustom}
         style={{
           backgroundColor: '#001529',
           display: 'flex',
@@ -85,9 +87,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             width: '100%',
             padding: '0 1rem',
             zIndex: 1000,
+            display: 'flex',
+            alignItems: 'center',
           }}
         >
-          <div style={{ color: '#fff', fontSize: '0.8rem' }}>DaaS-IoT NodeJs ver {version}</div>
+          <div style={{ color: '#fff', fontSize: '0.8rem', lineHeight: 1 }}>DaaS-IoT NodeJs ver {version}</div>
         </Footer>
       </Layout>
     </Layout>

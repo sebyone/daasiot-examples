@@ -16,7 +16,7 @@ import type { ThemeConfig } from 'antd';
 import { ConfigProvider } from 'antd';
 import type { Metadata } from 'next';
 import { NextIntlClientProvider } from 'next-intl';
-import { Inter } from 'next/font/google';
+import { Plus_Jakarta_Sans } from 'next/font/google';
 import { notFound } from 'next/navigation';
 import './globals.css';
 
@@ -28,7 +28,11 @@ const config: ThemeConfig = {
   // },
 };
 
-const inter = Inter({ subsets: ['latin'] });
+const jakarta = Plus_Jakarta_Sans({
+  subsets: ['latin'],
+  weight: ['400', '500', '600', '700'],
+  display: 'swap',
+});
 
 export const metadata: Metadata = {
   title: 'DaaS-NodeJS - Sebyone',
@@ -43,6 +47,9 @@ export default async function RootLayout({
   params: { locale: string };
 }) {
   const theme = {
+    token: {
+      fontFamily: jakarta.style.fontFamily,
+    },
     components: {
       Form: { verticalLabelPadding: 0 },
     },
@@ -57,7 +64,7 @@ export default async function RootLayout({
 
   return (
     <html lang="it">
-      <body className={inter.className} suppressHydrationWarning={true}>
+      <body className={jakarta.className} suppressHydrationWarning={true}>
         <NextIntlClientProvider locale={locale} messages={messages}>
           <AntdRegistry>
             <ConfigProvider theme={theme}>{children}</ConfigProvider>

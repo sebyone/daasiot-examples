@@ -402,6 +402,7 @@ export default function Dispositivi() {
             collapsedWidth="0"
             width={250}
             theme="dark"
+            className={styles.siderCustom}
             style={{
               marginLeft: '-22px',
               marginTop: 2,

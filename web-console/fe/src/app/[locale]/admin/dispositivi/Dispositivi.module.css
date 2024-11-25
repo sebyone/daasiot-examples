@@ -15,3 +15,10 @@
 .ant-pagination-next:hover .ant-pagination-item-link {
   background-color: #d1d1d1;
 }
+
+:global([class*='ant-layout']) .siderCustom :global(.ant-layout-sider-zero-width-trigger-left) {
+  position: absolute !important;
+  inset-inline-end: -20px !important;
+  width: 20px !important;
+  height: 20px !important;
+}
