@@ -16,7 +16,7 @@ import { Button, Modal, Space } from 'antd';
 import React, { useState } from 'react';
 
 export default function Settings() {
-  const [isVisible, setIsVisible] = useState(false);
+  /*const [isVisible, setIsVisible] = useState(false);
 
   const handleOpenModal = () => {
     setIsVisible(true);
@@ -24,9 +24,9 @@ export default function Settings() {
 
   const handleCloseModal = () => {
     setIsVisible(false);
-  };
-  return (
-    <Space size="middle">
+  };*/
+  return <div>Riordina periodicamente map-entries dei receivers</div>; /*(
+    /*<Space size="middle">
       <Button
         type="text"
         icon={<SettingOutlined />}
@@ -46,5 +46,5 @@ export default function Settings() {
         <div>Riordina periodicamente map-entries dei receivers</div>
       </Modal>
     </Space>
-  );
+  );*/
 }

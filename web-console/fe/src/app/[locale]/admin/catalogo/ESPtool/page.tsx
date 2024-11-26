@@ -236,7 +236,15 @@ const DaaSUpdater = () => {
   return (
     <div className={styles.container}>
       <div className={styles.title}>
-        <Title level={2} style={{ fontWeight: 'bold' }}>
+        <Title
+          level={2}
+          style={{
+            background: 'linear-gradient(to right, #0077e6, #003366, #001529)',
+            backgroundClip: 'text',
+            color: 'transparent',
+            fontWeight: 'bold',
+          }}
+        >
           Devices Firmware Updater (Esp32)
         </Title>
       </div>

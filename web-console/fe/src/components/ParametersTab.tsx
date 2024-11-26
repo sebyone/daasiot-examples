@@ -670,7 +670,23 @@ export default function ParametersTab({ device }: { device: DataDevice | null })
           ?
         </p>
       </Modal>
-      {showTestComponent && (
+      <Modal open={showTestComponent} onCancel={handleTest} width={370} footer={null}>
+        <CardDispositivoFactory
+          deviceType="UPL"
+          deviceName="UPL Modello XX"
+          dinOptions={dinOptions}
+          selectedDin={selectedDin}
+          setSelectedDin={setSelectedDin}
+          onTest={handleTest}
+          onSend={onSend}
+          status={status}
+          setStatus={onChange}
+          value={value}
+          setValue={onChangeComplete}
+          showTestControl={showTestControl}
+        />
+      </Modal>
+      {/*showTestComponent && (
         <div style={{ marginLeft: 250 }}>
           <CardDispositivoFactory
             deviceType="UPL"
@@ -687,7 +703,7 @@ export default function ParametersTab({ device }: { device: DataDevice | null })
             showTestControl={showTestControl}
           />
         </div>
-      )}
+      )*/}
     </Space>
   );
 }

@@ -17,6 +17,7 @@ import {
   BoxPlotOutlined,
   DeploymentUnitOutlined,
   DesktopOutlined,
+  SettingOutlined,
   ShoppingOutlined,
   SyncOutlined,
 } from '@ant-design/icons';
@@ -39,6 +40,7 @@ const getPathMap = (locale: string) => ({
   [`/${locale}/admin/dispositivi`]: '/admin/dispositivi',
   [`/${locale}/admin/updater-Esp32`]: '/admin/updater-Esp32',
   [`/${locale}/admin/catalogo`]: '/admin/catalogo',
+  [`/${locale}/admin/impostazioni`]: '/admin/impostazioni',
   [`/${locale}/admin`]: '/admin',
 });
 
@@ -53,9 +55,6 @@ const getSelectedKey = (pathname: string, locale: string): string => {
 };
 
 const menuItemStyle = {
-  display: 'flex',
-  justifyContent: 'center',
-  alignItems: 'center',
   height: '4vh',
   padding: '0',
 };
@@ -73,7 +72,7 @@ export default function NavMenu({ role }: { role?: string }) {
     lineHeight: '32px',
     display: 'flex',
     justifyContent: 'center',
-    marginLeft: wh ? 5 : 7,
+
     width: '100%',
   };
 
@@ -110,6 +109,12 @@ export default function NavMenu({ role }: { role?: string }) {
       label: 'Updater',
       href: `/${locale}/admin/updater-Esp32`,
     },
+    {
+      key: '/admin/impostazioni',
+      icon: <SettingOutlined style={iconStyle} />,
+      label: 'Impostazioni',
+      href: `/${locale}/admin/impostazioni`,
+    },
   ];
 
   useEffect(() => {
@@ -125,7 +130,7 @@ export default function NavMenu({ role }: { role?: string }) {
   }, [role]);
 
   return (
-    <Menu theme="dark" mode="inline" selectedKeys={[selectedKey]} style={{ height: '100%' }}>
+    <Menu theme="dark" mode="inline" selectedKeys={[selectedKey]} style={{ height: '100%', borderRight: 0 }}>
       {menuItems.map((item) => (
         <Menu.Item key={item.key} icon={item.icon} style={menuItemStyle}>
           <Tooltip placement="right" title={item.label} mouseEnterDelay={0.1}>

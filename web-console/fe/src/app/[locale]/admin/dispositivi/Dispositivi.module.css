@@ -1,6 +1,5 @@
 .container {
   display: flex;
-  height: 89vh;
 }
 
 .ant-pagination-prev .ant-pagination-item-link,
@@ -21,4 +20,5 @@
   inset-inline-end: -20px !important;
   width: 20px !important;
   height: 20px !important;
+  top: 40px !important;
 }

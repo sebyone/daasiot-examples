@@ -19,6 +19,7 @@ const { Header, Sider, Content } = Layout;
 
 import NavMenu from '@/components/base/NavMenu';
 import Settings from '@/components/base/Settings';
+import UserMenu from '@/components/base/UserMenu';
 import DaaSIoTLogo from '@/components/DaaSIoTLogo';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
 import { useWindowSize } from '@/hooks/useWindowSize';
@@ -31,45 +32,48 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const wh = width < 1024;
   return (
     <Layout style={{ height: '100vh', overflow: wh ? '' : 'hidden' }}>
-      <Sider
-        breakpoint="lg"
-        collapsedWidth="0"
-        className={styles.siderCustom}
+      <Header
         style={{
-          backgroundColor: '#001529',
+          padding: '0 1rem',
+          top: 0,
+          background: '#001529',
+          zIndex: 1,
           display: 'flex',
-          justifyContent: 'center',
+          width: '100%',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          position: 'sticky',
         }}
       >
-        <div style={{ padding: '16px' }}>
-          <DaaSIoTLogo />
-        </div>
-        <NavMenu />
-      </Sider>
-      <Layout>
-        <Header
+        <DaaSIoTLogo />
+
+        <div
           style={{
-            padding: '0 24px',
-            background: '#001529',
             display: 'flex',
-            justifyContent: 'flex-end',
-            alignItems: 'center',
-            position: 'sticky',
+            gap: '2px',
+            alignItems: 'flex-end',
+            minWidth: 'fit-content',
           }}
         >
-          <div
-            style={{
-              display: 'flex',
-              gap: '16px',
-              alignItems: 'center',
-            }}
-          >
-            <Settings />
-            <LanguageSwitcher />
-          </div>
-        </Header>
+          <UserMenu />
+          <LanguageSwitcher />
+        </div>
+      </Header>
+      <Layout style={{ padding: 0 }}>
+        <Sider
+          breakpoint="lg"
+          collapsedWidth="0"
+          className={styles.siderCustom}
+          style={{
+            backgroundColor: '#001529',
+          }}
+        >
+          <NavMenu />
+        </Sider>
+
         <Content
           style={{
+            margin: 0,
             padding: 24,
             background: 'white',
           }}
@@ -77,23 +81,23 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           <div id="form-menu-portal" style={{ marginTop: -20 }}></div>
           {children}
         </Content>
-        <Footer
-          style={{
-            textAlign: 'left',
-            backgroundColor: '#002140',
-            height: '25px',
-            position: 'fixed',
-            bottom: '0',
-            width: '100%',
-            padding: '0 1rem',
-            zIndex: 1000,
-            display: 'flex',
-            alignItems: 'center',
-          }}
-        >
-          <div style={{ color: '#fff', fontSize: '0.8rem', lineHeight: 1 }}>DaaS-IoT NodeJs ver {version}</div>
-        </Footer>
       </Layout>
+      <Footer
+        style={{
+          textAlign: 'left',
+          backgroundColor: '#002140',
+          height: '25px',
+          position: 'fixed',
+          bottom: '0',
+          width: '100%',
+          padding: '0 1rem',
+          zIndex: 1000,
+          display: 'flex',
+          alignItems: 'center',
+        }}
+      >
+        <div style={{ color: '#fff', fontSize: '0.8rem', lineHeight: 1 }}>DaaS-IoT NodeJs ver {version}</div>
+      </Footer>
     </Layout>
   );
 }
