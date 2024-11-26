@@ -14,7 +14,7 @@
 'use client';
 import { useCustomNotification } from '@/hooks/useNotificationHook';
 import { default as ConfigService, default as configService } from '@/services/configService';
-import { DataDevice, Event } from '@/types';
+import { DataDevice, DeviceFunction, Event, Function } from '@/types';
 import {
   DeploymentUnitOutlined,
   EditFilled,
@@ -34,6 +34,7 @@ import {
   Input,
   Layout,
   List,
+  message,
   Modal,
   Pagination,
   Space,
@@ -71,7 +72,6 @@ export default function Dispositivi() {
   const [devicesData, setDevicesData] = useState<DataDevice[]>([]);
   const { notify, contextHolder } = useCustomNotification();
   const [selectedDevice, setSelectedDevice] = useState<DataDevice | null>(null);
-
   const [isDeviceSelected, setIsDeviceSelected] = useState(false);
   const [isModalInfoEventVisible, setIsModalInfoEventVisible] = useState(false);
   const [selectedRow, setSelectedRow] = useState(null);
@@ -83,6 +83,15 @@ export default function Dispositivi() {
   const [ddos, setDdos] = useState<Event[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [filterEnabled, setFilterEnabled] = useState(false);
+  const [functions, setFunctions] = useState<Function[]>([]);
+  const [selectedFunctions, setSelectedFunctions] = useState<DeviceFunction[]>([]);
+  const [checkedFunctions, setCheckedFunctions] = useState<number[]>([]);
+  const [status, setStatus] = useState<boolean>(false);
+  const [value, setValue] = useState<number>(0);
+  const [showTestComponent, setShowTestComponent] = useState(false);
+  const [selectedDin, setSelectedDin] = useState<number | null>(null);
+  const [dinOptions, setDinOptions] = useState<number[]>([]);
+  const [ws, setSocket] = useState<WebSocket | null>(null);
 
   const MapComponent = dynamic(() => import('@/components/Map'), {
     ssr: false,
@@ -265,6 +274,229 @@ export default function Dispositivi() {
     []
   );
 
+  useEffect(() => {
+    const socket = new WebSocket(`${process.env.NEXT_PUBLIC_API_BASE_URL}`);
+
+    socket.onmessage = (event) => {
+      console.log('Ricevuto messaggio', event.data);
+      const data = JSON.parse(event.data);
+
+      if (data.event === 'ddo') {
+        setStatus(data.status);
+        setValue(data.value);
+      }
+    };
+
+    socket.onopen = () => {
+      console.log('Connesso al server');
+    };
+
+    socket.onclose = () => {
+      console.log('Disconnesso dal server');
+    };
+
+    setSocket(socket);
+
+    return () => {
+      if (socket && socket.readyState === WebSocket.OPEN) {
+        socket.close();
+      }
+    };
+  }, []);
+
+  const fetchFunctions = useCallback(async () => {
+    if (!selectedDevice?.id) return;
+    try {
+      const response = await ConfigService.getFunctions(selectedDevice.device_model_id);
+      setFunctions(response);
+    } catch (error) {
+      console.error('Error fetching functions:', error);
+    }
+  }, [selectedDevice?.id, selectedDevice?.device_model_id]);
+
+  useEffect(() => {
+    fetchFunctions();
+  }, [fetchFunctions]);
+
+  const fetchProgram = useCallback(async () => {
+    if (!selectedDevice?.id) return;
+    try {
+      const response = await ConfigService.getProgram(selectedDevice.id);
+      setSelectedFunctions(response);
+      setCheckedFunctions(response.filter((func) => func.enabled).map((func) => func.id));
+    } catch (error) {
+      console.error('Error fetching program:', error);
+    }
+  }, [selectedDevice?.id]);
+
+  useEffect(() => {
+    fetchProgram();
+  }, [fetchProgram]);
+
+  const handleAddFunction = useCallback(
+    async (functionToAdd: Function) => {
+      if (!selectedDevice?.id) return;
+      try {
+        const response = await ConfigService.addFunction(selectedDevice.id, functionToAdd.id);
+        setSelectedFunctions((prev) => [...prev, response]);
+        message.success('Funzione aggiunta con successo');
+      } catch (error) {
+        message.error("Errore nell'aggiunta della funzione");
+      }
+      fetchProgram();
+    },
+    [selectedDevice?.id, fetchProgram]
+  );
+
+  const handleDeleteFunctions = useCallback(async () => {
+    if (!selectedDevice?.id || checkedFunctions.length === 0) return;
+
+    const loadingMessage = message.loading('Eliminazione in corso...', 0);
+    const results: { success: boolean; functionId: number; error?: any }[] = [];
+
+    try {
+      for (const functionId of checkedFunctions) {
+        try {
+          if (results.length > 0) {
+            await new Promise((resolve) => setTimeout(resolve, 500));
+          }
+
+          await ConfigService.deleteFunction(selectedDevice.id, functionId);
+          results.push({ success: true, functionId });
+        } catch (error: any) {
+          if (error?.error_name === 'SequelizeTimeoutError' && error?.message?.includes('database is locked')) {
+            try {
+              await new Promise((resolve) => setTimeout(resolve, 1500));
+              await ConfigService.deleteFunction(selectedDevice.id, functionId);
+              results.push({ success: true, functionId });
+            } catch (retryError) {
+              results.push({ success: false, functionId, error: retryError });
+            }
+          } else {
+            results.push({ success: false, functionId, error });
+          }
+        }
+      }
+
+      const successfulDeletes = results.filter((result) => result.success).map((result) => result.functionId);
+      const failedDeletes = results.filter((result) => !result.success).map((result) => result.functionId);
+
+      if (successfulDeletes.length > 0) {
+        setSelectedFunctions((prev) => prev.filter((f) => !successfulDeletes.includes(f.id)));
+        setCheckedFunctions((prev) => prev.filter((id) => !successfulDeletes.includes(id)));
+        message.success(
+          successfulDeletes.length === 1
+            ? 'Funzione eliminata con successo'
+            : `${successfulDeletes.length} funzioni eliminate con successo`
+        );
+      }
+
+      if (failedDeletes.length > 0) {
+        message.error(
+          failedDeletes.length === 1
+            ? "Errore nell'eliminazione della funzione"
+            : `Errore nell'eliminazione di ${failedDeletes.length} funzioni`
+        );
+      }
+    } catch (error) {
+      message.error("Si è verificato un errore durante l'eliminazione delle funzioni");
+    } finally {
+      loadingMessage();
+    }
+  }, [selectedDevice?.id, checkedFunctions]);
+
+  const handleUpdateFunction = useCallback(
+    async (
+      functionId: number,
+      updates: {
+        parameters?: { property_id: number; value: any }[];
+        inputs?: { property_id: number; value: any }[];
+        outputs?: { property_id: number; value: any }[];
+        notifications?: { property_id: number; value: any }[];
+      }
+    ) => {
+      if (!selectedDevice?.id) return;
+
+      try {
+        const functionToUpdate = selectedFunctions.find((f) => f.id === functionId);
+        if (!functionToUpdate) return;
+
+        const updatedFunction = { ...functionToUpdate };
+
+        if (updates.parameters) {
+          updatedFunction.parameters = updatedFunction.parameters.map((param) => {
+            const update = updates.parameters?.find((u) => u.property_id === param.property_id);
+            return update ? { ...param, value: update.value } : param;
+          });
+        }
+
+        if (updates.inputs) {
+          updatedFunction.inputs = updatedFunction.inputs.map((input) => {
+            const update = updates.inputs?.find((u) => u.property_id === input.property_id);
+            return update ? { ...input, value: update.value } : input;
+          });
+        }
+
+        if (updates.outputs) {
+          updatedFunction.outputs = updatedFunction.outputs.map((output) => {
+            const update = updates.outputs?.find((u) => u.property_id === output.property_id);
+            return update ? { ...output, value: update.value } : output;
+          });
+        }
+
+        if (updates.notifications) {
+          updatedFunction.notifications = updatedFunction.notifications.map((notification) => {
+            const update = updates.notifications?.find((u) => u.property_id === notification.property_id);
+            return update ? { ...notification, value: update.value } : notification;
+          });
+        }
+
+        await ConfigService.updateFunction(selectedDevice.id, functionId, updatedFunction);
+        setSelectedFunctions((prev) => prev.map((func) => (func.id === functionId ? updatedFunction : func)));
+
+        message.success('Funzione aggiornata con successo');
+      } catch (error) {
+        console.error('Error updating function:', error);
+        message.error("Errore nell'aggiornamento della funzione");
+      }
+    },
+    [selectedDevice?.id, selectedFunctions]
+  );
+
+  const handleStatusChange = useCallback((newStatus: boolean) => {
+    setStatus(newStatus);
+  }, []);
+
+  const handleValueChange = useCallback((newValue: number) => {
+    setValue(newValue);
+  }, []);
+
+  const handleFunctionSelect = useCallback((functionId: number) => {
+    setCheckedFunctions((prev) =>
+      prev.includes(functionId) ? prev.filter((id) => id !== functionId) : [...prev, functionId]
+    );
+  }, []);
+
+  const handleTestClick = useCallback(() => {
+    setShowTestComponent((prev) => !prev);
+  }, []);
+
+  const handleDinSelect = useCallback((din: number | null) => {
+    setSelectedDin(din);
+  }, []);
+
+  const handleSendCommand = useCallback(async () => {
+    if (selectedDevice) {
+      try {
+        const dev = await ConfigService.getDeviceById(selectedDevice.id);
+        const response = await ConfigService.sendPayload(Number(dev.din.din), status, value);
+        console.log(response);
+      } catch (error) {
+        console.error('Errore:', error);
+      }
+    }
+  }, [selectedDevice, status, value]);
+
   const items: TabsProps['items'] = [
     {
       key: '1',
@@ -286,7 +518,29 @@ export default function Dispositivi() {
           {<SettingOutlined style={{ fontSize: '1.1rem' }} />} {t('config')}
         </span>
       ),
-      children: <ParametersTab key={selectedDevice?.id} device={selectedDevice} />,
+      children: (
+        <ParametersTab
+          key={selectedDevice?.id}
+          device={selectedDevice}
+          functions={functions}
+          selectedFunctions={selectedFunctions}
+          checkedFunctions={checkedFunctions}
+          status={status}
+          value={value}
+          showTestComponent={showTestComponent}
+          selectedDin={selectedDin}
+          dinOptions={dinOptions}
+          onStatusChange={handleStatusChange}
+          onValueChange={handleValueChange}
+          onSendCommand={handleSendCommand}
+          onFunctionSelect={handleFunctionSelect}
+          onTestClick={handleTestClick}
+          onDinSelect={handleDinSelect}
+          onAddFunction={handleAddFunction}
+          onDeleteFunctions={handleDeleteFunctions}
+          onUpdateFunction={handleUpdateFunction}
+        />
+      ),
     },
     {
       key: '3',
@@ -359,7 +613,7 @@ export default function Dispositivi() {
       ),
       children: (
         <div style={{ height: '55vh', marginTop: -40 }}>
-          <MapComponent device={selectedDevice} form={formGenerali} />
+          <MapComponent key={selectedDevice?.id} device={selectedDevice} form={formGenerali} />
         </div>
       ),
     },

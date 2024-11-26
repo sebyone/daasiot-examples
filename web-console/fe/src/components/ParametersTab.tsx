@@ -11,7 +11,6 @@
  * francescopantusa98@gmail.com - initial implementation
  *
  */
-import ConfigService from '@/services/configService';
 import { DataDevice, DeviceFunction, Function, FunctionParameter } from '@/types';
 import {
   BellOutlined,
@@ -25,230 +24,92 @@ import {
   SettingOutlined,
   SlidersOutlined,
 } from '@ant-design/icons';
-import { Button, Checkbox, Descriptions, Input, List, message, Modal, Select, Space, Table } from 'antd';
+import { Button, Checkbox, Descriptions, Input, List, Modal, Select, Space, Table } from 'antd';
 import { useTranslations } from 'next-intl';
 import dynamic from 'next/dynamic';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useState } from 'react';
+
 const CardDispositivoFactory = dynamic(() => import('@/components/CardDispositivoFactory'), { ssr: false });
 
-export default function ParametersTab({ device }: { device: DataDevice | null }) {
+interface ParametersTabProps {
+  device: DataDevice | null;
+  functions: Function[];
+  selectedFunctions: DeviceFunction[];
+  checkedFunctions: number[];
+  status: boolean;
+  value: number;
+  showTestComponent: boolean;
+  selectedDin: number | null;
+  dinOptions: number[];
+  onStatusChange: (status: boolean) => void;
+  onValueChange: (value: number) => void;
+  onSendCommand: () => Promise<void>;
+  onFunctionSelect: (functionId: number) => void;
+  onTestClick: () => void;
+  onDinSelect: (din: number | null) => void;
+  onAddFunction: (functionToAdd: Function) => Promise<void>;
+  onDeleteFunctions: () => Promise<void>;
+  onUpdateFunction: (
+    functionId: number,
+    updates: {
+      parameters?: { property_id: number; value: any }[];
+      inputs?: { property_id: number; value: any }[];
+      outputs?: { property_id: number; value: any }[];
+      notifications?: { property_id: number; value: any }[];
+    }
+  ) => Promise<void>;
+}
+
+export default function ParametersTab({
+  device,
+  functions,
+  selectedFunctions,
+  checkedFunctions,
+  status,
+  value,
+  showTestComponent,
+  selectedDin,
+  dinOptions,
+  onStatusChange,
+  onValueChange,
+  onSendCommand,
+  onFunctionSelect,
+  onTestClick,
+  onDinSelect,
+  onAddFunction,
+  onDeleteFunctions,
+  onUpdateFunction,
+}: ParametersTabProps) {
   const t = useTranslations('ParametersTab');
-  const [functions, setFunctions] = useState<Function[]>([]);
-  const [selectedFunctions, setSelectedFunctions] = useState<DeviceFunction[]>([]);
+
+  // Stati UI locali
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [isAddModalVisible, setIsAddModalVisible] = useState(false);
+  const [isDeleteConfirmVisible, setIsDeleteConfirmVisible] = useState(false);
   const [currentAction, setCurrentAction] = useState<string | null>(null);
   const [currentFunction, setCurrentFunction] = useState<DeviceFunction | null>(null);
-  const [checkedFunctions, setCheckedFunctions] = useState<number[]>([]);
   const [tempParameters, setTempParameters] = useState<{ [key: number]: any }>({});
   const [tempInputs, setTempInputs] = useState<{ [key: number]: any }>({});
   const [tempOutputs, setTempOutputs] = useState<{ [key: number]: any }>({});
-  const [isDeleteConfirmVisible, setIsDeleteConfirmVisible] = useState<boolean>(false);
-  const [showTestComponent, setShowTestComponent] = useState(false);
-  const [status, setStatus] = useState<boolean>(false);
-  const [value, setValue] = useState<number>(0);
-  const [ws, setSocket] = useState<WebSocket | null>(null);
-  const [selectedDin, setSelectedDin] = useState<number | null>(null);
-  const [showTestControl, setShowTestControl] = useState<boolean>(false);
-  const [dinOptions, setDinOptions] = useState<number[]>([]);
+  const [tempNotifications, setTempNotifications] = useState<{ [key: number]: any }>({});
+  const [showTestControl] = useState(false);
 
-  const handleTest = () => {
-    setShowTestComponent((prevState) => !prevState);
-  };
+  // Handlers UI locali
+  const handleDeleteClick = useCallback(() => {
+    if (checkedFunctions.length === 0) return;
+    setIsDeleteConfirmVisible(true);
+  }, [checkedFunctions.length]);
 
-  useEffect(() => {
-    const socket = new WebSocket(`${process.env.NEXT_PUBLIC_API_BASE_URL}`);
-
-    socket.onmessage = (event) => {
-      console.log('Ricevuto messaggio', event.data);
-      const data = JSON.parse(event.data);
-
-      if (data.event === 'ddo') {
-        setStatus(data.status);
-        setValue(data.value);
-      }
-    };
-
-    socket.onopen = () => {
-      console.log('Connesso al server');
-    };
-
-    socket.onclose = () => {
-      console.log('Disconnesso dal server');
-    };
-
-    setSocket(socket);
-
-    return () => {
-      if (socket && socket.readyState === WebSocket.OPEN) {
-        socket.close();
-      }
-    };
-  }, []);
-
-  const onChangeComplete = (value: number) => {
-    setValue(value);
-  };
-
-  const onChange = (status: boolean) => {
-    setStatus(status);
-  };
-
-  const onSend = async () => {
-    if (device) {
-      try {
-        const dev = await ConfigService.getDeviceById(device.id);
-        const response = await ConfigService.sendPayload(Number(dev.din.din), status, value);
-        console.log(response);
-      } catch (error) {
-        console.error('Errore:', error);
-      }
-    }
-  };
-
-  const fetchFunctions = useCallback(async () => {
-    if (!device?.id) return;
-    try {
-      const response = await ConfigService.getFunctions(device.device_model_id);
-      setFunctions(response);
-    } catch (error) {
-      console.error('Error fetching functions:', error);
-    }
-  }, [device?.id, device?.device_model_id]);
-
-  useEffect(() => {
-    fetchFunctions();
-  }, [fetchFunctions]);
-
-  const fetchProgram = useCallback(async () => {
-    if (!device?.id) return;
-    try {
-      const response = await ConfigService.getProgram(device.id);
-      setSelectedFunctions(response);
-      setCheckedFunctions(response.filter((func) => func.enabled).map((func) => func.id));
-    } catch (error) {
-      console.error('Error fetching program:', error);
-    }
-  }, [device?.id]);
-
-  useEffect(() => {
-    fetchProgram();
-  }, [fetchProgram]);
-
-  const handleSelectFunction = useCallback((functionId: number) => {
-    setCheckedFunctions((prev) =>
-      prev.includes(functionId) ? prev.filter((id) => id !== functionId) : [...prev, functionId]
-    );
-  }, []);
+  const handleConfirmDelete = useCallback(() => {
+    setIsDeleteConfirmVisible(false);
+    onDeleteFunctions();
+  }, [onDeleteFunctions]);
 
   const handleIconClick = useCallback((func: DeviceFunction, actionType: string) => {
     setCurrentFunction(func);
     setCurrentAction(actionType);
     setIsModalVisible(true);
   }, []);
-
-  const handleAddFunction = useCallback(
-    async (functionToAdd: Function) => {
-      if (!device?.id) return;
-      try {
-        const response = await ConfigService.addFunction(device.id, functionToAdd.id);
-
-        setSelectedFunctions((prevFunctions) => [...prevFunctions, response]);
-        setIsAddModalVisible(false);
-        message.success('Funzione aggiunta con successo');
-      } catch (error) {
-        message.error('Errore');
-      }
-      fetchProgram();
-    },
-
-    [device?.id, fetchProgram]
-  );
-
-  const handleDeleteFunctions = useCallback(() => {
-    if (!device?.id) {
-      return;
-    }
-
-    if (checkedFunctions.length === 0) {
-      message.warning('Seleziona una funzione da eliminare');
-      return;
-    }
-
-    setIsDeleteConfirmVisible(true);
-  }, [device?.id, checkedFunctions]);
-
-  const confirmDelete = useCallback(async () => {
-    setIsDeleteConfirmVisible(false);
-
-    if (!device?.id) {
-      return;
-    }
-
-    if (checkedFunctions.length === 0) {
-      message.warning('Seleziona una funzione da eliminare');
-      return;
-    }
-
-    const loadingMessage = message.loading('Eliminazione in corso...', 0);
-
-    const results: { success: boolean; functionId: number; error?: any }[] = [];
-
-    try {
-      for (const functionId of checkedFunctions) {
-        try {
-          if (results.length > 0) {
-            await new Promise((resolve) => setTimeout(resolve, 500));
-          }
-
-          await ConfigService.deleteFunction(device.id, functionId);
-          results.push({ success: true, functionId });
-        } catch (error: any) {
-          if (error?.error_name === 'SequelizeTimeoutError' && error?.message?.includes('database is locked')) {
-            try {
-              await new Promise((resolve) => setTimeout(resolve, 1500));
-              await ConfigService.deleteFunction(device.id, functionId);
-              results.push({ success: true, functionId });
-            } catch (retryError) {
-              results.push({ success: false, functionId, error: retryError });
-            }
-          } else {
-            results.push({ success: false, functionId, error });
-          }
-        }
-      }
-
-      loadingMessage();
-
-      const successfulDeletes = results.filter((result) => result.success).map((result) => result.functionId);
-      const failedDeletes = results.filter((result) => !result.success).map((result) => result.functionId);
-
-      if (successfulDeletes.length > 0) {
-        setSelectedFunctions((prev) => prev.filter((f) => !successfulDeletes.includes(f.id)));
-        setCheckedFunctions((prev) => prev.filter((id) => !successfulDeletes.includes(id)));
-      }
-
-      if (successfulDeletes.length > 0) {
-        message.success(
-          successfulDeletes.length === 1
-            ? 'Funzione eliminata con successo'
-            : `${successfulDeletes.length} funzioni eliminate con successo`
-        );
-      }
-
-      if (failedDeletes.length > 0) {
-        message.error(
-          failedDeletes.length === 1
-            ? "Errore nell'eliminazione della funzione"
-            : `Errore nell'eliminazione di ${failedDeletes.length} funzioni`
-        );
-      }
-    } catch (error) {
-      message.error("Si è verificato un errore durante l'eliminazione delle funzioni");
-    } finally {
-      loadingMessage();
-    }
-  }, [device?.id, checkedFunctions]);
 
   const handleParameterChange = useCallback((paramId: number, value: any) => {
     setTempParameters((prev) => ({ ...prev, [paramId]: value }));
@@ -272,51 +133,64 @@ export default function ParametersTab({ device }: { device: DataDevice | null })
     }
   }, []);
 
-  const handleModalOk = useCallback(async () => {
-    if (currentFunction && device?.id) {
-      try {
-        let updatedFunction: DeviceFunction = { ...currentFunction };
-
-        if (currentAction === 'parametro') {
-          updatedFunction.parameters = updatedFunction.parameters.map((param) => ({
-            ...param,
-            value: tempParameters[param.property_id] || param.value,
-          }));
-        } else if (currentAction === 'ingresso') {
-          updatedFunction.inputs = updatedFunction.inputs.map((input) => ({
-            ...input,
-            value: tempInputs[input.property_id] || input.value,
-          }));
-        } else if (currentAction === 'uscita') {
-          updatedFunction.outputs = updatedFunction.outputs.map((output) => ({
-            ...output,
-            value: tempOutputs[output.property_id] || output.value,
-          }));
-        }
-
-        await ConfigService.updateFunction(device.id, currentFunction.id, updatedFunction);
-
-        setSelectedFunctions((prev) => prev.map((func) => (func.id === currentFunction.id ? updatedFunction : func)));
-
-        setIsModalVisible(false);
-        setTempParameters({});
-        setTempInputs({});
-        setTempOutputs({});
-
-        message.success(`${currentAction} aggiornato correttamente`);
-      } catch (error) {
-        console.error(`Error updating ${currentAction}:`, error);
-        message.error(`Errore nell'aggiornamento di ${currentAction}`);
+  const handleNotificationChange = useCallback(
+    (notificationId: number, field: 'options1' | 'options2', value: string) => {
+      if (field === 'options2') {
+        setTempNotifications((prev) => ({
+          ...prev,
+          [notificationId]: value,
+        }));
       }
+    },
+    []
+  );
+
+  const handleModalOk = useCallback(async () => {
+    if (!currentFunction) return;
+
+    const updates: {
+      parameters?: { property_id: number; value: any }[];
+      inputs?: { property_id: number; value: any }[];
+      outputs?: { property_id: number; value: any }[];
+      notifications?: { property_id: number; value: any }[];
+    } = {};
+
+    if (currentAction === 'parametro') {
+      updates.parameters = Object.entries(tempParameters).map(([id, value]) => ({
+        property_id: Number(id),
+        value,
+      }));
+    } else if (currentAction === 'ingresso') {
+      updates.inputs = Object.entries(tempInputs).map(([id, value]) => ({
+        property_id: Number(id),
+        value,
+      }));
+    } else if (currentAction === 'uscita') {
+      updates.outputs = Object.entries(tempOutputs).map(([id, value]) => ({
+        property_id: Number(id),
+        value,
+      }));
+    } else if (currentAction === 'notifica') {
+      updates.notifications = Object.entries(tempNotifications).map(([id, value]) => ({
+        property_id: Number(id),
+        value,
+      }));
     }
-  }, [currentFunction, device?.id, tempParameters, tempInputs, tempOutputs, currentAction]);
+
+    await onUpdateFunction(currentFunction.id, updates);
+    setIsModalVisible(false);
+    setTempParameters({});
+    setTempInputs({});
+    setTempOutputs({});
+    setTempNotifications({});
+  }, [currentFunction, currentAction, tempParameters, tempInputs, tempOutputs, tempNotifications, onUpdateFunction]);
 
   const columns = [
     {
       title: '',
       dataIndex: 'select',
       render: (_: any, record: DeviceFunction) => (
-        <Checkbox checked={checkedFunctions.includes(record.id)} onChange={() => handleSelectFunction(record.id)} />
+        <Checkbox checked={checkedFunctions.includes(record.id)} onChange={() => onFunctionSelect(record.id)} />
       ),
     },
     {
@@ -423,7 +297,16 @@ export default function ParametersTab({ device }: { device: DataDevice | null })
       render: (_: any, record: DeviceFunction) =>
         record?.function?.notifications.length > 0 ? (
           <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
-            {record.function.notifications.map((notification) => notification.name).join(', ')}
+            {record.function.notifications
+              .map((notification) => {
+                const deviceNotification = record.notifications.find((n) => n.property_id === notification.id);
+                return `${notification.name}: ${deviceNotification ? deviceNotification.value : ''}`;
+              })
+              .join(', ')}
+            <SettingOutlined
+              onClick={() => handleIconClick(record, 'notifica')}
+              style={{ fontSize: '1rem', color: '#1890ff', cursor: 'pointer' }}
+            />
           </div>
         ) : (
           <SettingOutlined
@@ -447,18 +330,12 @@ export default function ParametersTab({ device }: { device: DataDevice | null })
           title: t('type'),
           dataIndex: 'type',
           key: 'type',
-          render: (text: string, record: any) => {
-            const options = ['GPIO', 'DIN'];
-            return (
-              <Select value={text} style={{ width: '100%' }}>
-                {options.map((option) => (
-                  <Select.Option key={option} value={option}>
-                    {option}
-                  </Select.Option>
-                ))}
-              </Select>
-            );
-          },
+          render: (text: string) => (
+            <Select value={text} style={{ width: '100%' }}>
+              <Select.Option value="GPIO">GPIO</Select.Option>
+              <Select.Option value="DIN">DIN</Select.Option>
+            </Select>
+          ),
         },
         {
           title: t('value'),
@@ -580,19 +457,41 @@ export default function ParametersTab({ device }: { device: DataDevice | null })
           title: t('type'),
           dataIndex: 'type',
           key: 'type',
-          render: (text: string, record: any) => {
-            return <Select style={{ width: '100%' }}></Select>;
-          },
+          render: (text: string) => (
+            <Select value={text} style={{ width: '100%' }}>
+              <Select.Option value="GPIO">GPIO</Select.Option>
+            </Select>
+          ),
         },
         {
           title: t('value'),
           dataIndex: 'value',
           key: 'value',
-          render: (text: string, record: any) => <Input placeholder={t('insertValue')} />,
+          render: (text: string, record: any) => {
+            const deviceNotification = currentFunction.notifications.find((n) => n.property_id === record.id);
+            return (
+              <Input
+                value={tempNotifications[record.id] ?? (deviceNotification ? deviceNotification.value : '')}
+                onChange={(e) => handleNotificationChange(record.id, 'options2', e.target.value)}
+                placeholder={t('insertValue')}
+              />
+            );
+          },
         },
       ];
 
-      return <Table columns={columns} pagination={false} />;
+      const data = currentFunction.function.notifications.map((notification) => {
+        const deviceNotification = currentFunction.notifications.find((n) => n.property_id === notification.id);
+        return {
+          key: notification.id,
+          id: notification.id,
+          name: notification.name,
+          type: 'GPIO',
+          value: deviceNotification?.value || '',
+        };
+      });
+
+      return <Table columns={columns} dataSource={data} pagination={false} />;
     }
     return null;
   };
@@ -602,11 +501,7 @@ export default function ParametersTab({ device }: { device: DataDevice | null })
       <Table columns={columns} dataSource={selectedFunctions} rowKey="id" pagination={false} scroll={{ y: 210 }} />
       <Space style={{ width: '100%', justifyContent: 'space-between' }}>
         <Space>
-          <Button
-            onClick={handleDeleteFunctions}
-            type="primary"
-            icon={<DeleteOutlined style={{ fontSize: '1.2rem' }} />}
-          >
+          <Button onClick={handleDeleteClick} type="primary" icon={<DeleteOutlined style={{ fontSize: '1.2rem' }} />}>
             {t('delete')}
           </Button>
           <Button
@@ -616,7 +511,7 @@ export default function ParametersTab({ device }: { device: DataDevice | null })
           >
             {t('addFunction')}
           </Button>
-          <Button type="primary" onClick={handleTest} icon={<BulbOutlined style={{ fontSize: '1.2rem' }} />}>
+          <Button type="primary" onClick={onTestClick} icon={<BulbOutlined style={{ fontSize: '1.2rem' }} />}>
             Test
           </Button>
         </Space>
@@ -629,6 +524,7 @@ export default function ParametersTab({ device }: { device: DataDevice | null })
           </Button>
         </Space>
       </Space>
+
       <Modal
         title={`Modifica ${currentAction}`}
         open={isModalVisible}
@@ -638,6 +534,7 @@ export default function ParametersTab({ device }: { device: DataDevice | null })
       >
         {renderModalContent()}
       </Modal>
+
       <Modal
         title={t('addFunction')}
         open={isAddModalVisible}
@@ -648,16 +545,24 @@ export default function ParametersTab({ device }: { device: DataDevice | null })
         <List
           dataSource={functions}
           renderItem={(item) => (
-            <List.Item key={item.id} onClick={() => handleAddFunction(item)} style={{ cursor: 'pointer' }}>
+            <List.Item
+              key={item.id}
+              onClick={() => {
+                onAddFunction(item);
+                setIsAddModalVisible(false);
+              }}
+              style={{ cursor: 'pointer' }}
+            >
               {item.name}
             </List.Item>
           )}
         />
       </Modal>
+
       <Modal
         title="Conferma eliminazione"
         open={isDeleteConfirmVisible}
-        onOk={confirmDelete}
+        onOk={handleConfirmDelete}
         onCancel={() => setIsDeleteConfirmVisible(false)}
         okText="Elimina"
         cancelText="Annulla"
@@ -670,40 +575,23 @@ export default function ParametersTab({ device }: { device: DataDevice | null })
           ?
         </p>
       </Modal>
-      <Modal open={showTestComponent} onCancel={handleTest} width={370} footer={null}>
+
+      <Modal open={showTestComponent} onCancel={onTestClick} width={370} footer={null}>
         <CardDispositivoFactory
           deviceType="UPL"
           deviceName="UPL Modello XX"
           dinOptions={dinOptions}
           selectedDin={selectedDin}
-          setSelectedDin={setSelectedDin}
-          onTest={handleTest}
-          onSend={onSend}
+          setSelectedDin={onDinSelect}
+          onTest={onTestClick}
+          onSend={onSendCommand}
           status={status}
-          setStatus={onChange}
+          setStatus={onStatusChange}
           value={value}
-          setValue={onChangeComplete}
+          setValue={onValueChange}
           showTestControl={showTestControl}
         />
       </Modal>
-      {/*showTestComponent && (
-        <div style={{ marginLeft: 250 }}>
-          <CardDispositivoFactory
-            deviceType="UPL"
-            deviceName="UPL Modello XX"
-            dinOptions={dinOptions}
-            selectedDin={selectedDin}
-            setSelectedDin={setSelectedDin}
-            onTest={handleTest}
-            onSend={onSend}
-            status={status}
-            setStatus={onChange}
-            value={value}
-            setValue={onChangeComplete}
-            showTestControl={showTestControl}
-          />
-        </div>
-      )*/}
     </Space>
   );
 }
