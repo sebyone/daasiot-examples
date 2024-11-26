@@ -256,6 +256,7 @@ router.get('/devices/:id/reports', async function (req, res) {
 
         const result = await carboneRender(template, data, options).catch(err => {
             res.status(500);
+            console.log(err)
             throw new Error(`Errore durante la generazione del report`);
         });
         res.setHeader('Content-Type', extension === 'pdf' ? 'application/pdf' : 'application/xlsx');
