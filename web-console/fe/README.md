@@ -6,7 +6,7 @@
 
 This is the Frontend client for the DaaS-IoT DCCS project, a distributed configurable control system for IoT devices that uses the **DaaS-IoT** technology to provide a mesh network of devices that can be controlled and monitored remotely.
 
-The frontend client is a Next.js application that communicates with the [backend server](/web-console/be/README.md), using a DaaS-IoT node to communicate with the devices.
+The frontend client is a Next.js application that communicates with the [backend server](/web-console/be/README.md)
 ## Getting Started
 
 First, install the dependencies:
