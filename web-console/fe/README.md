@@ -4,9 +4,9 @@
 
 ## Introduction
 
-This is the backend server for the DaaS-IoT DCCS project, a distributed configurable control system for IoT devices that uses the **DaaS-IoT** technology to provide a mesh network of devices that can be controlled and monitored remotely.
+This is the Frontend client for the DaaS-IoT DCCS project, a distributed configurable control system for IoT devices that uses the **DaaS-IoT** technology to provide a mesh network of devices that can be controlled and monitored remotely.
 
-The backend server is a Node.js application that uses the Express.js framework to provide a REST API to the [frontend client](/web-console/fe/README.md), using a DaaS-IoT node to communicate with the devices.
+The frontend client is a Next.js application that communicates with the [backend server](/web-console/be/README.md), using a DaaS-IoT node to communicate with the devices.
 ## Getting Started
 
 First, install the dependencies:
