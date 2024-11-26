@@ -226,6 +226,7 @@ router.get('/devices/:id/reports', async function (req, res) {
                 { din_id_dst: device.din_id }
             ]
         };
+
         let data = await DDO.findAll({ where, include: ['din_dst', 'din_src'], raw: true, nest: true });
         if (data.length === 0) {
             res.status(404);
@@ -233,7 +234,6 @@ router.get('/devices/:id/reports', async function (req, res) {
         }
 
         data[0].nodo = device.name;
-        console.log(data[0]);
 
         for (let i = 0; i < data.length; i++) {
             data[i].payload = Buffer.from(data[i].payload, 'base64').toString('utf-8');
@@ -256,7 +256,7 @@ router.get('/devices/:id/reports', async function (req, res) {
 
         const result = await carboneRender(template, data, options).catch(err => {
             res.status(500);
-            throw new Error(`Errore durante la generazione del report: ${err}`);
+            throw new Error(`Errore durante la generazione del report`);
         });
         res.setHeader('Content-Type', extension === 'pdf' ? 'application/pdf' : 'application/xlsx');
         res.setHeader('Content-Disposition', `attachment; filename="report${device.din_id}.${extension}"`);
