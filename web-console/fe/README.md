@@ -8,6 +8,17 @@ First, install the dependencies:
 npm i
 ```
 
+Then, you need to setup your .env.local file with your own links:
+NEXT_PUBLIC_API_BASE_URL - this will be your own [back-end](https://github.com/sebyone/daasiot-examples-dccs/blob/main/web-console/be/README.md) api endpoint:
+```bash
+NEXT_PUBLIC_API_BASE_URL= your-own-be/api-endpoint
+```
+
+NEXT_PUBLIC_WS_URL - this is your own websocket you use for devices related actions:
+```bash
+NEXT_PUBLIC_WS_URL= your-own-ws-url
+```
+
 Run the development server:
 
 ```bash
