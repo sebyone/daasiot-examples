@@ -8,7 +8,7 @@ First, install the dependencies:
 npm i
 ```
 
-Then, you need to setup your .env.dev file with your own links and rename it to .env.local:
+Then, you need to setup your .env.dev file with your own links and rename it to .env.local:\
 NEXT_PUBLIC_API_BASE_URL - this will be your own [back-end](https://github.com/sebyone/daasiot-examples-dccs/blob/main/web-console/be/README.md) api endpoint:
 ```bash
 NEXT_PUBLIC_API_BASE_URL= your-own-be/api-endpoint
