@@ -13,27 +13,34 @@
  */
 'use client';
 import { useCustomNotification } from '@/hooks/useNotificationHook';
+import { useWindowSize } from '@/hooks/useWindowSize';
 import { default as ConfigService, default as configService } from '@/services/configService';
 import { DataDevice, DeviceFunction, Event, Function } from '@/types';
 import {
   DeploymentUnitOutlined,
+  DownloadOutlined,
+  DownOutlined,
   EditFilled,
   EnvironmentOutlined,
+  FileOutlined,
   InfoCircleOutlined,
   LoadingOutlined,
   PlusCircleOutlined,
   SearchOutlined,
+  SendOutlined,
   SettingOutlined,
   UnorderedListOutlined,
 } from '@ant-design/icons';
 import {
   Button,
   Descriptions,
+  Dropdown,
   Empty,
   Form,
   Input,
   Layout,
   List,
+  Menu,
   message,
   Modal,
   Pagination,
@@ -43,6 +50,7 @@ import {
   Tabs,
   TabsProps,
 } from 'antd';
+import dayjs from 'dayjs';
 import debounce from 'debounce';
 import 'leaflet/dist/leaflet.css';
 import { useLocale, useTranslations } from 'next-intl';
@@ -92,6 +100,8 @@ export default function Dispositivi() {
   const [selectedDin, setSelectedDin] = useState<number | null>(null);
   const [dinOptions, setDinOptions] = useState<number[]>([]);
   const [ws, setSocket] = useState<WebSocket | null>(null);
+  const { width } = useWindowSize();
+  const wh = width <= 1920;
 
   const MapComponent = dynamic(() => import('@/components/Map'), {
     ssr: false,
@@ -115,19 +125,32 @@ export default function Dispositivi() {
 
   const columnsEvents = [
     {
-      title: 'Timestamp',
+      title: <span style={{ display: 'flex', justifyContent: 'center' }}>Timestamp</span>,
+      width: wh ? '12%' : '10%',
       dataIndex: 'timestamp',
       key: 'timestamp',
     },
     {
-      title: 'Typeset',
+      title: <span style={{ display: 'flex', justifyContent: 'center' }}>Typeset</span>,
+      width: wh ? '10%' : '5%',
       dataIndex: 'typeset',
       key: 'typeset',
     },
     {
-      title: 'Payload Size [Byte]',
+      title: <span style={{ display: 'flex', justifyContent: 'center' }}>Payload Size [Byte]</span>,
+      width: wh ? '12%' : '7%',
       dataIndex: 'payloadSize',
       key: 'payloadSize',
+    },
+    {
+      title: <span style={{ display: 'flex', justifyContent: 'center' }}>Payload</span>,
+      width: wh ? '35%' : '40%',
+      dataIndex: 'payload',
+      key: 'payload',
+      render: (text: string) => {
+        const base64Content = convertToBase64(text);
+        return <span>{base64Content}</span>;
+      },
     },
     {
       title: '',
@@ -168,7 +191,7 @@ export default function Dispositivi() {
       const offset = (currentPage - 1) * pageSize;
       const response = await ConfigService.getDDOByDeviceId(selectedDevice.id, offset, pageSize, filterEnabled);
       const ddos = response.data.map((ddo) => ({
-        timestamp: ddo.timestamp,
+        timestamp: dayjs(ddo.timestamp).format('DD/MM/YYYY HH:mm:ss'),
         typeset: ddo.typeset_id,
         payload: ddo.payload,
         payloadSize: ddo.payload_size,
@@ -183,7 +206,7 @@ export default function Dispositivi() {
   };
 
   const handleSwitchChange = (checked: boolean) => {
-    setFilterEnabled(checked);
+    setFilterEnabled(!checked);
     setCurrentPage(1);
   };
 
@@ -497,6 +520,70 @@ export default function Dispositivi() {
     }
   }, [selectedDevice, status, value]);
 
+  const [isReportLoading, setIsReportLoading] = useState<boolean>(false);
+
+  const handleReportClick = async (extension: 'pdf' | 'xlsx') => {
+    if (!selectedDevice) {
+      return;
+    }
+
+    try {
+      setIsLoading(true);
+      const blob = await ConfigService.getDeviceReport(selectedDevice.id, extension);
+
+      // Determina il tipo MIME e l'estensione del file
+      const mimeType =
+        extension === 'pdf' ? 'application/pdf' : 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+      const fileExtension = extension;
+
+      // Crea URL per il download
+      const url = window.URL.createObjectURL(new Blob([blob], { type: mimeType }));
+
+      // Crea un elemento anchor temporaneo
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `ddo-report-${selectedDevice.id}.${fileExtension}`);
+
+      // Aggiungi al DOM, clicca e rimuovi
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      // Pulisci l'URL creato
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      notify('error', t('error'), t('errorGeneratingReport'));
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const convertToBase64 = (content: string) => {
+    try {
+      return atob(content);
+    } catch (error) {
+      return content;
+    }
+  };
+
+  const reportMenu = (
+    <Menu onClick={({ key }) => handleReportClick(key as 'pdf' | 'xlsx')}>
+      <Menu.Item key="pdf">PDF</Menu.Item>
+      <Menu.Item key="xlsx">Excel</Menu.Item>
+    </Menu>
+  );
+
+  const switchContainerStyle = {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '12px',
+    marginBottom: '16px',
+    padding: '12px',
+    backgroundColor: '#f5f5f5',
+    borderRadius: '8px',
+    width: 'fit-content',
+  };
+
   const items: TabsProps['items'] = [
     {
       key: '1',
@@ -551,14 +638,36 @@ export default function Dispositivi() {
       ),
       children: (
         <>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
-            <Switch checked={filterEnabled} onChange={handleSwitchChange} />
-            <span>{filterEnabled ? 'Messaggi inviati' : 'Messaggi ricevuti'}</span>
+          <div style={switchContainerStyle}>
+            <Switch
+              checked={!filterEnabled}
+              onChange={handleSwitchChange}
+              checkedChildren={<SendOutlined />}
+              unCheckedChildren={<DownloadOutlined />}
+              style={{ backgroundColor: filterEnabled ? '#1890ff' : '#52c41a' }}
+            />
+            <span
+              style={{
+                fontSize: '14px',
+                fontWeight: '500',
+                color: '#262626',
+              }}
+            >
+              {!filterEnabled ? (
+                <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                  <SendOutlined /> Messaggi inviati
+                </span>
+              ) : (
+                <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                  <DownloadOutlined /> Messaggi ricevuti
+                </span>
+              )}
+            </span>
           </div>
           <Table
             columns={columnsEvents}
             dataSource={ddos}
-            scroll={{ y: 150 }}
+            scroll={{ y: wh ? 120 : 700 }}
             pagination={{
               current: currentPage,
               pageSize: pageSize,
@@ -569,11 +678,21 @@ export default function Dispositivi() {
                 setCurrentPage(page);
                 setPageSize(pageSize);
               },
+              responsive: true,
+              style: { marginBottom: 16 },
             }}
           />
           <div style={{ display: 'flex', justifyContent: 'center', marginTop: '20px', gap: '8px' }}>
             <Button type="primary">{t('clearLog')}</Button>
-            <Button type="primary">Report</Button>
+            <Dropdown overlay={reportMenu} disabled={isReportLoading || !selectedDevice}>
+              <Button type="primary" loading={isReportLoading}>
+                <Space>
+                  <FileOutlined />
+                  Report
+                  <DownOutlined />
+                </Space>
+              </Button>
+            </Dropdown>
           </div>
           <Modal
             title={<span style={{ fontSize: '1.2rem', fontWeight: 'bold' }}>{t('details')}</span>}

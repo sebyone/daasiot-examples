@@ -105,15 +105,7 @@ const EditDispositivo = () => {
     const fetchDeviceModels = async () => {
       try {
         const response = await ConfigService.getDeviceModel(0, 100);
-        setDeviceModels([
-          {
-            id: 0,
-            device_group_id: 0,
-            name: 'Device Model Default',
-            serial: '',
-          },
-          ...response.data,
-        ]);
+        setDeviceModels([...response.data]);
       } catch (err) {
         console.error('Errore nel caricamento dei modelli:', err);
       }

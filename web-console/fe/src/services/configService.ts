@@ -555,6 +555,25 @@ const ConfigService = {
       throw error;
     }
   },
+
+  getDeviceReport: async (deviceId: number, extension: 'pdf' | 'xlsx'): Promise<Blob> => {
+    try {
+      const response = await axiosInstance.get(`/devices/${deviceId}/reports`, {
+        params: { extension },
+        responseType: 'blob',
+        headers: {
+          Accept:
+            extension === 'pdf'
+              ? 'application/pdf'
+              : 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        },
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Error:', error);
+      throw error;
+    }
+  },
 };
 
 export default ConfigService;
