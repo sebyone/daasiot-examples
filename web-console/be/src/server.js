@@ -19,11 +19,9 @@ const path = require('path');
 const logger = require('morgan');
 var debug = require('debug')('nodejs-express-generated:server');
 
-const { WebSocketServer } = require("ws");
 const { decode, getTime } = require('./daas/utils');
 const daasApi = require('./daas/daas');
 
-const viewRouter = require('./routes/views');
 const apiRouter = require('./routes/api');
 
 const swaggerApp = require('./swagger');
@@ -39,21 +37,22 @@ const app = express();
 var port = normalizePort(process.env.PORT || '3000');
 app.set('port', port);
 
-// view engine setup
-app.set('view engine', 'ejs');
-app.set('views', path.join(__dirname, '/views'));
-
 app.use(cors());
 app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
-app.use('/', viewRouter);
+
 app.use('/api', apiRouter);
 
 app.use('/static', express.static(path.join(__dirname, '..', 'static', 'public')));
 
 app.use(swaggerApp);
+
+// Redirect from '/' to '/api-docs'
+app.get('/', (req, res) => {
+    res.redirect('/api-docs');
+});
 
 
 // Web Server
@@ -62,32 +61,10 @@ const server = http.createServer(app);
 let localSid = undefined;
 let localDin = undefined;
 
-// Web Socket
-const wss = new WebSocketServer({ server });
-
-wss.on('connection', ws => {
-    console.log(getTime(), 'New client connected!');
-    ws.send(JSON.stringify({ message: 'Connection established' }));
-    ws.on('close', () => console.log(JSON.stringify({ message: 'Client has disconnected!' })));
-    ws.on('message', data => {
-        wss.clients.forEach(client => {
-            client.send(`${data}`);
-        })
-    })
-    ws.onerror = function () {
-        console.log({ message: 'websocket error' });
-    }
-})
 
 app.set("daasApi", daasApi);
 
 const localNode = daasApi.getNode();
-
-const wsSendBroadcast = (clients, payload) => {
-    clients.forEach(client => {
-        client.send(JSON.stringify(payload));
-    });
-}
 
 
 localNode.onDDOReceived((din) => {
@@ -117,8 +94,6 @@ localNode.onDDOReceived((din) => {
             if (!ddo) {
                 console.error(getTime(), "Failed to save DDO to db");
             }
-
-            wsSendBroadcast(wss.clients, { event: "ddo", data: { din, typeset, ddo: decodedData } });
         } catch (error) {
             console.error(getTime(), error);
         }
@@ -140,7 +115,7 @@ db.sequelize.sync({ force: false })
             localSid = res.sid;
             localDin = res.din;
 
-            console.log(getTime(), `[daas] DinLocal loaded: sid=${localSid} din=${localDin} \n\n\n\n`);
+            console.log(getTime(), `[daas] DinLocal loaded: sid=${localSid} din=${localDin} \n\n\n`);
 
             if (localNode.doPerform()) {
                 console.log(getTime(), `[daas] doPerform OK`)

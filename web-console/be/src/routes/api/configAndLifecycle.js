@@ -5,16 +5,31 @@ const { createDDO } = require('../../services/ddo.service');
 const daasNode = require('../../daas/daas');
 const db = require("../../db/models");
 const { sendError } = require('./utilities');
+const fs = require('fs');
+const yaml = require('js-yaml');
+const path = require('path');
 
 module.exports = {
     router
 };
 
 
+
+function getApiVersion() {
+    const yamlPath = path.resolve(__dirname, '../../api-specifications/api-spec.yml');
+    const doc = yaml.load(fs.readFileSync(yamlPath, 'utf8'));
+    const version = doc.info.version;
+    return version;
+}
+
+const version = getApiVersion();
+
 router.get('/', function (req, res) {
+
+    //get version from src/api-specifications/api-spec.yml
     res.send({
         name: "DaasIoT API",
-        version: 0,
+        version: version,
         message: "OK",
     });
 });
