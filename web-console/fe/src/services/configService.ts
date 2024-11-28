@@ -16,6 +16,7 @@ import {
   ConfigFormData,
   CreateDevice,
   DataDevice,
+  Dev,
   Device,
   DeviceFunction,
   DeviceGroup,
@@ -524,6 +525,21 @@ const ConfigService = {
           q: q,
         },
       });
+      return response.data;
+    } catch (error) {
+      console.error('Error:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Recupera un device_model specifico tramite il suo ID
+   * id - ID del device_model da recuperare
+   * Promise<DeviceModel> - Oggetto DeviceModel del device_model richiesto
+   */
+  getDeviceModelById: async (deviceModelId: number): Promise<Dev> => {
+    try {
+      const response = await axiosInstance.get(`/device_models/${deviceModelId}`);
       return response.data;
     } catch (error) {
       console.error('Error:', error);

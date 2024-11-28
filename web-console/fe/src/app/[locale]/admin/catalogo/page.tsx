@@ -101,8 +101,8 @@ export default function Catalogo() {
   /**
    * Gestisce la navigazione alla pagina di caricamento firmware
    */
-  const handleLoadFW = () => {
-    router.push(`/${locale}/admin/catalogo/ESPtool`);
+  const handleLoadFW = (device_model: Dev) => {
+    router.push(`/${locale}/admin/catalogo/ESPtool/${device_model.id}`);
   };
 
   return (
@@ -175,7 +175,7 @@ export default function Catalogo() {
                       documents: t('documents'),
                       loadFW: t('loadFW'),
                     }}
-                    onLoadFW={handleLoadFW}
+                    onLoadFW={() => handleLoadFW(selectedModel)}
                     getCoverModelImage={getCoverModelImage}
                     getDatasheetModelDocuments={getDatasheetModelDocuments}
                     getFirmware={getFirmware}

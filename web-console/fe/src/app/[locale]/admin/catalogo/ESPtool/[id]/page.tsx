@@ -12,35 +12,25 @@
  *
  */
 'use client';
-import { InfoCircleOutlined, SyncOutlined, UploadOutlined, UsbOutlined } from '@ant-design/icons';
-import { Alert, Button, Descriptions, Divider, Progress, Select, Space, Typography, Upload, message } from 'antd';
+import FirmwareUpdaterExplanation from '@/components/FirmwareUpdaterExplanation';
+import ConfigService from '@/services/configService';
+import { InfoCircleOutlined, SyncOutlined, UsbOutlined } from '@ant-design/icons';
+import { Alert, Button, Descriptions, Progress, Select, Space, Typography, Upload, message } from 'antd';
+import axios from 'axios';
 import CryptoJS from 'crypto-js';
 import { ESPLoader, Transport } from 'esptool-js';
-import dynamic from 'next/dynamic';
-import React, { useEffect, useRef, useState } from 'react';
-//import { ITerminalOptions, Terminal } from 'xterm';
-import FirmwareUpdaterExplanation from '@/components/FirmwareUpdaterExplanation';
-import { LeftOutlined } from '@ant-design/icons';
 import { useLocale, useTranslations } from 'next-intl';
-import { useRouter } from 'next/navigation';
-import Terminal from 'react-console-emulator';
+import { useParams, useRouter } from 'next/navigation';
+import React, { useEffect, useState } from 'react';
 import styles from './ESP.module.css';
 
 const { Title } = Typography;
-
-/*interface XTermProps {
-  options?: ITerminalOptions;
-  style?: React.CSSProperties;
-}*/
 
 const DaaSUpdater = () => {
   const t = useTranslations('DaaSUpdater');
   const router = useRouter();
   const locale = useLocale();
-  const XTerm = dynamic(() => import('react-xtermjs').then((mod) => mod.XTerm), {
-    ssr: false,
-    loading: () => <p>Caricamento terminale...</p>,
-  });
+
   const [device, setDevice] = useState(null);
   const [transport, setTransport] = useState(null);
   const [chip, setChip] = useState(null);
@@ -49,55 +39,31 @@ const DaaSUpdater = () => {
   const [selectedFirmware, setSelectedFirmware] = useState();
   const [updateComplete, setUpdateComplete] = useState(false);
   const [portInfo, setPortInfo] = useState('');
-  const [terminalLineData, setTerminalLineData] = useState([
-    { type: 'input', value: 'Device Firmware Updater Terminal' },
-  ]);
+  const params = useParams();
+  const id = Number(params.id);
+  let esploader;
 
-  const FakeTerminal = () => (
-    <div
-      style={{
-        width: '50%',
-        height: '300px',
-        backgroundColor: '#000',
-        color: '#00ff00',
-        fontFamily: 'monospace',
-        padding: '10px',
-        overflowY: 'auto',
-        marginBottom: '20px',
-      }}
-    ></div>
-  );
-  //const [terminal, setTerminal] = useState<Terminal | null>(null);
-  //const xtermRef = useRef<{ terminal: Terminal } | null>(null);
+  const [availableFirmware, setAvailableFirmware] = useState<string | null>(null);
 
-  /*useEffect(() => {
-    if (xtermRef.current && xtermRef.current.terminal) {
-      setTerminal(xtermRef.current.terminal);
-      return () => {
-        if (xtermRef.current && xtermRef.current.terminal) {
-          xtermRef.current.terminal.dispose();
-        }
-      };
+  const fetchFirmwareData = async () => {
+    try {
+      const response = await ConfigService.getDeviceModelById(id);
+
+      const firmwareResources = response.resources?.find(
+        (resource) => resource.resource_type === 5 && resource.name === 'firmware'
+      )?.link;
+      setAvailableFirmware(firmwareResources);
+    } catch (error) {
+      console.error('Error fetching firmware:', error);
+      message.error('Errore nel caricamento del firmware');
     }
-  }, []);
+  };
 
-  const espLoaderTerminal = {
-    clean() {
-      if (terminal) {
-        terminal.clear();
-      }
-    },
-    writeLine(data: string) {
-      if (terminal) {
-        terminal.writeln(data);
-      }
-    },
-    write(data: string) {
-      if (terminal) {
-        terminal.write(data);
-      }
-    },
-  };*/
+  useEffect(() => {
+    if (id) {
+      fetchFirmwareData();
+    }
+  }, [id]);
 
   useEffect(() => {
     const loadPolyfill = async () => {
@@ -121,13 +87,11 @@ const DaaSUpdater = () => {
       const flashOptions = {
         transport: newTransport,
         baudrate: 115200,
-        //terminal: espLoaderTerminal,
       };
-      const esploader = new ESPLoader(flashOptions);
+      esploader = new ESPLoader(flashOptions);
       const detectedChip = await esploader.main();
       setChip(detectedChip);
       setIsConnected(true);
-      //espLoaderTerminal.writeLine(`Connected to device: ${detectedChip}`);
       message.success(`Connesso al dispositivo: ${detectedChip}`);
     } catch (e) {
       console.error(e);
@@ -143,55 +107,174 @@ const DaaSUpdater = () => {
     setTransport(null);
     setChip(null);
     setIsConnected(false);
-    //espLoaderTerminal.clean();
     message.info('Dispositivo disconnesso');
   };
 
+  const [flashStatus, setFlashStatus] = useState('');
+
   const uploadFirmware = async () => {
-    if (!isConnected || !selectedFirmware) {
-      //espLoaderTerminal.writeLine('Please select firmware');
+    if (!selectedFirmware) {
       message.warning('Seleziona firmware');
       return;
     }
+
     try {
-      const firmwareData = null; //await fetchFirmwareData(selectedFirmware);
-      if (!firmwareData) {
-        throw new Error('Failed to fetch firmware data');
+      // Gestione disconnessione precedente
+      if (transport) {
+        console.log('Chiusura porta seriale precedente...');
+        await transport.disconnect();
+        setTransport(null);
+        setDevice(null);
+        setIsConnected(false);
       }
 
-      const arrayBuffer = await firmwareData.arrayBuffer();
-      const fileArray = untar(arrayBuffer);
+      setFlashStatus('downloading');
+      const response = await axios.get(selectedFirmware, {
+        responseType: 'blob',
+      });
 
-      const flashOptions = {
-        fileArray: fileArray,
-        flashSize: 'keep',
-        eraseAll: false,
-        compress: true,
-        reportProgress: (fileIndex, written, total) => {
-          const newProgress = fileIndex * 25 + (written / total) * 25;
-          setProgress(newProgress);
-          //espLoaderTerminal.writeLine(`Update progress: ${Math.round(newProgress)}%`);
-        },
-        calculateMD5Hash: (image) => CryptoJS.MD5(CryptoJS.enc.Latin1.parse(image)),
-      };
+      const firmwareData = new Blob([response.data], { type: 'application/octet-stream' });
+      const arrayBuffer = await firmwareData.arrayBuffer();
+
+      setFlashStatus('extracting');
+      const files = untar(arrayBuffer);
+      console.log('Files estratti e filtrati:', files);
+
+      if (files.length !== 3) {
+        throw new Error(`File mancanti o non validi!`);
+      }
+
+      // Richiedi una nuova porta seriale
+      setFlashStatus('connecting');
+      if (!device) {
+        const port = await navigator.serial.requestPort({});
+        setDevice(port);
+        const newTransport = new Transport(port);
+        setTransport(newTransport);
+        console.log('Nuova connessione seriale stabilita');
+      }
 
       const esploader = new ESPLoader({
         transport,
         baudrate: 115200,
-        //terminal: espLoaderTerminal,
       });
 
-      //espLoaderTerminal.writeLine('Starting firmware update...');
+      // Inizializzazione ESP
+      await esploader.main();
+      setIsConnected(true);
+
+      // Prepara i file per il flash
+      const flashFiles = files.map((file) => ({
+        data: file.data,
+        address: file.offset,
+      }));
+
+      // Flash di tutti i file in una volta
+      const flashOptions = {
+        fileArray: flashFiles,
+        flashSize: '4MB',
+        eraseAll: true,
+        compress: true,
+        reportProgress: (fileIndex, written, total) => {
+          const progress = (fileIndex * 100) / files.length + (written / total) * (100 / files.length);
+          setProgress(Math.round(progress));
+        },
+        calculateMD5Hash: (image) => CryptoJS.MD5(CryptoJS.enc.Latin1.parse(image)),
+      };
+
+      setFlashStatus('flashing');
+      console.log('Avvio flash con opzioni:', flashOptions);
       await esploader.writeFlash(flashOptions);
+
       setUpdateComplete(true);
-      //espLoaderTerminal.writeLine('Firmware update completed successfully!');
       message.success('Firmware aggiornato correttamente');
     } catch (e) {
-      console.error(e);
-      //espLoaderTerminal.writeLine(`Error: ${e.message}`);
+      console.error('Errore durante il flash:', e);
       message.error(`Errore nell'aggiornamento del firmware: ${e.message}`);
+
+      // Cleanup in caso di errore
+      if (transport) {
+        try {
+          await transport.disconnect();
+          setTransport(null);
+          setDevice(null);
+          setIsConnected(false);
+        } catch (disconnectError) {
+          console.error('Errore durante la disconnessione:', disconnectError);
+        }
+      }
     } finally {
       setProgress(0);
+      setFlashStatus('');
+    }
+  };
+
+  // Aggiungi una funzione di cleanup quando il componente viene smontato
+  useEffect(() => {
+    return () => {
+      if (transport) {
+        transport.disconnect().catch(console.error);
+      }
+    };
+  }, [transport]);
+
+  function untar(arrayBuffer) {
+    const TAR_BLOCK_SIZE = 512;
+    let offset = 0;
+    const files = [];
+
+    // Mappa per gli offset standard
+    const fileOffsets = {
+      'bootloader.bin': 0x1000,
+      'partitions.bin': 0x8000,
+      'firmware.bin': 0x10000,
+    };
+
+    while (offset < arrayBuffer.byteLength) {
+      const nameBuffer = arrayBuffer.slice(offset, offset + 100);
+      const name = new TextDecoder().decode(nameBuffer).replace(/\0/g, '');
+      if (!name) break;
+
+      const sizeBuffer = arrayBuffer.slice(offset + 124, offset + 136);
+      const size = parseInt(new TextDecoder().decode(sizeBuffer).trim(), 8);
+      if (size === 0) break;
+
+      const content = arrayBuffer.slice(offset + TAR_BLOCK_SIZE, offset + TAR_BLOCK_SIZE + size);
+
+      // Filtra solo i file principali
+      if (!name.startsWith('PaxHeader/') && !name.startsWith('._') && !name.startsWith('_')) {
+        const baseName = name.split('/').pop(); // Rimuove eventuali percorsi
+        if (fileOffsets[baseName] !== undefined) {
+          console.log(`Processando file: ${baseName}, dimensione: ${size} bytes`);
+          files.push({
+            name: baseName,
+            data: arrayBufferToBinaryString(content),
+            size: size,
+            offset: fileOffsets[baseName],
+          });
+        }
+      }
+
+      offset += TAR_BLOCK_SIZE + size;
+      if (size % TAR_BLOCK_SIZE !== 0) {
+        offset += TAR_BLOCK_SIZE - (size % TAR_BLOCK_SIZE);
+      }
+    }
+
+    // Ordina i file per offset
+    return files.sort((a, b) => a.offset - b.offset);
+  }
+
+  const getStatusMessage = () => {
+    switch (flashStatus) {
+      case 'downloading':
+        return 'Download firmware in corso...';
+      case 'validating':
+        return 'Validazione firmware...';
+      case 'flashing':
+        return 'Aggiornamento firmware in corso...';
+      default:
+        return '';
     }
   };
 
@@ -202,35 +285,6 @@ const DaaSUpdater = () => {
       binaryString += String.fromCharCode(bytes[i]);
     }
     return binaryString;
-  }
-
-  function untar(arrayBuffer) {
-    const TAR_BLOCK_SIZE = 512;
-    let offset = 0;
-    const files = [];
-
-    const offsets = [0x10000, 0x8000, 0x1000];
-
-    let index = 0;
-
-    while (offset < arrayBuffer.byteLength) {
-      const name = new TextDecoder().decode(arrayBuffer.slice(offset, offset + 100)).replace(/\0/g, '');
-      if (!name) break;
-
-      const size = parseInt(new TextDecoder().decode(arrayBuffer.slice(offset + 124, offset + 136)).trim(), 8);
-      const content = arrayBuffer.slice(offset + TAR_BLOCK_SIZE, offset + TAR_BLOCK_SIZE + size);
-
-      console.log(name, size, content);
-
-      files.push({ name: name, data: arrayBufferToBinaryString(content), address: offsets[index++] });
-
-      offset += TAR_BLOCK_SIZE + size;
-      if (size % TAR_BLOCK_SIZE !== 0) {
-        offset += TAR_BLOCK_SIZE - (size % TAR_BLOCK_SIZE);
-      }
-    }
-
-    return files;
   }
 
   return (
@@ -292,11 +346,10 @@ const DaaSUpdater = () => {
                   placeholder="Seleziona Firmware"
                   onChange={(value) => setSelectedFirmware(value)}
                   value={selectedFirmware}
+                  disabled={!availableFirmware}
                 >
-                  <Select.Option value="firmware1">Firmware 1</Select.Option>
-                  <Select.Option value="firmware2">Firmware 2</Select.Option>
+                  {availableFirmware && <Select.Option value={availableFirmware}>Firmware disponibile</Select.Option>}
                 </Select>
-
                 <Button onClick={uploadFirmware} type="primary" icon={<SyncOutlined />} style={{ flex: 1 }}>
                   Start Update
                 </Button>
@@ -305,13 +358,14 @@ const DaaSUpdater = () => {
           )}
         </div>
 
-        {/* Terminal Section */}
         <div className={styles.terminal}>
           {!updateComplete && <FirmwareUpdaterExplanation />}
 
+          {flashStatus && <Alert message={getStatusMessage()} type="info" showIcon style={{ marginBottom: '1rem' }} />}
+
           {progress > 0 && (
             <div style={{ marginTop: '1rem' }}>
-              <Progress percent={progress} />
+              <Progress percent={Math.round(progress)} />
             </div>
           )}
 
