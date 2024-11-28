@@ -113,7 +113,7 @@ module.exports = {
           updated_at: new Date(),
         },
         {
-          id: 2,
+          id: 3,
           device_model_id: 3,
           din_id: 3,
           name: 'Example Device 2',
