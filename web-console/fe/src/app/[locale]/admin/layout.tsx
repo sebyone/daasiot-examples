@@ -31,7 +31,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const { width } = useWindowSize();
   const wh = width < 1024;
   return (
-    <Layout style={{ height: '100vh', overflow: wh ? '' : 'hidden' }}>
+    <Layout style={{ minHeight: '100vh' }}>
       <Header
         style={{
           padding: '0 1rem',

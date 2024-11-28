@@ -20,7 +20,6 @@ const NodoFormGeo = ({ form }: { form: FormInstance }) => {
   const t = useTranslations('NodoForm');
   const style = {
     width: '100%',
-    maxWidth: '680px',
     marginTop: '30px',
     padding: '0 15px',
   };
@@ -33,14 +32,14 @@ const NodoFormGeo = ({ form }: { form: FormInstance }) => {
     <div className="form-geo-container">
       <Form form={form} layout="vertical" style={style}>
         <Row gutter={[16, 16]}>
-          <Col xs={24} sm={24} md={8}>
+          <Col xs={24} sm={24} md={11}>
             <Descriptions column={1} bordered className="custom-descriptions geo-descriptions" size="small">
               <Descriptions.Item label={t('latitude')}>
                 {renderField(form.getFieldValue('latitudine'))}
               </Descriptions.Item>
             </Descriptions>
           </Col>
-          <Col xs={24} sm={24} md={8}>
+          <Col xs={24} sm={24} md={11}>
             <Descriptions column={1} bordered className="custom-descriptions geo-descriptions" size="small">
               <Descriptions.Item label={t('longitude')}>
                 {renderField(form.getFieldValue('longitudine'))}

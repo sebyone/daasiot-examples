@@ -44,13 +44,6 @@
   transform: scale(0.9);
 }
 
-.mobile-message {
-  display: none;
-  font-size: 1.2em;
-  text-align: center;
-  padding: 20px;
-}
-
 .descriptions :global(.ant-descriptions-item-label) {
   background-color: #fafafa;
 }
@@ -58,27 +51,3 @@
 .descriptions :global(.ant-descriptions-item-content) {
   padding: 12px 24px;
 }
-
-/*@media (max-width: 600px) {
-  .panel-content-view {
-    display: none;
-  }
-
-  .panel-content-list {
-    display: none;
-  }
-
-  .mobile-message {
-    display: block;
-  }
-}
-
-.title {
-  font-size: 14px;
-  font-weight: bold;
-}
-
-label {
-  font-size: 5px;
-}
-*/

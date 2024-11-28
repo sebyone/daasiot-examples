@@ -138,7 +138,7 @@ export default function Dispositivi() {
     },
     {
       title: <span style={{ display: 'flex', justifyContent: 'center' }}>Payload Size [Byte]</span>,
-      width: wh ? '12%' : '7%',
+      width: wh ? '14%' : '9%',
       dataIndex: 'payloadSize',
       key: 'payloadSize',
     },
@@ -668,6 +668,7 @@ export default function Dispositivi() {
             columns={columnsEvents}
             dataSource={ddos}
             scroll={{ y: wh ? 120 : 700 }}
+            size="small"
             pagination={{
               current: currentPage,
               pageSize: pageSize,
@@ -769,7 +770,7 @@ export default function Dispositivi() {
     <>
       {contextHolder}
       <div className={styles.container}>
-        <Layout style={{ height: '92vh' }}>
+        <Layout style={{ minHeight: '92vh' }}>
           <Sider
             breakpoint="lg"
             collapsedWidth="0"
@@ -839,18 +840,6 @@ export default function Dispositivi() {
               )}
               style={{ height: 'calc(100% - 120px)', overflowY: 'auto', padding: '8px 16px' }}
             />
-            {/*<Pagination
-              current={1}
-              pageSize={pageSize}
-              pageSizeOptions={['10', '20', '50', '100']}
-              total={1}
-              onChange={() => {}}
-              showSizeChanger
-              showQuickJumper
-              itemRender={itemRender}
-              className={`${styles['ant-pagination-prev']} ${styles['ant-pagination-next']}`}
-              style={{ marginTop: -50 }}
-            />*/}
           </Sider>
           <Layout>
             <Content style={{ padding: 0, background: '#fff', maxHeight: '100%' }}>

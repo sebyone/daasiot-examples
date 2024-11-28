@@ -4,13 +4,14 @@
 
 .geo-descriptions {
   width: 100%;
-  margin-bottom: 16px;
+  margin-bottom: 2px;
 }
 
 .geo-field {
   font-size: 0.8rem;
   padding: 8px;
   word-break: break-word;
+  white-space: nowrap;
 }
 
 .geo-divider {

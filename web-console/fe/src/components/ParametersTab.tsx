@@ -24,10 +24,11 @@ import {
   SettingOutlined,
   SlidersOutlined,
 } from '@ant-design/icons';
-import { Button, Checkbox, Descriptions, Input, List, Modal, Select, Space, Table } from 'antd';
+import { Button, Checkbox, Col, Descriptions, Input, List, Modal, Row, Select, Space, Table } from 'antd';
 import { useTranslations } from 'next-intl';
 import dynamic from 'next/dynamic';
 import React, { useCallback, useState } from 'react';
+import styles from './ParametersTab.module.css';
 
 const CardDispositivoFactory = dynamic(() => import('@/components/CardDispositivoFactory'), { ssr: false });
 
@@ -499,31 +500,49 @@ export default function ParametersTab({
   return (
     <Space direction="vertical" style={{ width: '100%' }}>
       <Table columns={columns} dataSource={selectedFunctions} rowKey="id" pagination={false} scroll={{ y: 210 }} />
-      <Space style={{ width: '100%', justifyContent: 'space-between' }}>
-        <Space>
-          <Button onClick={handleDeleteClick} type="primary" icon={<DeleteOutlined style={{ fontSize: '1.2rem' }} />}>
-            {t('delete')}
-          </Button>
-          <Button
-            onClick={() => setIsAddModalVisible(true)}
-            type="primary"
-            icon={<ControlOutlined style={{ fontSize: '1.2rem' }} />}
-          >
-            {t('addFunction')}
-          </Button>
-          <Button type="primary" onClick={onTestClick} icon={<BulbOutlined style={{ fontSize: '1.2rem' }} />}>
-            Test
-          </Button>
-        </Space>
-        <Space>
-          <Button type="primary" icon={<CloudDownloadOutlined style={{ fontSize: '1.2rem' }} />}>
-            {t('recall')}
-          </Button>
-          <Button type="primary" icon={<CloudUploadOutlined style={{ fontSize: '1.2rem' }} />}>
-            {t('schedule')}
-          </Button>
-        </Space>
-      </Space>
+      <Row gutter={[16, 16]} justify="space-between">
+        <Col xs={24} sm={24} md={12}>
+          <Row gutter={[8, 8]}>
+            <Col>
+              <Button
+                onClick={handleDeleteClick}
+                type="primary"
+                icon={<DeleteOutlined style={{ fontSize: '1.2rem' }} />}
+              >
+                {t('delete')}
+              </Button>
+            </Col>
+            <Col>
+              <Button
+                onClick={() => setIsAddModalVisible(true)}
+                type="primary"
+                icon={<ControlOutlined style={{ fontSize: '1.2rem' }} />}
+              >
+                {t('addFunction')}
+              </Button>
+            </Col>
+            <Col>
+              <Button type="primary" onClick={onTestClick} icon={<BulbOutlined style={{ fontSize: '1.2rem' }} />}>
+                Test
+              </Button>
+            </Col>
+          </Row>
+        </Col>
+        <Col xs={24} sm={24} md={12}>
+          <Row gutter={[8, 8]} className={styles.rightButtonGroup}>
+            <Col>
+              <Button type="primary" icon={<CloudDownloadOutlined style={{ fontSize: '1.2rem' }} />}>
+                {t('recall')}
+              </Button>
+            </Col>
+            <Col>
+              <Button type="primary" icon={<CloudUploadOutlined style={{ fontSize: '1.2rem' }} />}>
+                {t('schedule')}
+              </Button>
+            </Col>
+          </Row>
+        </Col>
+      </Row>
 
       <Modal
         title={`Modifica ${currentAction}`}
