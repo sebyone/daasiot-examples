@@ -2,9 +2,10 @@ const express = require('express');
 const router = express.Router();
 const { Op } = require("sequelize");
 const carbone = require('carbone');
-const { Device, DeviceModel, Din, DDO } = require('../../db/models');
+const { Device, DeviceModel, Din, DDO, DeviceFunction } = require('../../db/models');
 const db = require('../../db/models');
 const { getPaginationParams, getQuery, sendError, toPaginationData, addQuery } = require('./utilities');
+const { PLACEHOLDER_DEVICE_MODEL_ID } = require('./deviceModels');
 
 module.exports = {
     router
@@ -48,12 +49,14 @@ router.post('/devices', async function (req, res) {
     try {
         const device = req.body;
 
-        for (const field of ['device_model_id', 'din_id', 'name', 'serial']) {
+        for (const field of ['din_id', 'name', 'serial']) {
             if (!device[field]) {
                 res.status(400);
                 throw new Error(`Il campo ${field} è obbligatorio.`);
             }
         }
+
+        device.device_model_id = device.device_model_id || PLACEHOLDER_DEVICE_MODEL_ID;
 
         const din = await Din.findByPk(parseInt(device.din_id));
         if (din === null) {
@@ -123,9 +126,24 @@ router.put('/devices/:id', async function (req, res) {
             console.log(`[API] Updated din with id=${oldDin.id}`);
         }
 
+        // we can't modify the device_model from here
         if (device.device_model != undefined) {
             res.status(400);
             throw new Error(`Non è possibile modificare il device_model del dispositivo da questo endpoint.`);
+        }
+
+        if (device.device_model_id != undefined && device.device_model_id !== oldDevice.device_model_id) {
+            // we are changing the device model
+
+            // the new device model must exist
+            const newDeviceModel = await DeviceModel.findByPk(device.device_model_id, { transaction: t });
+            if (newDeviceModel === null) {
+                res.status(404);
+                throw new Error(`DeviceModel con id=${device.device_model_id} non trovato.`);
+            }
+
+            // remove all device functions
+            await DeviceFunction.destroy({ where: { device_id: oldDevice.id }, transaction: t });
         }
 
         const updatedRows = await Device.update(device, { where: { id }, transaction: t });

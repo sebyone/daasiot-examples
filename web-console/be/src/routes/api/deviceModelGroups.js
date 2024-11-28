@@ -4,8 +4,11 @@ const { Op } = require("sequelize");
 const { DeviceModelGroup, DeviceModel } = require('../../db/models');
 const { getPaginationParams, getQuery, sendError, toPaginationData, addQuery } = require('./utilities');
 
+const DEFAULT_DEVICE_MODEL_GROUP_ID = 1;
+
 module.exports = {
-    router
+    router,
+    DEFAULT_DEVICE_MODEL_GROUP_ID
 };
 
 router.get('/device_model_groups', async function (req, res) {
@@ -90,6 +93,12 @@ router.put('/device_model_groups/:deviceModelGroupId', async function (req, res)
 router.delete('/device_model_groups/:deviceModelGroupId', async function (req, res) {
     try {
         const id = parseInt(req.params.deviceModelGroupId);
+
+        if (id === DEFAULT_DEVICE_MODEL_GROUP_ID) {
+            res.status(400);
+            throw new Error(`Non è possibile eliminare il device_model_group con id=${id}.`);
+        }
+
         const deletedRows = await DeviceModelGroup.destroy({ where: { id } });
 
         if (deletedRows === 0) {
@@ -109,7 +118,6 @@ router.get('/device_model_groups/:deviceModelGroupId/device_models', async funct
         const deviceModelGroupId = parseInt(req.params.deviceModelGroupId);
         const { limit, offset } = getPaginationParams(req);
         const q = getQuery(req);
-
 
         const deviceModelGroup = await DeviceModelGroup.findByPk(deviceModelGroupId);
         if (deviceModelGroup === null) {

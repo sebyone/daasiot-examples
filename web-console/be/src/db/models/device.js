@@ -22,6 +22,7 @@ module.exports = (sequelize, DataTypes) => {
     },
     din_id: {
       type: DataTypes.INTEGER,
+      unique: true,
       allowNull: false,
     },
     name: {

@@ -217,7 +217,6 @@ components:
           description: longitudine
           example: 16.2536
       required:
-        - device_model_id
         - din_id
         - name
         - serial
@@ -1581,7 +1580,7 @@ paths:
             schema:
               $ref: "#/components/schemas/DeviceCreationObject"
               example:
-                device_model_id: 1
+                device_model_id: 4
                 din_id: 1
                 name: "Device 1"
                 latitude: 39.3015
@@ -1781,9 +1780,13 @@ paths:
         - DDOs
       parameters:
         - name: extension
-          required: true
+          required: false
           in: query
           description: definisce l'estensione del file, se pdf o xlsx
+          schema:
+            type: string
+            enum: [pdf, xlsx]
+            example: pdf
       responses:
         "200":
           description: Pagina di DDO e informazioni sulla paginazione
@@ -1792,10 +1795,10 @@ paths:
               schema:
                 type: string
                 format: binary
-              examples:
-                sampleFile:
-                  summary: Un esempio di file PDF
-                  externalValue: "../../static/public/img/reporting_templates/esempio_report.pdf"
+              # examples:
+              #   sampleFile:
+              #     summary: Un esempio di file PDF
+              #     externalValue: "../../static/public/img/reporting_templates/esempio_report.pdf"
         "404":
           description: Device non trovato.
           content:
@@ -1882,7 +1885,6 @@ paths:
                         $ref: "#/components/schemas/DeviceModelFunction"
 
               required:
-                - device_group_id
                 - description
                 - serial
             example:
@@ -1895,7 +1897,7 @@ paths:
               resources:
                 - name: cover
                   link: https://m.media-amazon.com/images/I/71D4E5DS-qL.jpg
-                  resource_type: 1
+                  resource_type: 4
                 - name: datasheet
                   link: https://www.espressif.com/sites/default/files/documentation/esp32_datasheet_en.pdf
                   resource_type: 2
@@ -1905,6 +1907,9 @@ paths:
                 - name: programming guide
                   link: https://docs.espressif.com/projects/esp-idf/en/latest/esp32/get-started/index.html
                   resource_type: 1
+                - name: firmware
+                  link: http://example.com/firmware.dsfw
+                  resource_type: 5
               functions:
                 - name: PID1
                   parameters:

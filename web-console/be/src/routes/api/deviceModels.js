@@ -5,10 +5,15 @@ const { DeviceModel, DeviceModelGroup, Device, DeviceModelResource } = require('
 const { getPaginationParams, getQuery, sendError, toPaginationData, addQuery } = require('./utilities');
 const db = require('../../db/models');
 const { createDeviceModelFunction } = require('./programming');
+const { DEFAULT_DEVICE_MODEL_GROUP_ID } = require('./deviceModelGroups');
 
+
+
+const PLACEHOLDER_DEVICE_MODEL_ID = 1;
 
 module.exports = {
-    router
+    router,
+    PLACEHOLDER_DEVICE_MODEL_ID
 };
 
 router.get('/device_models', async function (req, res) {
@@ -70,11 +75,7 @@ router.post('/device_models', async function (req, res) {
         if (deviceModel.device_group_id != undefined) {
             deviceGroup = await DeviceModelGroup.findByPk(parseInt(deviceModel.device_group_id), { transaction: t });
         }
-        else {
-            if (!deviceModel.device_group) {
-                res.status(400);
-                throw new Error("Il device model deve avere un device_group, specificato come nuovo oggetto o come id.");
-            }
+        else if (deviceModel.device_group) {
 
             // se il device_group.id è specificato, lo uso per cercare il device_group
             if (deviceModel.device_group.id) {
@@ -95,11 +96,11 @@ router.post('/device_models', async function (req, res) {
         }
 
         if (deviceGroup === null) {
-            res.status(404);
-            throw new Error(`DeviceModelGroup con id=${deviceModel.device_group_id} non trovato.`);
+            deviceModel.device_group_id = DEFAULT_DEVICE_MODEL_GROUP_ID;
         }
-
-        deviceModel.device_group_id = deviceGroup.id;
+        else {
+            deviceModel.device_group_id = deviceGroup.id
+        }
 
         const newDeviceModel = await DeviceModel.create(deviceModel, { transaction: t });
 
@@ -131,6 +132,11 @@ router.put('/device_models/:deviceModelId', async function (req, res) {
     try {
         const id = parseInt(req.params.deviceModelId);
         const deviceModel = req.body;
+
+        if (id === PLACEHOLDER_DEVICE_MODEL_ID) {
+            res.status(400);
+            throw new Error(`Il device_model con id=${PLACEHOLDER_DEVICE_MODEL_ID} è un placeholder e non può essere modificato.`);
+        }
 
         const oldDeviceModel = await DeviceModel.findByPk(id);
         if (oldDeviceModel === null) {
@@ -175,6 +181,12 @@ router.put('/device_models/:deviceModelId', async function (req, res) {
 router.delete('/device_models/:deviceModelId', async function (req, res) {
     try {
         const id = parseInt(req.params.deviceModelId);
+
+        if (id === PLACEHOLDER_DEVICE_MODEL_ID) {
+            res.status(400);
+            throw new Error(`Il device_model con id=${PLACEHOLDER_DEVICE_MODEL_ID} è un placeholder e non può essere eliminato.`);
+        }
+
         const deletedRows = await DeviceModel.destroy({ where: { id } });
 
         if (deletedRows === 0) {
@@ -248,6 +260,12 @@ router.post('/device_models/:deviceModelId/resources', async function (req, res)
     const t = await DeviceModel.sequelize.transaction();
     try {
         const deviceModelId = parseInt(req.params.deviceModelId);
+
+        if (deviceModelId === PLACEHOLDER_DEVICE_MODEL_ID) {
+            res.status(400);
+            throw new Error(`Il device_model con id=${PLACEHOLDER_DEVICE_MODEL_ID} è un placeholder e non può avere risorse.`);
+        }
+
         const resource = req.body;
         resource.device_model_id = deviceModelId;
 
@@ -272,6 +290,11 @@ router.delete('/device_models/:deviceModelId/resources/:resourceId', async funct
     try {
         const deviceModelId = parseInt(req.params.deviceModelId);
         const resourceId = parseInt(req.params.resourceId);
+
+        if (deviceModelId === PLACEHOLDER_DEVICE_MODEL_ID) {
+            res.status(400);
+            throw new Error(`Il device_model con id=${PLACEHOLDER_DEVICE_MODEL_ID} è un placeholder e non può avere risorse.`);
+        }
 
         const resource = await DeviceModelResource.findByPk(resourceId, { transaction: t });
         if (resource === null) {

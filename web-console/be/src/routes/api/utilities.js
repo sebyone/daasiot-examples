@@ -1,6 +1,5 @@
 const DEFAULT_PAGE_LIMIT = 20;
-const MAX_PAGE_LIMIT = 50;
-
+// const MAX_PAGE_LIMIT = 50;
 
 module.exports = {
     sendError,
@@ -28,7 +27,7 @@ function getPaginationParams(req) {
     let offset = 0;
     if (req.query.limit != undefined) {
         limit = parseInt(req.query.limit);
-        limit = Math.min(limit, MAX_PAGE_LIMIT);
+        // limit = Math.min(limit, MAX_PAGE_LIMIT);
         limit = Math.max(limit, 0);
         // 0 <= limit <= MAX_PAGE_LIMIT
     }
