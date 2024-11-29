@@ -206,7 +206,7 @@ export default function Dispositivi() {
   };
 
   const handleSwitchChange = (checked: boolean) => {
-    setFilterEnabled(!checked);
+    setFilterEnabled(checked);
     setCurrentPage(1);
   };
 
@@ -640,10 +640,10 @@ export default function Dispositivi() {
         <>
           <div style={switchContainerStyle}>
             <Switch
-              checked={!filterEnabled}
+              checked={filterEnabled}
               onChange={handleSwitchChange}
-              checkedChildren={<SendOutlined />}
               unCheckedChildren={<DownloadOutlined />}
+              checkedChildren={<SendOutlined />}
               style={{ backgroundColor: filterEnabled ? '#1890ff' : '#52c41a' }}
             />
             <span
@@ -653,7 +653,7 @@ export default function Dispositivi() {
                 color: '#262626',
               }}
             >
-              {!filterEnabled ? (
+              {filterEnabled ? (
                 <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                   <SendOutlined /> Messaggi inviati
                 </span>

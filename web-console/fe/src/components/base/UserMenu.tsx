@@ -24,10 +24,17 @@ export default function UserMenu() {
   return (
     <>
       <Dropdown menu={{ items }} trigger={['click']} placement="bottomRight">
-        <Button onClick={(e) => e.preventDefault()} type="link" style={{ color: 'white' }}>
+        <Button
+          onClick={(e) => e.preventDefault()}
+          type="link"
+          style={{ color: 'white', border: ' none', backgroundColor: 'transparent' }}
+        >
           <Space>
             <span className={styles.user}>{'Utente xxx'}</span>
-            <Avatar icon={<UserOutlined style={{ color: 'white' }} />} />
+            <Avatar
+              icon={<UserOutlined style={{ color: 'white' }} />}
+              style={{ backgroundColor: 'transparent', border: 'none' }}
+            />
             <DownOutlined />
           </Space>
         </Button>

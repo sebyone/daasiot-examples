@@ -51,7 +51,8 @@ export const useModelHelpers = () => {
    * @returns URL del firmware
    */
   const getFirmware = (model: Dev): string | undefined => {
-    return model.resources?.find((resource) => resource.resource_type === 5 && resource.name === 'firmware')?.link;
+    const firmwareLink = model.resources?.find((resource) => resource.resource_type === 5)?.link;
+    return firmwareLink?.split('/').pop();
   };
 
   return {

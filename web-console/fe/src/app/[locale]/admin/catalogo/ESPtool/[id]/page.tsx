@@ -39,6 +39,7 @@ const DaaSUpdater = () => {
   const [selectedFirmware, setSelectedFirmware] = useState();
   const [updateComplete, setUpdateComplete] = useState(false);
   const [portInfo, setPortInfo] = useState('');
+  const [firmwareName, setFirmwareName] = useState<string | undefined>('');
   const params = useParams();
   const id = Number(params.id);
   let esploader;
@@ -52,6 +53,7 @@ const DaaSUpdater = () => {
       const firmwareResources = response.resources?.find(
         (resource) => resource.resource_type === 5 && resource.name === 'firmware'
       )?.link;
+      setFirmwareName(firmwareResources?.split('/').pop());
       setAvailableFirmware(firmwareResources);
     } catch (error) {
       console.error('Error fetching firmware:', error);
@@ -121,7 +123,6 @@ const DaaSUpdater = () => {
     try {
       // Gestione disconnessione precedente
       if (transport) {
-        console.log('Chiusura porta seriale precedente...');
         await transport.disconnect();
         setTransport(null);
         setDevice(null);
@@ -138,7 +139,6 @@ const DaaSUpdater = () => {
 
       setFlashStatus('extracting');
       const files = untar(arrayBuffer);
-      console.log('Files estratti e filtrati:', files);
 
       if (files.length !== 3) {
         throw new Error(`File mancanti o non validi!`);
@@ -151,7 +151,6 @@ const DaaSUpdater = () => {
         setDevice(port);
         const newTransport = new Transport(port);
         setTransport(newTransport);
-        console.log('Nuova connessione seriale stabilita');
       }
 
       const esploader = new ESPLoader({
@@ -183,7 +182,6 @@ const DaaSUpdater = () => {
       };
 
       setFlashStatus('flashing');
-      console.log('Avvio flash con opzioni:', flashOptions);
       await esploader.writeFlash(flashOptions);
 
       setUpdateComplete(true);
@@ -209,7 +207,6 @@ const DaaSUpdater = () => {
     }
   };
 
-  // Aggiungi una funzione di cleanup quando il componente viene smontato
   useEffect(() => {
     return () => {
       if (transport) {
@@ -245,7 +242,6 @@ const DaaSUpdater = () => {
       if (!name.startsWith('PaxHeader/') && !name.startsWith('._') && !name.startsWith('_')) {
         const baseName = name.split('/').pop(); // Rimuove eventuali percorsi
         if (fileOffsets[baseName] !== undefined) {
-          console.log(`Processando file: ${baseName}, dimensione: ${size} bytes`);
           files.push({
             name: baseName,
             data: arrayBufferToBinaryString(content),
@@ -348,7 +344,7 @@ const DaaSUpdater = () => {
                   value={selectedFirmware}
                   disabled={!availableFirmware}
                 >
-                  {availableFirmware && <Select.Option value={availableFirmware}>Firmware disponibile</Select.Option>}
+                  {availableFirmware && <Select.Option value={availableFirmware}>{firmwareName}</Select.Option>}
                 </Select>
                 <Button onClick={uploadFirmware} type="primary" icon={<SyncOutlined />} style={{ flex: 1 }}>
                   Start Update
