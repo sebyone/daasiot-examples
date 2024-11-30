@@ -43,6 +43,12 @@ Start server for development:
 npm run start:dev:server
 ```
 
+Start server on a different port (e.g. 3001):
+
+```sh
+PORT=3001 npm run start:server
+```
+
 ### (Optional) Start the sender
 
 the sender is a very simple script that sends a message to the DaaS-IoT network every 5 seconds.
