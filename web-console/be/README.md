@@ -23,6 +23,10 @@ Avviare il nodo sender:
 
 ```npm run start:sender```
 
+Se si desidera avviare utilizzare una porta diversa dalla 3000 (e.g. 3001):
+
+```PORT=3001 npm run start:server```
+
 ### Sviluppo con VSCode e DevContainer
 
 Per sviluppare all'interno di un container, in modo da avere un ambiente di sviluppo isolato e riproducibile, è possibile utilizzare il DevContainer di VSCode.
