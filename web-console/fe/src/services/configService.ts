@@ -30,10 +30,24 @@ import {
   LinkDataType,
   MapDataType,
   StatusDataType,
+  Version,
 } from '@/types';
 import axiosInstance from '@/utils/api';
 
 const ConfigService = {
+  /**
+   * Restituisce le informazioni sullo stack DaaS che sta alla base del nodo
+   * Promise<Version> - oggetto Version
+   */
+  getVersion: async (): Promise<Version> => {
+    try {
+      const response = await axiosInstance.get('/version');
+      return response.data;
+    } catch (error) {
+      console.error('Error:', error);
+      throw error;
+    }
+  },
   /**
    * Recupera l'elenco di tutti i receivers
    * Promise<ConfigData[]> - Array di oggetti ConfigData

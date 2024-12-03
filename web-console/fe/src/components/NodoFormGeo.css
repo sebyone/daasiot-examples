@@ -2,11 +2,6 @@
   width: 100%;
 }
 
-.geo-descriptions {
-  width: 100%;
-  margin-bottom: 2px;
-}
-
 .geo-field {
   font-size: 0.8rem;
   padding: 8px;
@@ -15,16 +10,11 @@
 }
 
 .geo-divider {
-  margin: 12px 0;
+  margin: 8px 0;
   width: 100%;
 }
 
 @media (max-width: 576px) {
-  .geo-descriptions .ant-descriptions-item-label,
-  .geo-descriptions .ant-descriptions-item-content {
-    padding: 8px 4px;
-  }
-
   .geo-field {
     padding: 4px;
   }
@@ -33,9 +23,5 @@
 @media (max-width: 768px) {
   .form-geo-container form {
     margin: 20px 15px;
-  }
-
-  .geo-descriptions {
-    margin-bottom: 12px;
   }
 }

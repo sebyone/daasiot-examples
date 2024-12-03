@@ -18,6 +18,14 @@ import React from 'react';
 
 export type TableDataType = LinkDataType | MapDataType | DinLocalDataType | StatusDataType;
 
+export interface Version {
+  daasLibrary: string;
+  compiler: string;
+  cppStandardLibrary: string;
+  node: string;
+  nodeAddonApi: string;
+}
+
 export interface DinLocalDataType {
   id?: number;
   title: string;
@@ -158,6 +166,14 @@ export interface ConfigData {
     p_res: string;
     skey: string;
   };
+  links?: [
+    {
+      id: number;
+      link: number;
+      din_id: number;
+      url: string;
+    },
+  ];
 }
 
 export interface LinkFormProps {

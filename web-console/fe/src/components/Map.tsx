@@ -27,7 +27,7 @@ export default function MapComponent({ device, form }: { device: DataDevice; for
   });
 
   return (
-    <div style={{ height: '100%', marginTop: 3 }}>
+    <div style={{ height: '100%', marginTop: 1 }}>
       <NodoFormGeo form={form} />
       <MapContainer center={[39.298263, 16.253736]} zoom={13} style={{ height: '85%', width: '100%', marginTop: 10 }}>
         <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />

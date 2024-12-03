@@ -11,7 +11,7 @@
  * francescopantusa98@gmail.com - initial implementation
  *
  */
-import { Col, Descriptions, Divider, Form, FormInstance, Row, Typography } from 'antd';
+import { Card, Col, Descriptions, Divider, Form, FormInstance, Row, Statistic, Typography } from 'antd';
 import { useTranslations } from 'next-intl';
 import React from 'react';
 import './NodoFormGeo.css';
@@ -20,31 +20,71 @@ const NodoFormGeo = ({ form }: { form: FormInstance }) => {
   const t = useTranslations('NodoForm');
   const style = {
     width: '100%',
-    marginTop: '30px',
+    marginTop: '28px',
     padding: '0 15px',
   };
-  const renderField = (value: string | number | boolean | undefined) => (
-    <Text strong className="geo-field">
-      {value !== undefined ? String(value) : '-'}
-    </Text>
-  );
+  const renderField = (value: string | number | boolean | undefined) => (value !== undefined ? String(value) : '-');
   return (
     <div className="form-geo-container">
       <Form form={form} layout="vertical" style={style}>
         <Row gutter={[16, 16]}>
           <Col xs={24} sm={24} md={11}>
-            <Descriptions column={1} bordered className="custom-descriptions geo-descriptions" size="small">
-              <Descriptions.Item label={t('latitude')}>
-                {renderField(form.getFieldValue('latitudine'))}
-              </Descriptions.Item>
-            </Descriptions>
+            <Card
+              size="small"
+              bordered={false}
+              bodyStyle={{
+                padding: '4px',
+                minHeight: '20px',
+              }}
+              style={{ boxShadow: '5px 8px 24px 5px rgba(208, 216, 243, 0.6)', cursor: 'default' }}
+            >
+              <Statistic
+                title={
+                  <span
+                    style={{
+                      fontSize: '0.75rem',
+                      marginBottom: '2px',
+                    }}
+                  >
+                    Latituidine
+                  </span>
+                }
+                value={renderField(form.getFieldValue('latitudine'))}
+                valueStyle={{
+                  color: 'black',
+                  fontSize: '0.85rem',
+                }}
+              />
+            </Card>
           </Col>
           <Col xs={24} sm={24} md={11}>
-            <Descriptions column={1} bordered className="custom-descriptions geo-descriptions" size="small">
-              <Descriptions.Item label={t('longitude')}>
-                {renderField(form.getFieldValue('longitudine'))}
-              </Descriptions.Item>
-            </Descriptions>
+            <Card
+              size="small"
+              bordered={false}
+              bodyStyle={{
+                padding: '4px',
+                minHeight: '20px',
+              }}
+              style={{ boxShadow: '5px 8px 24px 5px rgba(208, 216, 243, 0.6)', cursor: 'default' }}
+            >
+              <Statistic
+                title={
+                  <span
+                    style={{
+                      fontSize: '0.75rem',
+                      marginBottom: '2px',
+                    }}
+                  >
+                    Longitudine
+                  </span>
+                }
+                value={renderField(form.getFieldValue('longitudine'))}
+                valueStyle={{
+                  color: 'black',
+                  fontSize: '0.85rem',
+                }}
+              />
+            </Card>
           </Col>
         </Row>
         <Divider className="geo-divider" />

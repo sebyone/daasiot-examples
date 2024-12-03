@@ -11,7 +11,8 @@
     "system": "Sistema",
     "devices": "Dispositivi",
 
-    "catalog": "Catalogo"
+    "catalog": "Catalogo",
+    "settings": "Impostazioni"
   },
   "FormMenu": {
     "add": "Aggiungi",

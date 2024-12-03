@@ -10,7 +10,8 @@
     "dashboard": "Dashboard",
     "system": "System",
     "devices": "Devices",
-    "catalog": "Catalog"
+    "catalog": "Catalog",
+    "settings": "Settings"
   },
   "FormMenu": {
     "add": "Add",

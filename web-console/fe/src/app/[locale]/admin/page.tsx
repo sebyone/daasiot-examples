@@ -12,21 +12,48 @@
  *
  */
 'use client';
+import IPAddressIcon from '@/components/IPAddressIcon';
+import LTEIcon from '@/components/LTEIcon';
 import { useCustomNotification } from '@/hooks/useNotificationHook';
+import { useWindowSize } from '@/hooks/useWindowSize';
 import ConfigService from '@/services/configService';
+import { ConfigData, Version } from '@/types';
 import { ApiOutlined, MessageOutlined, WifiOutlined } from '@ant-design/icons';
-import { Card, Col, Row, Statistic } from 'antd';
+import { Card, Col, Row, Space } from 'antd';
+import Title from 'antd/es/typography/Title';
 import { useTranslations } from 'next-intl';
-import { useEffect, useState } from 'react';
-import styles from './Dashboard.module.css';
+import { ReactNode, useEffect, useState } from 'react';
 
 export default function Dashboard() {
   const { notify, contextHolder } = useCustomNotification();
+  const [recievers, setRecievers] = useState<ConfigData[]>([]);
+  const [version, setVersion] = useState<Version>();
   const [remotesCount, setRemotesCount] = useState<number>(0);
-  const [receiversCount, setReceiversCount] = useState<number>(0);
   const t = useTranslations('Dashboard');
+  const { width } = useWindowSize();
+  const wh = width < 768;
 
   useEffect(() => {
+    const fetchVersion = async () => {
+      try {
+        const response = await ConfigService.getVersion();
+        setVersion(response);
+      } catch (error) {
+        notify('error', 'Qualcosa non ha funzionato', 'Errore nel caricamento della versione');
+        console.error('Errore nel caricamento della versione:', error);
+      }
+    };
+
+    const fetchRecievers = async () => {
+      try {
+        const response = await ConfigService.getReceivers();
+        setRecievers(response);
+      } catch (error) {
+        notify('error', 'Qualcosa non ha funzionato', 'Errore nel caricamento del conteggio dei remotes');
+        console.error('Errore nel caricamento del conteggio dei remotes:', error);
+      }
+    };
+
     const fetchRemotesCount = async () => {
       try {
         const count = await ConfigService.getRemotesCount();
@@ -36,57 +63,138 @@ export default function Dashboard() {
         console.error('Errore nel caricamento del conteggio dei remotes:', error);
       }
     };
-    const fetchReceiversCount = async () => {
-      try {
-        const count = await ConfigService.getReceiversCount();
-        setReceiversCount(count);
-      } catch (error) {
-        notify('error', 'Qualcosa non ha funzionato', 'Errore nel caricamento del conteggio dei receivers');
-        console.error('Errore nel caricamento del conteggio dei receivers:', error);
-      }
-    };
 
+    fetchVersion();
+    fetchRecievers();
     fetchRemotesCount();
-    fetchReceiversCount();
   }, []);
+
+  const getIconForLinks = (tipologia: number): ReactNode => {
+    switch (tipologia) {
+      case 2:
+        return <IPAddressIcon />;
+      case 4:
+        return <LTEIcon />;
+    }
+  };
 
   return (
     <>
       {contextHolder}
-      <div className={styles.container}>
-        <Row gutter={[30, 30]} style={{ width: '100%' }}>
-          <Col xs={24} sm={24} md={8}>
-            <Card hoverable style={{ width: '100%' }}>
-              <Statistic
-                title="Receivers"
-                value={receiversCount}
-                prefix={<WifiOutlined style={{ color: '#1890ff' }} />}
-                className={styles.customStatistic}
-              />
-            </Card>
-          </Col>
-          <Col xs={24} sm={24} md={8}>
-            <Card hoverable style={{ width: '100%' }}>
-              <Statistic
-                title={t('managedNodes')}
-                value={remotesCount}
-                prefix={<ApiOutlined style={{ color: '#52c41a' }} />}
-                className={styles.customStatistic}
-              />
-            </Card>
-          </Col>
-          <Col xs={24} sm={24} md={8}>
-            <Card hoverable style={{ width: '100%' }}>
-              <Statistic
-                title={t('messagesExchanged')}
-                value={0}
-                prefix={<MessageOutlined style={{ color: '#faad14' }} />}
-                className={styles.customStatistic}
-              />
-            </Card>
-          </Col>
-        </Row>
-      </div>
+      {recievers.map((receiver) => (
+        <Card key={receiver.id} style={{ width: '100%', padding: 16, marginTop: 30 }}>
+          <Row gutter={[24, 24]}>
+            <Col
+              xs={24}
+              md={8}
+              style={{ paddingLeft: '64px', paddingRight: '64px', borderRight: wh ? '' : '2px solid #f0f0f0' }}
+            >
+              <Title level={3}>
+                <span style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  {receiver.title}
+                  {<WifiOutlined style={{ fontSize: '24px', color: '#1890ff' }} />}
+                </span>
+              </Title>
+              <div style={{ color: 'grey', fontSize: '1rem' }}>
+                <strong>System ID: </strong>
+                {receiver.din.sid}
+              </div>
+              <div style={{ color: 'grey', fontSize: '1rem', marginBottom: 15 }}>
+                <strong>DaaS Id Name: </strong>
+                {receiver.din.sid}
+              </div>
+              <Card
+                title={
+                  <div style={{ color: 'grey', fontSize: '1rem' }}>
+                    <strong>Version</strong>
+                  </div>
+                }
+                size="small"
+              >
+                <div style={{ color: 'grey', fontSize: '0.9rem' }}>
+                  <strong>daasLibrary: </strong>
+                  <span>{version?.compiler}</span>
+                </div>
+                <div style={{ color: 'grey', fontSize: '0.9rem' }}>
+                  <strong>compiler: </strong>
+                  <span>{version?.cppStandardLibrary}</span>
+                </div>
+                <div style={{ color: 'grey', fontSize: '0.9rem' }}>
+                  <strong>cppStandardLibrary: </strong>
+                  <span>{version?.daasLibrary}</span>
+                </div>
+                <div style={{ color: 'grey', fontSize: '0.9rem' }}>
+                  <strong>node: </strong>
+                  <span>{version?.node}</span>
+                </div>
+                <div style={{ color: 'grey', fontSize: '0.9rem' }}>
+                  <strong>nodeAddonApi: </strong>
+                  <span>{version?.nodeAddonApi}</span>
+                </div>
+              </Card>
+            </Col>
+            <Col
+              xs={24}
+              md={8}
+              style={{ paddingLeft: '64px', paddingRight: '64px', borderRight: wh ? '' : '2px solid #f0f0f0' }}
+            >
+              <Title level={3}>
+                <span style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  Stato operativo
+                  {<ApiOutlined style={{ fontSize: '24px', color: '#52c41a' }} />}
+                </span>
+              </Title>
+
+              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <span style={{ color: 'grey', fontSize: '1rem' }}>
+                  <strong>Nodi Gestiti</strong>
+                </span>
+                <span style={{ color: 'grey', fontSize: '1rem' }}>
+                  <strong>{remotesCount}</strong>
+                </span>
+              </div>
+              <Space>
+                <div>
+                  <span style={{ color: 'grey', fontSize: '1rem' }}>
+                    <strong>Link attivi:</strong>
+                  </span>
+                  {receiver.links?.map((link) => (
+                    <div
+                      key={link.id}
+                      style={{
+                        color: 'grey',
+                        fontSize: '1rem',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 5,
+                      }}
+                    >
+                      <span>{getIconForLinks(link.link)}</span>
+                      {link.url}
+                    </div>
+                  ))}
+                </div>
+              </Space>
+            </Col>
+            <Col xs={24} md={8} style={{ paddingLeft: '64px', paddingRight: '64px' }}>
+              <Title level={3}>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  Statistiche
+                  {<MessageOutlined style={{ fontSize: '24px', color: '#faad14' }} />}
+                </div>
+              </Title>
+              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <span style={{ color: 'grey', fontSize: '1rem' }}>
+                  <strong>Messaggi scambiati</strong>
+                </span>
+                <span style={{ color: 'grey', fontSize: '1rem' }}>
+                  <strong>0</strong>
+                </span>
+              </div>
+            </Col>
+          </Row>
+        </Card>
+      ))}
     </>
   );
 }

@@ -56,7 +56,7 @@ const getSelectedKey = (pathname: string, locale: string): string => {
 
 const menuItemStyle = {
   height: '4vh',
-  padding: '0',
+  padding: '0px 0px 0px 0px',
 };
 
 export default function NavMenu({ role }: { role?: string }) {
@@ -68,8 +68,8 @@ export default function NavMenu({ role }: { role?: string }) {
   const wh = width < 768;
 
   const iconStyle = {
-    fontSize: '20px',
-    lineHeight: '32px',
+    fontSize: '25px',
+    lineHeight: '64px',
     display: 'flex',
     justifyContent: 'center',
 
@@ -106,13 +106,13 @@ export default function NavMenu({ role }: { role?: string }) {
     {
       key: '/admin/updater-Esp32',
       icon: <SyncOutlined style={iconStyle} />,
-      label: 'Updater',
+      label: 'OTA Service',
       href: `/${locale}/admin/updater-Esp32`,
     },
     {
       key: '/admin/impostazioni',
       icon: <SettingOutlined style={iconStyle} />,
-      label: 'Impostazioni',
+      label: t('settings'),
       href: `/${locale}/admin/impostazioni`,
     },
   ];
@@ -130,7 +130,13 @@ export default function NavMenu({ role }: { role?: string }) {
   }, [role]);
 
   return (
-    <Menu theme="dark" mode="inline" selectedKeys={[selectedKey]} style={{ height: '100%', borderRight: 0 }}>
+    <Menu
+      theme="dark"
+      mode="inline"
+      selectedKeys={[selectedKey]}
+      style={{ height: '100%', borderRight: 0 }}
+      inlineIndent={0}
+    >
       {menuItems.map((item) => (
         <Menu.Item key={item.key} icon={item.icon} style={menuItemStyle}>
           <Tooltip placement="right" title={item.label} mouseEnterDelay={0.1}>

@@ -11,11 +11,10 @@
  * francescopantusa98@gmail.com - initial implementation
  *
  */
-import { Col, Descriptions, Form, FormInstance, Input, Row, Typography } from 'antd';
+import { Card, Col, Form, FormInstance, Input, Row, Statistic } from 'antd';
 import { useTranslations } from 'next-intl';
 import React from 'react';
 import './NodoFormHeader.css';
-const { Text } = Typography;
 const NodoFormHeader = ({ form }: { form: FormInstance }) => {
   const t = useTranslations('NodoForm');
   const style = {
@@ -25,11 +24,12 @@ const NodoFormHeader = ({ form }: { form: FormInstance }) => {
     marginLeft: '25px',
     padding: '0 15px',
   };
-  const renderField = (value: string | number | boolean | undefined) => (
-    <Text strong className="header-field">
-      {value !== undefined ? String(value) : '-'}
-    </Text>
-  );
+  const renderField = (value: string | number | boolean | undefined) => (value !== undefined ? String(value) : '-');
+
+  const formatMatricola = (value: string | number | undefined) => {
+    if (value === undefined) return '-';
+    return String(value).replace(/,/g, '');
+  };
   return (
     <Form form={form} layout="vertical" style={style}>
       <Form.Item name="id" noStyle>
@@ -37,14 +37,63 @@ const NodoFormHeader = ({ form }: { form: FormInstance }) => {
       </Form.Item>
       <Row gutter={[16, 16]}>
         <Col xs={24} sm={24} md={12}>
-          <Descriptions column={1} bordered className="custom-descriptions header-descriptions" size="small">
-            <Descriptions.Item label={t('model')}>{renderField(form.getFieldValue('modello'))}</Descriptions.Item>
-          </Descriptions>
+          <Card
+            size="small"
+            bordered={false}
+            bodyStyle={{
+              padding: '4px',
+              minHeight: '20px',
+            }}
+            style={{ boxShadow: '5px 8px 24px 5px rgba(208, 216, 243, 0.6)', cursor: 'default' }}
+          >
+            <Statistic
+              title={
+                <span
+                  style={{
+                    fontSize: '0.75rem',
+                    marginBottom: '2px',
+                  }}
+                >
+                  Modello
+                </span>
+              }
+              value={renderField(form.getFieldValue('modello'))}
+              valueStyle={{
+                color: 'black',
+                fontSize: '0.85rem',
+              }}
+            />
+          </Card>
         </Col>
         <Col xs={24} sm={24} md={12}>
-          <Descriptions column={1} bordered className="custom-descriptions header-descriptions" size="small">
-            <Descriptions.Item label={t('serialNumber')}>{renderField(form.getFieldValue('serial'))}</Descriptions.Item>
-          </Descriptions>
+          <Card
+            size="small"
+            bordered={false}
+            bodyStyle={{
+              padding: '4px',
+              minHeight: '20px',
+            }}
+            style={{ boxShadow: '5px 8px 24px 5px rgba(208, 216, 243, 0.6)', cursor: 'default' }}
+          >
+            <Statistic
+              title={
+                <span
+                  style={{
+                    fontSize: '0.75rem',
+                    marginBottom: '2px',
+                  }}
+                >
+                  Matricola
+                </span>
+              }
+              value={form.getFieldValue('serial')}
+              formatter={formatMatricola}
+              valueStyle={{
+                color: 'black',
+                fontSize: '0.85rem',
+              }}
+            />
+          </Card>
         </Col>
       </Row>
     </Form>

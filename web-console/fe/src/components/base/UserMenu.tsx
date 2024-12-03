@@ -7,16 +7,14 @@ const items: MenuProps['items'] = [
   {
     label: <div>Profilo</div>,
     key: '0',
-    disabled: true,
   },
   {
     type: 'divider',
   },
   {
     label: 'Log Out',
-    icon: <LogoutOutlined />,
+    icon: <LogoutOutlined style={{ color: 'red' }} />,
     key: 'logout',
-    disabled: true,
   },
 ];
 

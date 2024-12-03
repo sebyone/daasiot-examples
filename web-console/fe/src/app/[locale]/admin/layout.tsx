@@ -56,18 +56,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           }}
         >
           <UserMenu />
-          <LanguageSwitcher />
         </div>
       </Header>
       <Layout style={{ padding: 0 }}>
-        <Sider
-          breakpoint="lg"
-          collapsedWidth="0"
-          className={styles.siderCustom}
-          style={{
-            backgroundColor: '#001529',
-          }}
-        >
+        <Sider breakpoint="lg" collapsedWidth="0" className={styles.siderCustom} width={130}>
           <NavMenu />
         </Sider>
 
