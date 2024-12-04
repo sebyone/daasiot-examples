@@ -5,45 +5,39 @@ import {
   SyncOutlined,
   UsbOutlined,
 } from '@ant-design/icons';
-import { Card, Space, Steps, Typography } from 'antd';
+import { Alert, Card, Space, Steps, Typography } from 'antd';
+import { useTranslations } from 'next-intl';
 import React from 'react';
 
 const { Title, Paragraph } = Typography;
 const { Step } = Steps;
 
 export default function FirmwareUpdaterExplanation() {
+  const t = useTranslations('FirmwareUpdaterExplanation');
   return (
-    <Card style={{ width: '100%', maxWidth: '800px', margin: '0 auto' }}>
-      <Space direction="vertical" style={{ width: '100%' }}>
+    <Card style={{ maxWidth: '800px' }}>
+      <Space direction="vertical">
+        <Alert message={t('alert.warning')} description={t('alert.description')} type="warning" showIcon />
         <Typography>
-          <Title level={2}>{"Come funziona l'aggiornamento del firmware"}</Title>
-          <Paragraph>Una guida passo-passo al processo di aggiornamento del firmware del dispositivo</Paragraph>
+          <Title level={3}>{t('typography.title')}</Title>
         </Typography>
 
         <Steps direction="vertical" current={-1}>
+          <Step title={t('steps.step1.title')} description={t('steps.step1.description')} icon={<UsbOutlined />} />
           <Step
-            title="Connessione del dispositivo"
-            description="Collega il tuo dispositivo ESP32 al computer tramite USB."
-            icon={<UsbOutlined />}
-          />
-          <Step
-            title="Selezione del firmware"
-            description="Scegli il firmware appropriato per il tuo dispositivo dall'elenco disponibile."
+            title={t('steps.step2.title')}
+            description={t('steps.step2.description')}
             icon={<OrderedListOutlined />}
           />
           <Step
-            title="Avvio dell'aggiornamento"
-            description="Clicca su 'Start Update' per iniziare il processo di aggiornamento del firmware."
+            title={t('steps.step3.title')}
+            description={t('steps.step3.description')}
             icon={<PlayCircleOutlined />}
           />
+          <Step title={t('steps.step4.title')} description={t('steps.step4.description')} icon={<SyncOutlined />} />
           <Step
-            title="Processo di aggiornamento"
-            description="Il firmware viene caricato sul dispositivo. Una barra di avanzamento mostra lo stato dell'aggiornamento."
-            icon={<SyncOutlined />}
-          />
-          <Step
-            title="Completamento"
-            description="Una volta completato l'aggiornamento, riceverai un messaggio di conferma. Riavvia il dispositivo per applicare le modifiche."
+            title={t('steps.step5.title')}
+            description={t('steps.step5.description')}
             icon={<CheckCircleOutlined />}
           />
         </Steps>

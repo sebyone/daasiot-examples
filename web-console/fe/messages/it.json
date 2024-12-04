@@ -150,7 +150,58 @@
     "note": "Assicurati che il dispositivo sia collegato correttamente durante l'aggiornamento. Non interrompere il processo di aggiornamento per evitare danni al dispositivo."
   },
   "DaaSUpdater": {
-    "mobileMessage": "Questo contenuto non è disponibile sui dispositivi mobile."
+    "title1": "Servizio OTA generico per l'attivazione e l'aggiornamento dei dispositivi",
+    "title2": "Aggiornamento del firmware del dispositivo",
+    "start": "Inizia",
+    "port": "Porta",
+    "device": "Dispositivo",
+    "availableFirmware": "Seleziona firmware",
+    "noFirmwareAvailable": "Nessun firmware disponibile",
+    "startUpdate": "Avvia aggiornamento",
+    "flashStatus": {
+      "downloading": "Download firmware in corso...",
+      "validating": "Validazione firmware...",
+      "flashing": "Aggiornamento firmware in corso, non scollegare il dispositivo!"
+    },
+    "alertUpdateComplete": {
+      "message": "Programmazione conclusa con successo!",
+      "description": "Riavvia il dispositivo e segui la procedura di configurazione prevista per il modello."
+    },
+    "alertUpdateFailed": {
+      "message": "Programmazione non riuscita!",
+      "description": "Si è verificato un problema durante l'aggiornamento, riprova seguendo la procedura. Se il problema persiste contatta il servizio tecnico."
+    }
+  },
+  "FirmwareUpdaterExplanation": {
+    "alert": {
+      "warning": "Attenzione",
+      "description": "Il servizio OTA potrebbe non essere disponibile su alcuni modelli. Consulta il catalogo per verificare le funzionalità del tuo dispositivo."
+    },
+    "typography": {
+      "title": "Come aggiornare/attivare un dispositivo"
+    },
+    "steps": {
+      "step1": {
+        "title": "Connetti il dispositivo che desideri attivare/aggiornare",
+        "description": "Collega il tuo dispositivo al computer tramite USB."
+      },
+      "step2": {
+        "title": "Seleziona il firmware compatibile",
+        "description": "Scegli il firmware appropriato per il tuo dispositivo dall'elenco disponibile."
+      },
+      "step3": {
+        "title": "Avvia la programmazione",
+        "description": "Clicca su 'Avvia aggiornamento' per iniziare il processo di aggiornamento del firmware."
+      },
+      "step4": {
+        "title": "Attendi il completamento senza scollegare il dispositivo",
+        "description": "Il firmware viene caricato sul dispositivo. Una barra di avanzamento mostra lo stato dell'aggiornamento."
+      },
+      "step5": {
+        "title": "Scollega e riavvia il dispositivo",
+        "description": "Una volta completato l'aggiornamento, riceverai un messaggio di conferma. Riavvia il dispositivo per applicare le modifche."
+      }
+    }
   },
   "ParametersTab": {
     "function": "Funzione",

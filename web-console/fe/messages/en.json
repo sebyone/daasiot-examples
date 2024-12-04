@@ -149,6 +149,60 @@
     "importantNotes": "Important notes",
     "note": "Make sure your device is connected correctly during the update. Do not interrupt the update process to avoid damage to your device."
   },
+  "DaaSUpdater": {
+    "title1": "Generic OTA service for devices activation and updating",
+    "title2": "Device Firmware Updater",
+    "start": "Start",
+    "port": "Port",
+    "device": "Device",
+    "availableFirmware": "Select firmware",
+    "noFirmwareAvailable": "No firmware available",
+    "startUpdate": "Start update",
+    "flashStatus": {
+      "downloading": "Firmware download in progress...",
+      "validating": "Firmware validation...",
+      "flashing": "Firmware update in progress, don't disconnect the device!"
+    },
+    "alertUpdateComplete": {
+      "message": "Programming completed successfully!",
+      "description": "Restart your device and follow the setup procedures for your model."
+    },
+    "alertUpdateFailed": {
+      "message": "Programming failed!",
+      "description": "There was a problem updating, please try again following the procedure. If the problem persists, contact technical service."
+    }
+  },
+  "FirmwareUpdaterExplanation": {
+    "alert": {
+      "warning": "Warning",
+      "description": "OTA service may not be available on some models. Consult the catalog to check the functionality of your device."
+    },
+    "typography": {
+      "title": "How to update/activate a device"
+    },
+    "steps": {
+      "step1": {
+        "title": "Connect the device you want to activate/update",
+        "description": "Connect your device to your computer via USB."
+      },
+      "step2": {
+        "title": "Select compatible firmware",
+        "description": "Choose the appropriate firmware for your device from the available list."
+      },
+      "step3": {
+        "title": "Start programming",
+        "description": "Click on 'Start Update' to begin the firmware update process."
+      },
+      "step4": {
+        "title": "Wait for completion without disconnecting your device",
+        "description": "The firmware is being loaded onto the device. A progress bar shows the update status."
+      },
+      "step5": {
+        "title": "Unplug and restart your device",
+        "description": "Once the update is complete, you will receive a confirmation message. Please restart your device to apply the changes."
+      }
+    }
+  },
   "ParametersTab": {
     "function": "Function",
     "parameters": "Parameters",
