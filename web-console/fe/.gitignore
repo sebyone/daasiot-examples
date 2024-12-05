@@ -29,7 +29,7 @@ yarn-error.log*
 .env*.local
 
 #file sftp
-/.vscode/sftp.json
+.vscode/sftp.json
 
 # vercel
 .vercel
