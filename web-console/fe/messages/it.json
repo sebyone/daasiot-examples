@@ -10,8 +10,8 @@
     "dashboard": "Dashboard",
     "system": "Sistema",
     "devices": "Dispositivi",
-
     "catalog": "Catalogo",
+    "otaService": "Servizio OTA",
     "settings": "Impostazioni"
   },
   "FormMenu": {
@@ -22,8 +22,12 @@
     "save": "Salva"
   },
   "Dashboard": {
+    "version": "Versione",
     "managedNodes": "Nodi Gestiti",
-    "messagesExchanged": "Messaggi Scambiati"
+    "messagesExchanged": "Messaggi Scambiati",
+    "operationalStatus": "Stato operativo",
+    "activeLinks": "Link attivi:",
+    "statistics": "Statistiche"
   },
   "Dispositivi": {
     "selectDevice": "Seleziona un dispositivo nella lista per visualizzarne i dettagli",

@@ -106,10 +106,11 @@ export default function Dashboard() {
               <Card
                 title={
                   <div style={{ color: 'grey', fontSize: '1rem' }}>
-                    <strong>Version</strong>
+                    <strong>{t('version')}</strong>
                   </div>
                 }
                 size="small"
+                style={{ minWidth: '170px', maxWidth: '300px' }}
               >
                 <div style={{ color: 'grey', fontSize: '0.9rem' }}>
                   <strong>daasLibrary: </strong>
@@ -140,14 +141,14 @@ export default function Dashboard() {
             >
               <Title level={3}>
                 <span style={{ display: 'flex', justifyContent: 'space-between' }}>
-                  Stato operativo
+                  {t('operationalStatus')}
                   {<ApiOutlined style={{ fontSize: '24px', color: '#52c41a' }} />}
                 </span>
               </Title>
 
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                 <span style={{ color: 'grey', fontSize: '1rem' }}>
-                  <strong>Nodi Gestiti</strong>
+                  <strong>{t('managedNodes')}</strong>
                 </span>
                 <span style={{ color: 'grey', fontSize: '1rem' }}>
                   <strong>{remotesCount}</strong>
@@ -156,7 +157,7 @@ export default function Dashboard() {
               <Space>
                 <div>
                   <span style={{ color: 'grey', fontSize: '1rem' }}>
-                    <strong>Link attivi:</strong>
+                    <strong>{t('activeLinks')}</strong>
                   </span>
                   {receiver.links?.map((link) => (
                     <div
@@ -178,14 +179,14 @@ export default function Dashboard() {
             </Col>
             <Col xs={24} md={8} style={{ paddingLeft: '64px', paddingRight: '64px' }}>
               <Title level={3}>
-                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                  Statistiche
+                <div style={{ display: 'flex', justifyContent: 'space-between', whiteSpace: 'nowrap' }}>
+                  {t('statistics')}
                   {<MessageOutlined style={{ fontSize: '24px', color: '#faad14' }} />}
                 </div>
               </Title>
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                 <span style={{ color: 'grey', fontSize: '1rem' }}>
-                  <strong>Messaggi scambiati</strong>
+                  <strong>{t('messagesExchanged')}</strong>
                 </span>
                 <span style={{ color: 'grey', fontSize: '1rem' }}>
                   <strong>0</strong>

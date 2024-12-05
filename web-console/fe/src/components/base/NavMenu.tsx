@@ -106,7 +106,7 @@ export default function NavMenu({ role }: { role?: string }) {
     {
       key: '/admin/updater-Esp32',
       icon: <SyncOutlined style={iconStyle} />,
-      label: 'OTA Service',
+      label: t('otaService'),
       href: `/${locale}/admin/updater-Esp32`,
     },
     {

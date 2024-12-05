@@ -11,6 +11,7 @@
     "system": "System",
     "devices": "Devices",
     "catalog": "Catalog",
+    "otaService": "OTA Service",
     "settings": "Settings"
   },
   "FormMenu": {
@@ -21,8 +22,12 @@
     "save": "Save"
   },
   "Dashboard": {
+    "version": "Version",
     "managedNodes": "Managed Nodes",
-    "messagesExchanged": "Messages Exchanged"
+    "messagesExchanged": "Exchanged Messages",
+    "operationalStatus": "Operational status",
+    "activeLinks": "Active links:",
+    "statistics": "Statistics"
   },
   "Dispositivi": {
     "selectDevice": "Select a device in the list to view its details",
