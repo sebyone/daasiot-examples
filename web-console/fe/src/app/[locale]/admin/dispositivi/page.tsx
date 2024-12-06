@@ -15,7 +15,7 @@
 import { useCustomNotification } from '@/hooks/useNotificationHook';
 import { useWindowSize } from '@/hooks/useWindowSize';
 import { default as ConfigService, default as configService } from '@/services/configService';
-import { DataDevice, DeviceFunction, Event, Function } from '@/types';
+import { DataDevice, DDO, DeviceFunction, Event, Function } from '@/types';
 import {
   DeploymentUnitOutlined,
   DownloadOutlined,
@@ -73,7 +73,6 @@ const ParametersTab = dynamic(() => import('@/components/ParametersTab'), { ssr:
 export default function Dispositivi() {
   const router = useRouter();
   const t = useTranslations('Dispositivi');
-  const [title, setTitle] = useState('');
   const [formGenerali] = Form.useForm();
   const [formHeader] = Form.useForm();
   const [searchTerm, setSearchTerm] = useState('');
@@ -82,13 +81,13 @@ export default function Dispositivi() {
   const [selectedDevice, setSelectedDevice] = useState<DataDevice | null>(null);
   const [isDeviceSelected, setIsDeviceSelected] = useState(false);
   const [isModalInfoEventVisible, setIsModalInfoEventVisible] = useState(false);
-  const [selectedRow, setSelectedRow] = useState(null);
+  const [selectedRow, setSelectedRow] = useState<DDO>();
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(20);
   const [totalItems, setTotalItems] = useState(0);
   const locale = useLocale();
   const [activeTabKey, setActiveTabKey] = useState('1');
-  const [ddos, setDdos] = useState<Event[]>([]);
+  const [ddos, setDdos] = useState<DDO[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [filterEnabled, setFilterEnabled] = useState(false);
   const [functions, setFunctions] = useState<Function[]>([]);
@@ -113,14 +112,14 @@ export default function Dispositivi() {
     setPageSize(pageSize);
   };
 
-  const handleViewClick = (record) => {
+  const handleViewClick = (record: DDO) => {
     setSelectedRow(record);
     setIsModalInfoEventVisible(true);
   };
 
   const handleModalClose = () => {
     setIsModalInfoEventVisible(false);
-    setSelectedRow(null);
+    setSelectedRow(undefined);
   };
 
   const columnsEvents = [
@@ -133,14 +132,14 @@ export default function Dispositivi() {
     {
       title: <span style={{ display: 'flex', justifyContent: 'center' }}>Typeset</span>,
       width: wh ? '10%' : '5%',
-      dataIndex: 'typeset',
-      key: 'typeset',
+      dataIndex: 'typeset_id',
+      key: 'typeset_id',
     },
     {
       title: <span style={{ display: 'flex', justifyContent: 'center' }}>Payload Size [Byte]</span>,
       width: wh ? '14%' : '9%',
-      dataIndex: 'payloadSize',
-      key: 'payloadSize',
+      dataIndex: 'payload_size',
+      key: 'payload_size',
     },
     {
       title: <span style={{ display: 'flex', justifyContent: 'center' }}>Payload</span>,
@@ -155,34 +154,9 @@ export default function Dispositivi() {
     {
       title: '',
       key: 'action',
-      render: (text, record) => (
-        <SearchOutlined style={{ cursor: 'pointer' }} onClick={() => handleViewClick(record)} />
-      ),
+      render: (record: DDO) => <SearchOutlined style={{ cursor: 'pointer' }} onClick={() => handleViewClick(record)} />,
     },
   ];
-
-  /*useEffect(() => {
-    if (selectedDevice) {
-      const fetchDdo = async () => {
-        try {
-          const offset = (currentPage - 1) * pageSize;
-          console.log(selectedDevice.id);
-          const response = await ConfigService.getDDOByDeviceId(selectedDevice.id, offset, pageSize, false);
-          const ddos = response.data.map((ddo) => ({
-            timestamp: ddo.timestamp,
-            typeset: ddo.typeset_id,
-            payload: ddo.payload,
-            payloadSize: ddo.payload_size,
-          }));
-          setDdos(ddos);
-          setTotalItems(response.pagination.total);
-        } catch (error) {
-          notify('error', t('error'), 'Errore ddo');
-        }
-      };
-      fetchDdo();
-    }
-  }, [selectedDevice, currentPage, pageSize]);*/
 
   const fetchDdo = async () => {
     if (!selectedDevice) return;
@@ -192,9 +166,9 @@ export default function Dispositivi() {
       const response = await ConfigService.getDDOByDeviceId(selectedDevice.id, offset, pageSize, filterEnabled);
       const ddos = response.data.map((ddo) => ({
         timestamp: dayjs(ddo.timestamp).format('DD/MM/YYYY HH:mm:ss'),
-        typeset: ddo.typeset_id,
+        typeset_id: ddo.typeset_id,
         payload: ddo.payload,
-        payloadSize: ddo.payload_size,
+        payload_size: ddo.payload_size,
       }));
       setDdos(ddos);
       setTotalItems(response.pagination.total);
@@ -250,26 +224,6 @@ export default function Dispositivi() {
       handleDeviceClick(selectedDevice);
     }
   }, [selectedDevice, handleDeviceClick]);
-
-  /*const handleDeviceClick = (device: DataDevice) => {
-    setSelectedDevice(device);
-    setIsDeviceSelected(true);
-    setActiveTabKey('1');
-    configService.getDeviceById(device.id).then((data) => {
-      formGenerali.setFieldsValue({
-        id: data.id,
-        sid: data.din.sid,
-        din: data.din.din,
-        latitudine: data.latitude,
-        longitudine: data.longitude,
-      });
-      formHeader.setFieldsValue({
-        id: data.id,
-        modello: data.device_model.description,
-        matricola: data.device_model.serial,
-      });
-    });
-  };*/
 
   const fetchDevices = useCallback(async () => {
     setIsLoading(true);
@@ -708,15 +662,15 @@ export default function Dispositivi() {
                     {selectedRow.timestamp}
                   </Descriptions.Item>
                   <Descriptions.Item label={'Typeset'} labelStyle={{ fontWeight: 'bold' }}>
-                    {selectedRow.typeset}
+                    {selectedRow.typeset_id}
                   </Descriptions.Item>
                   <Descriptions.Item label={'Payload Size [Byte]'} labelStyle={{ fontWeight: 'bold' }}>
-                    {selectedRow.payloadSize}
+                    {selectedRow.payload_size}
                   </Descriptions.Item>
                 </Descriptions>
                 <p style={{ marginTop: 10, fontSize: '1rem' }}>
                   <strong>Payload Content</strong>
-                  <PayloadContentViewer payloadContent={selectedRow.payload} />
+                  <PayloadContentViewer key={selectedRow.id} payloadContent={selectedRow.payload} />
                 </p>
               </Space>
             ) : null}
@@ -733,7 +687,7 @@ export default function Dispositivi() {
       ),
       children: (
         <div style={{ height: '55vh', marginTop: -40 }}>
-          <MapComponent key={selectedDevice?.id} device={selectedDevice} form={formGenerali} />
+          {selectedDevice && <MapComponent key={selectedDevice?.id} device={selectedDevice} form={formGenerali} />}
         </div>
       ),
     },
@@ -747,17 +701,6 @@ export default function Dispositivi() {
     e.stopPropagation();
     router.push(`/${locale}/admin/dispositivi/editDispositivo/${deviceId}`);
   };
-
-  /*const itemRender = (_, type, originalElement) => {
-    console.log(type, 'a');
-    if (type === 'prev') {
-      return <a style={{ color: 'white' }}>{'<'}</a>;
-    }
-    if (type === 'next') {
-      return <a style={{ color: 'white', cursor: 'pointer' }}>{'>'}</a>;
-    }
-    return originalElement;
-  };*/
 
   const handleTabChange = (key: string) => {
     setActiveTabKey(key);

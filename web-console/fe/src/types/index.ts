@@ -13,6 +13,8 @@
  */
 import { DeviceComponentsRegistry } from '@/utils/deviceComponentsRegistry';
 import { FormInstance } from 'antd';
+import CryptoJS from 'crypto-js';
+import { Transport } from 'esptool-js';
 import { AppRouterInstance } from 'next/dist/shared/lib/app-router-context.shared-runtime';
 import React from 'react';
 
@@ -594,3 +596,34 @@ export interface SelectedGroup {
   id: number;
   title: string | null;
 }
+
+export interface LoaderOptions {
+  transport: Transport;
+  baudrate: number;
+  romBaudrate: number;
+  serialInterface?: boolean;
+  debugLogging?: boolean;
+}
+
+export interface TarFile {
+  name: string;
+  data: string;
+  size: number;
+  offset: number;
+}
+
+export interface FlashOptions {
+  fileArray: {
+    data: string;
+    address: number;
+  }[];
+  flashSize: string;
+  flashMode: string;
+  flashFreq: string;
+  eraseAll: boolean;
+  compress: boolean;
+  reportProgress: (fileIndex: number, written: number, total: number) => void;
+  calculateMD5Hash: (image: string) => CryptoJS.WordArray;
+}
+
+export type FlashStatus = '' | 'downloading' | 'extracting' | 'connecting' | 'flashing' | 'validating';

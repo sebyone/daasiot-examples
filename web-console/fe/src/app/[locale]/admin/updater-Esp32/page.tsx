@@ -14,6 +14,7 @@
 'use client';
 import FirmwareUpdaterExplanation from '@/components/FirmwareUpdaterExplanation';
 import ConfigService from '@/services/configService';
+import { FlashOptions, FlashStatus, LoaderOptions, TarFile } from '@/types';
 import { InfoCircleOutlined, SyncOutlined, UsbOutlined } from '@ant-design/icons';
 import { Alert, Button, Descriptions, Progress, Select, Space, Typography, Upload, message } from 'antd';
 import axios from 'axios';
@@ -22,42 +23,64 @@ import { ESPLoader, Transport } from 'esptool-js';
 import { useLocale, useTranslations } from 'next-intl';
 import { useParams, useRouter } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
+import { SerialPort } from 'web-serial-polyfill';
 import styles from './Updater.module.css';
 
 const { Title } = Typography;
+declare global {
+  interface Navigator {
+    serial: {
+      requestPort(options?: SerialPortRequestOptions): Promise<SerialPort>;
+      getPorts(): Promise<SerialPort[]>;
+    };
+  }
+  interface SerialPortRequestOptions {
+    filters?: SerialPortFilter[];
+  }
+
+  interface SerialPortFilter {
+    usbVendorId?: number;
+    usbProductId?: number;
+  }
+}
 
 const DaaSUpdater = () => {
   const t = useTranslations('DaaSUpdater');
   const router = useRouter();
   const locale = useLocale();
 
-  const [device, setDevice] = useState(null);
-  const [transport, setTransport] = useState(null);
-  const [chip, setChip] = useState(null);
-  const [isConnected, setIsConnected] = useState(false);
-  const [progress, setProgress] = useState(0);
-  const [selectedFirmware, setSelectedFirmware] = useState();
-  const [updateComplete, setUpdateComplete] = useState(false);
-  const [updateFailed, setUpdateFailed] = useState(false);
-  const [portInfo, setPortInfo] = useState('');
+  const [device, setDevice] = useState<SerialPort | null>(null);
+  const [transport, setTransport] = useState<Transport | null>(null);
+  const [chip, setChip] = useState<string | null>(null);
+  const [isConnected, setIsConnected] = useState<boolean>(false);
+  const [progress, setProgress] = useState<number>(0);
+  const [selectedFirmware, setSelectedFirmware] = useState<string>();
+  const [updateComplete, setUpdateComplete] = useState<boolean>(false);
+  const [updateFailed, setUpdateFailed] = useState<boolean>(false);
+  const [portInfo, setPortInfo] = useState<string>('');
   const [firmwareName, setFirmwareName] = useState<string | undefined>('');
   const [image, setImage] = useState<string | undefined>('');
+  const [flashStatus, setFlashStatus] = useState<FlashStatus>('');
   //const params = useParams();
   const id = 5;
-  let esploader;
+  let esploader: ESPLoader;
 
   const [availableFirmware, setAvailableFirmware] = useState<string | null>(null);
 
   const fetchFirmwareData = async () => {
     try {
       const response = await ConfigService.getDeviceModelById(id);
-      const image = response.resources?.find((resource) => resource.resource_type === 4)?.link;
+      const imageResource = response.resources?.find((resource) => resource.resource_type === 4)?.link;
       const firmwareResources = response.resources?.find(
         (resource) => resource.resource_type === 5 && resource.name === 'firmware'
       )?.link;
-      setFirmwareName(firmwareResources?.split('/').pop());
-      setAvailableFirmware(firmwareResources);
-      setImage(image);
+      if (firmwareResources) {
+        setFirmwareName(firmwareResources.split('/').pop());
+        setAvailableFirmware(firmwareResources);
+      }
+      if (imageResource) {
+        setImage(imageResource);
+      }
     } catch (error) {
       console.error('Error fetching firmware:', error);
       message.error('Errore nel caricamento del firmware');
@@ -71,10 +94,10 @@ const DaaSUpdater = () => {
   }, [id]);
 
   useEffect(() => {
-    const loadPolyfill = async () => {
+    const loadPolyfill = async (): Promise<void> => {
       if (!navigator.serial && navigator.usb) {
         const serialPolyfill = await import('web-serial-polyfill');
-        navigator.serial = serialPolyfill.default;
+        navigator.serial = serialPolyfill as any;
       }
     };
     loadPolyfill();
@@ -89,15 +112,19 @@ const DaaSUpdater = () => {
 
       setPortInfo(port.getInfo().usbProductId ? `USB (Product ID: ${port.getInfo().usbProductId})` : 'Serial Port');
 
-      const flashOptions = {
+      const flashOptions: LoaderOptions = {
         transport: newTransport,
         baudrate: 115200,
+        romBaudrate: 115200,
+        serialInterface: true,
+        debugLogging: false,
       };
+
       esploader = new ESPLoader(flashOptions);
       const detectedChip = await esploader.main();
       setChip(detectedChip);
       setIsConnected(true);
-    } catch (e) {
+    } catch (e: any) {
       console.error(e);
       message.error(`Error: ${e.message}`);
     }
@@ -113,8 +140,6 @@ const DaaSUpdater = () => {
     setIsConnected(false);
     message.info('Dispositivo disconnesso');
   };
-
-  const [flashStatus, setFlashStatus] = useState('');
 
   const uploadFirmware = async () => {
     if (!selectedFirmware) {
@@ -158,6 +183,9 @@ const DaaSUpdater = () => {
       const esploader = new ESPLoader({
         transport,
         baudrate: 115200,
+        romBaudrate: 115200,
+        serialInterface: true,
+        debugLogging: false,
       });
 
       // Inizializzazione ESP
@@ -171,23 +199,25 @@ const DaaSUpdater = () => {
       }));
 
       // Flash di tutti i file in una volta
-      const flashOptions = {
+      const flashOptions: FlashOptions = {
         fileArray: flashFiles,
         flashSize: '4MB',
+        flashMode: 'dio',
+        flashFreq: '40m',
         eraseAll: true,
         compress: true,
-        reportProgress: (fileIndex, written, total) => {
+        reportProgress: (fileIndex: number, written: number, total: number) => {
           const progress = (fileIndex * 100) / files.length + (written / total) * (100 / files.length);
           setProgress(Math.round(progress));
         },
-        calculateMD5Hash: (image) => CryptoJS.MD5(CryptoJS.enc.Latin1.parse(image)),
+        calculateMD5Hash: (image: string) => CryptoJS.MD5(CryptoJS.enc.Latin1.parse(image)),
       };
 
       setFlashStatus('flashing');
       await esploader.writeFlash(flashOptions);
 
       setUpdateComplete(true);
-    } catch (e) {
+    } catch (e: any) {
       console.error('Errore durante il flash:', e);
       message.error(`Errore nell'aggiornamento del firmware: ${e.message}`);
       setUpdateFailed(true);
@@ -216,13 +246,13 @@ const DaaSUpdater = () => {
     };
   }, [transport]);
 
-  function untar(arrayBuffer) {
+  const untar = (arrayBuffer: ArrayBuffer): TarFile[] => {
     const TAR_BLOCK_SIZE = 512;
     let offset = 0;
-    const files = [];
+    const files: TarFile[] = [];
 
     // Mappa per gli offset standard
-    const fileOffsets = {
+    const fileOffsets: Record<string, number> = {
       'bootloader.bin': 0x1000,
       'partitions.bin': 0x8000,
       'firmware.bin': 0x10000,
@@ -242,7 +272,7 @@ const DaaSUpdater = () => {
       // Filtra solo i file principali
       if (!name.startsWith('PaxHeader/') && !name.startsWith('._') && !name.startsWith('_')) {
         const baseName = name.split('/').pop(); // Rimuove eventuali percorsi
-        if (fileOffsets[baseName] !== undefined) {
+        if (baseName && fileOffsets[baseName] !== undefined) {
           files.push({
             name: baseName,
             data: arrayBufferToBinaryString(content),
@@ -260,7 +290,7 @@ const DaaSUpdater = () => {
 
     // Ordina i file per offset
     return files.sort((a, b) => a.offset - b.offset);
-  }
+  };
 
   const getStatusMessage = () => {
     switch (flashStatus) {
@@ -275,14 +305,14 @@ const DaaSUpdater = () => {
     }
   };
 
-  function arrayBufferToBinaryString(arrayBuffer) {
+  const arrayBufferToBinaryString = (arrayBuffer: ArrayBuffer): string => {
     const bytes = new Uint8Array(arrayBuffer);
     let binaryString = '';
     for (let i = 0; i < bytes.length; i++) {
       binaryString += String.fromCharCode(bytes[i]);
     }
     return binaryString;
-  }
+  };
 
   return (
     <div className={styles.container}>

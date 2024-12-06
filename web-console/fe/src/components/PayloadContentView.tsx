@@ -12,13 +12,14 @@
  *
  */
 import { Checkbox, Input } from 'antd';
+import { CheckboxChangeEvent } from 'antd/es/checkbox';
 import React, { useEffect, useState } from 'react';
 
 const PayloadContentView = ({ payloadContent }: { payloadContent: string }) => {
   const [payloadFormat, setPayloadFormat] = useState('BASE64');
   const [convertedContent, setConvertedContent] = useState('');
 
-  const convertPayload = (format) => {
+  const convertPayload = (format: string) => {
     let content = payloadContent || '';
 
     switch (format) {
@@ -49,7 +50,7 @@ const PayloadContentView = ({ payloadContent }: { payloadContent: string }) => {
     }
   };
 
-  const handleCheckboxChange = (e) => {
+  const handleCheckboxChange = (e: CheckboxChangeEvent) => {
     const selectedFormat = e.target.value;
     setPayloadFormat(selectedFormat);
     convertPayload(selectedFormat);
