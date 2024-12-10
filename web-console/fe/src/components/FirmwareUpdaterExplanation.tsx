@@ -12,12 +12,12 @@ import React from 'react';
 const { Title, Paragraph } = Typography;
 const { Step } = Steps;
 
-export default function FirmwareUpdaterExplanation() {
+export default function FirmwareUpdaterExplanation({ ota }: { ota: boolean }) {
   const t = useTranslations('FirmwareUpdaterExplanation');
   return (
     <Card style={{ maxWidth: '800px' }}>
       <Space direction="vertical">
-        <Alert message={t('alert.warning')} description={t('alert.description')} type="warning" showIcon />
+        {ota && <Alert message={t('alert.warning')} description={t('alert.description')} type="warning" showIcon />}
         <Typography>
           <Title level={3}>{t('typography.title')}</Title>
         </Typography>

@@ -155,7 +155,8 @@
   },
   "DaaSUpdater": {
     "title1": "Servizio OTA generico per l'attivazione e l'aggiornamento dei dispositivi",
-    "title2": "Aggiornamento del firmware del dispositivo",
+    "title2": "Aggiornamento firmware del dispositivo",
+    "titleESP32": "Aggiornamento firmware dispositivo (ESP32)",
     "start": "Inizia",
     "port": "Porta",
     "device": "Dispositivo",

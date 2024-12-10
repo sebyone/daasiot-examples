@@ -16,7 +16,7 @@ import FirmwareUpdaterExplanation from '@/components/FirmwareUpdaterExplanation'
 import ConfigService from '@/services/configService';
 import { FlashOptions, FlashStatus, LoaderOptions, TarFile } from '@/types';
 import { InfoCircleOutlined, SyncOutlined, UsbOutlined } from '@ant-design/icons';
-import { Alert, Button, Descriptions, Progress, Select, Space, Typography, Upload, message } from 'antd';
+import { Alert, Button, Descriptions, Progress, Select, Space, Typography, message } from 'antd';
 import axios from 'axios';
 import CryptoJS from 'crypto-js';
 import { ESPLoader, Transport } from 'esptool-js';
@@ -348,7 +348,7 @@ const DaaSUpdater = () => {
         <div className={styles.controlPanel}>
           {!isConnected && !flashStatus && !progress && (
             <>
-              <FirmwareUpdaterExplanation />
+              <FirmwareUpdaterExplanation ota />
               <div style={{ display: 'flex', justifyContent: 'center', marginTop: 10 }}>
                 <Button icon={<UsbOutlined />} onClick={isConnected ? disconnectDevice : connectDevice} type="primary">
                   {isConnected ? 'Disconnetti dispositivo' : t('start')}

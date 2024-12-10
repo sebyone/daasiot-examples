@@ -157,6 +157,7 @@
   "DaaSUpdater": {
     "title1": "Generic OTA service for devices activation and updating",
     "title2": "Device Firmware Updater",
+    "titleESP32": "Device Firmware Updater (ESP32)",
     "start": "Start",
     "port": "Port",
     "device": "Device",
