@@ -160,7 +160,6 @@ export default function Dispositivi() {
 
   const fetchDdo = async () => {
     if (!selectedDevice) return;
-    setIsLoading(true);
     try {
       const offset = (currentPage - 1) * pageSize;
       const response = await ConfigService.getDDOByDeviceId(selectedDevice.id, offset, pageSize, filterEnabled);
@@ -174,8 +173,6 @@ export default function Dispositivi() {
       setTotalItems(response.pagination.total);
     } catch (error) {
       notify('error', t('error'), 'Errore ddo');
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -192,7 +189,6 @@ export default function Dispositivi() {
     async (device: DataDevice) => {
       setSelectedDevice(device);
       setIsDeviceSelected(true);
-      setIsLoading(true);
       setActiveTabKey('1');
       try {
         const data = await ConfigService.getDeviceById(device.id);
@@ -212,8 +208,6 @@ export default function Dispositivi() {
         });
       } catch (error) {
         console.error('Error fetching device details:', error);
-      } finally {
-        setIsLoading(false);
       }
     },
     [formGenerali, formHeader]

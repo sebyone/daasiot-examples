@@ -34,7 +34,7 @@ import { useModelHelpers } from '@/hooks/useModelHelpers';
 import { useCustomNotification } from '@/hooks/useNotificationHook';
 import { useWindowSize } from '@/hooks/useWindowSize';
 import { Dev, SelectedGroup } from '@/types';
-import { SearchOutlined } from '@ant-design/icons';
+import { LoadingOutlined, SearchOutlined } from '@ant-design/icons';
 import { Col, Input, Layout, Row } from 'antd';
 
 import { useLocale, useTranslations } from 'next-intl';
@@ -116,7 +116,7 @@ export default function Catalogo() {
               <Col xs={7} sm={24} md={24} lg={24} style={{ marginBottom: isMobile ? '20px' : '20px' }}>
                 <Input
                   placeholder={t('searchDevice')}
-                  prefix={<SearchOutlined />}
+                  prefix={isLoading ? <LoadingOutlined /> : <SearchOutlined />}
                   onChange={handleSearchChange}
                   value={searchTerm}
                 />

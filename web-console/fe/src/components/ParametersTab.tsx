@@ -19,6 +19,7 @@ import {
   CloudUploadOutlined,
   ControlOutlined,
   DeleteOutlined,
+  ExclamationCircleFilled,
   ExportOutlined,
   ImportOutlined,
   SettingOutlined,
@@ -579,12 +580,20 @@ export default function ParametersTab({
       </Modal>
 
       <Modal
-        title="Conferma eliminazione"
+        title={
+          <span>
+            <ExclamationCircleFilled style={{ color: '#faad14', marginRight: '8px' }} />
+            Conferma eliminazione
+          </span>
+        }
         open={isDeleteConfirmVisible}
         onOk={handleConfirmDelete}
         onCancel={() => setIsDeleteConfirmVisible(false)}
         okText="Elimina"
         cancelText="Annulla"
+        okButtonProps={{
+          danger: true,
+        }}
       >
         <p>
           Sei sicuro di voler eliminare{' '}

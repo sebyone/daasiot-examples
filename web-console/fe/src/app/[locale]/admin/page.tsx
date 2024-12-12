@@ -39,7 +39,6 @@ export default function Dashboard() {
         const response = await ConfigService.getVersion();
         setVersion(response);
       } catch (error) {
-        notify('error', 'Qualcosa non ha funzionato', 'Errore nel caricamento della versione');
         console.error('Errore nel caricamento della versione:', error);
       }
     };
@@ -49,8 +48,8 @@ export default function Dashboard() {
         const response = await ConfigService.getReceivers();
         setRecievers(response);
       } catch (error) {
-        notify('error', 'Qualcosa non ha funzionato', 'Errore nel caricamento del conteggio dei remotes');
-        console.error('Errore nel caricamento del conteggio dei remotes:', error);
+        notify('error', 'Qualcosa non ha funzionato', 'Errore nel caricamento dei receivers');
+        console.error('Errore nel caricamento dei receivers:', error);
       }
     };
 
@@ -59,8 +58,7 @@ export default function Dashboard() {
         const count = await ConfigService.getRemotesCount();
         setRemotesCount(count);
       } catch (error) {
-        notify('error', 'Qualcosa non ha funzionato', 'Errore nel caricamento del conteggio dei remotes');
-        console.error('Errore nel caricamento del conteggio dei remotes:', error);
+        console.error('Errore nel caricamento del conteggio dei nodi gestiti:', error);
       }
     };
 
