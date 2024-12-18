@@ -389,6 +389,9 @@ components:
             2: i16
             3: f32
             4: string
+            5: i8
+            6: i64
+            7: f64
           nullable: false
         default_value:
           type: string

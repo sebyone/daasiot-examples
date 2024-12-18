@@ -536,12 +536,21 @@ function validateWithPropertyValueType(property, value) {
     // int16
     case 2:
       return isNumeric(value) && Number.isInteger(parseFloat(value));
-
     // float32
     case 3:
       return isNumeric(value)
+    // string
     case 4:
       return typeof value === 'string';
+    // int8
+    case 5:
+      return isNumeric(value) && Number.isInteger(parseFloat(value));
+    // i64
+    case 6:
+      return isNumeric(value) && Number.isInteger(parseFloat(value));
+    // f64
+    case 7:
+      return isNumeric(value);
     default:
       return false;
   }
@@ -576,9 +585,9 @@ async function createDeviceModelFunctionProperty(res, property, deviceModelFunct
     throw new Error(`Il campo data_type è obbligatorio per tutti i ${property_list}.`);
   }
 
-  if (property.data_type < 1 || property.data_type > 4) {
+  if (property.data_type < 1 || property.data_type > 7) {
     res.status(400);
-    throw new Error(`Il campo data_type deve essere compreso tra 1 e 4.`);
+    throw new Error(`Il campo data_type deve essere compreso tra 1 e 7.`);
   }
 
   if (property.default_value === undefined) {
@@ -619,9 +628,9 @@ async function updateDeviceModelFunctionProperty(res, oldProperty, newProperty, 
 
   if (newProperty.default_value !== undefined) {
 
-    if (newProperty.data_type < 1 || newProperty.data_type > 4) {
+    if (newProperty.data_type < 1 || newProperty.data_type > 7) {
       res.status(400);
-      throw new Error(`Il campo data_type deve essere compreso tra 1 e 4. (property_id=${oldProperty.id})`);
+      throw new Error(`Il campo data_type deve essere compreso tra 1 e 7. (property_id=${oldProperty.id})`);
     }
 
     if (!validateWithPropertyValueType(oldProperty, newProperty.default_value)) {
