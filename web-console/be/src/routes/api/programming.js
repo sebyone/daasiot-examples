@@ -4,6 +4,7 @@ const router = express.Router();
 const { sendError, getPaginationParams, toPaginationData } = require('./utilities');
 const { DeviceModel, DeviceModelFunction, DeviceModelFunctionProperty, DeviceFunction, DeviceFunctionProperty, Device } = require('../../db/models');
 const db = require('../../db/models');
+const daas = require('../../daas/daas');
 
 module.exports = {
   router,
@@ -533,6 +534,63 @@ router.delete('/devices/:deviceId/functions/:dFuntionId', async function (req, r
 
 
 
+router.post('/devices/:deviceId/functions/apply', async function (req, res) {
+  const t = await db.sequelize.transaction();
+  try {
+    const deviceId = parseInt(req.params.deviceId);
+
+    const device = await Device.findByPk(deviceId, { transaction: t, include: 'din' });
+
+    if (device === null) {
+      res.status(404);
+      throw new Error(`Device con id=${deviceId} non trovato.`);
+    }
+
+    const deviceFunctions = await DeviceFunction.findAll({
+      where: { device_id: deviceId },
+      include: [
+        {
+          model: DeviceModelFunction,
+          as: 'function',
+          include: DEV_MOD_PROPERTY_TYPE_LIST,
+        },
+        ...DEV_MOD_PROPERTY_TYPE_LIST,
+      ],
+      transaction: t,
+    });
+
+    console.log(JSON.stringify(deviceFunctions, null, 2));
+
+
+    const din = parseInt(device.din.din);
+
+    let index = 0;
+    for (const deviceFunction of deviceFunctions) {
+      // send a DDO with the deviceFunction properties
+      deviceFunctionJSON = addPropertyTemplateToDeviceFunction(deviceFunction);
+
+      const payload = DeviceFunctionToDDOPayload(deviceFunctionJSON, index);
+
+      console.log(payload);
+
+      // send the DDO to the device
+      const typeset = 3700 + parseInt(deviceFunction.device_model_function_id);
+
+      console.log(`sending DDO [to din: ${din}, typeset: ${typeset}]\n${payload}\n`);
+
+      daas.send(din, typeset, payload);
+      index += 1;
+    }
+
+    await t.commit();
+    res.send({ message: `inviate regole al device con din ${din}` });
+  }
+  catch (err) {
+    await t.rollback();
+    sendError(res, err);
+  }
+});
+
 function validateWithPropertyValueType(property, value) {
   switch (property.data_type) {
 
@@ -786,4 +844,21 @@ async function createDeviceModelFunction(req, res, deviceModelId, deviceModelFun
   });
 
   return deviceModelFunctionWithProperties;
+}
+
+
+function DeviceFunctionToDDOPayload(fn, func_index) {
+  const payload = {
+    func_index,
+    parameters: {},
+    inputs: {},
+    outputs: {},
+    notifications: {}
+  }
+
+  for (const property_list of DEV_MOD_PROPERTY_TYPE_LIST) {
+    fn[property_list].forEach(p => payload[property_list][p.parameter_template.name] = p.value);
+  }
+
+  return JSON.stringify(payload, null, 2);
 }

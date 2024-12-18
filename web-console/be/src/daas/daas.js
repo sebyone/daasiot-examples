@@ -51,6 +51,7 @@ function restart() {
 }
 
 async function send(din, typeset, data) {
+    din = parseInt(din);
     const located = nodeInstance.locate(din);
 
     if (!located) throw new Error(`Node ${din} could not be located!`)

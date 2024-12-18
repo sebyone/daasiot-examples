@@ -3077,4 +3077,39 @@ paths:
                 $ref: "#/components/schemas/Error"
         default:
           $ref: "#/components/responses/InternalError"
+
+  /devices/{deviceId}/functions/apply:
+    post:
+      description: >
+        Applica le funzioni del device fisico utilizzando la rete DaaS per inviare i dati.
+      tags:
+        - devices
+        - programming
+        - device functions
+      parameters:
+        - name: deviceId
+          in: path
+          description: ID del device
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Funzioni del device applicate con successo.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Messaggio di successo
+        "404":
+          description: Device non trovato.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        default:
+          $ref: "#/components/responses/InternalError"
 #endregion Programming
