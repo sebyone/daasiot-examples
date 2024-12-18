@@ -28,13 +28,19 @@ const DEV_MOD_PROPERTY_TYPE_MAP_REVERSE = {
 
 const DEV_MOD_DEFAULT_VALUE_MAP = {
   // i32
-  1: '1',
-  // i16
-  2: '1',
+  1: '0',
+  // i06
+  2: '0',
   // f32
-  3: '1.0',
+  3: '0.0',
   // string
   4: '',
+  // i8
+  5: '0',
+  // i64
+  6: '0',
+  // f64
+  7: '0.0',
 }
 
 router.get('/device_models/any/functions/', async function (req, res) {
