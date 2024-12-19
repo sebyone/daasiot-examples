@@ -64,8 +64,8 @@ router.get('/device_models/find/:deviceName', async function (req, res) {
         }
 
         const similarModels = deviceModels
-        .filter(model => deviceName.includes(model.name)) // Filtra i modelli che contengono il nome del dispositivo
-        .sort((a, b) => b.name.length - a.name.length);   // Ordina per lunghezza del nome (decrescente)
+        .filter(model => deviceName.includes(model.name)) 
+        .sort((a, b) => b.name.length - a.name.length);   
 
         if (similarModels.length === 0) {
             res.status(404);
