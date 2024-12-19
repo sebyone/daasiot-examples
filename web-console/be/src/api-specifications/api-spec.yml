@@ -2054,6 +2054,35 @@ paths:
                 $ref: "#/components/schemas/Error"
         default:
           $ref: "#/components/responses/InternalError"
+          
+  /device_models/find/{deviceName}:
+    parameters:
+      - name: deviceName
+        in: path
+        description: nome del device
+        required: true
+        schema:
+          type: String
+
+    get:
+      description: Ritorna un modello di device specifico.
+      tags:
+        - device models
+      responses:
+        "200":
+          description: Modello di device trovato.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DeviceModelFull"
+        "404":
+          description: Modello di device non trovato.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        default:
+          $ref: "#/components/responses/InternalError"
 
   /device_models/{deviceModelId}/devices:
     parameters:

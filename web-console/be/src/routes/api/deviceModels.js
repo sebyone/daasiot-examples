@@ -53,6 +53,31 @@ router.get('/device_models/:deviceModelId', async function (req, res) {
     }
 });
 
+router.get('/device_models/find/:deviceName', async function (req, res) {
+    try {
+        const deviceName = req.params.deviceName;
+        const deviceModels = await DeviceModel.findAll({ include: ['device_group', 'resources'] });
+
+        if (deviceModels === null) {
+            res.status(404);
+            throw new Error(`DeviceModel non trovato.`);
+        }
+
+        const similarModels = deviceModels
+        .filter(model => deviceName.includes(model.name)) // Filtra i modelli che contengono il nome del dispositivo
+        .sort((a, b) => b.name.length - a.name.length);   // Ordina per lunghezza del nome (decrescente)
+
+        if (similarModels.length === 0) {
+            res.status(404);
+            throw new Error(`Nessun DeviceModel simile al nome del dispositivo: ${deviceName}`);
+        }
+        res.send(similarModels);
+    }
+    catch (err) {
+        sendError(res, err);
+    }
+});
+
 router.post('/device_models', async function (req, res) {
     const t = await db.sequelize.transaction();
     try {
