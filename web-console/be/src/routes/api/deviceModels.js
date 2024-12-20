@@ -71,7 +71,7 @@ router.get('/device_models/find/:deviceName', async function (req, res) {
             res.status(404);
             throw new Error(`Nessun DeviceModel simile al nome del dispositivo: ${deviceName}`);
         }
-        res.send(similarModels);
+        res.send(similarModels[0]);
     }
     catch (err) {
         sendError(res, err);
