@@ -351,6 +351,21 @@ const ConfigService = {
   },
 
   /**
+   * Invia regole di una funzione
+   * deviceId - ID del device
+   * func - Oggetto DeviceFunction
+   */
+  programFunction: async (deviceId: number, func: DeviceFunction): Promise<void> => {
+    try {
+      const response = await axiosInstance.post(`/devices/${deviceId}/functions/apply`, func);
+      return response.data;
+    } catch (error) {
+      console.error('Error:', error);
+      throw error;
+    }
+  },
+
+  /**
    * Elimina una funzione specifica di un device
    * id - ID del device
    */
@@ -554,6 +569,21 @@ const ConfigService = {
   getDeviceModelById: async (deviceModelId: number): Promise<Dev> => {
     try {
       const response = await axiosInstance.get(`/device_models/${deviceModelId}`);
+      return response.data;
+    } catch (error) {
+      console.error('Error:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Recupera un device_model specifico tramite il suo nome
+   * deviceName - Nome del device_model da recuperare
+   * Promise<DeviceModel> - Oggetto DeviceModel del device_model richiesto
+   */
+  getDeviceModelByName: async (deviceName: string): Promise<Dev> => {
+    try {
+      const response = await axiosInstance.get(`/device_models/find/${deviceName}`);
       return response.data;
     } catch (error) {
       console.error('Error:', error);

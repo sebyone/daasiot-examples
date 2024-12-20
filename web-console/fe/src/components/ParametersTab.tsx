@@ -11,6 +11,7 @@
  * francescopantusa98@gmail.com - initial implementation
  *
  */
+import ConfigService from '@/services/configService';
 import { DataDevice, DeviceFunction, Function, FunctionParameter } from '@/types';
 import {
   BellOutlined,
@@ -25,7 +26,7 @@ import {
   SettingOutlined,
   SlidersOutlined,
 } from '@ant-design/icons';
-import { Button, Checkbox, Col, Descriptions, Input, List, Modal, Row, Select, Space, Table } from 'antd';
+import { Button, Checkbox, Col, Descriptions, Input, List, message, Modal, Row, Select, Space, Table } from 'antd';
 import { useTranslations } from 'next-intl';
 import dynamic from 'next/dynamic';
 import React, { useCallback, useState } from 'react';
@@ -94,6 +95,7 @@ export default function ParametersTab({
   const [tempInputs, setTempInputs] = useState<{ [key: number]: any }>({});
   const [tempOutputs, setTempOutputs] = useState<{ [key: number]: any }>({});
   const [tempNotifications, setTempNotifications] = useState<{ [key: number]: any }>({});
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   const [showTestControl] = useState(false);
 
   // Handlers UI locali
@@ -147,6 +149,34 @@ export default function ParametersTab({
     []
   );
 
+  const handleProgram = useCallback(async () => {
+    if (!device?.id) return;
+    setIsLoading(true);
+    try {
+      const functionToApply = selectedFunctions.find((f) => f.id === checkedFunctions[0]);
+
+      if (!functionToApply) {
+        throw new Error('Seleziona una funzione');
+      }
+
+      const functionData = {
+        id: functionToApply.id,
+        parameters: functionToApply.parameters,
+        inputs: functionToApply.inputs,
+        outputs: functionToApply.outputs,
+        notifications: functionToApply.notifications,
+      };
+
+      await ConfigService.programFunction(device.id, functionData);
+      message.success('Funzione inviata con successo');
+    } catch (error: any) {
+      message.error(error.message || "Errore durante l'invio della funzione");
+      console.error('Send function error:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [device?.id, selectedFunctions, checkedFunctions]);
+
   const handleModalOk = useCallback(async () => {
     if (!currentFunction) return;
 
@@ -157,26 +187,65 @@ export default function ParametersTab({
       notifications?: { property_id: number; value: any }[];
     } = {};
 
+    let hasChanges = false;
+
     if (currentAction === 'parametro') {
-      updates.parameters = Object.entries(tempParameters).map(([id, value]) => ({
-        property_id: Number(id),
-        value,
-      }));
+      const changedParameters = Object.entries(tempParameters).filter(([id, value]) => {
+        const originalParam = currentFunction.parameters.find((p) => p.property_id === Number(id));
+        return originalParam?.value !== value;
+      });
+
+      if (changedParameters.length > 0) {
+        hasChanges = true;
+        updates.parameters = changedParameters.map(([id, value]) => ({
+          property_id: Number(id),
+          value,
+        }));
+      }
     } else if (currentAction === 'ingresso') {
-      updates.inputs = Object.entries(tempInputs).map(([id, value]) => ({
-        property_id: Number(id),
-        value,
-      }));
+      const changedInputs = Object.entries(tempInputs).filter(([id, value]) => {
+        const originalInput = currentFunction.inputs.find((i) => i.property_id === Number(id));
+        return originalInput?.value !== value;
+      });
+
+      if (changedInputs.length > 0) {
+        hasChanges = true;
+        updates.inputs = changedInputs.map(([id, value]) => ({
+          property_id: Number(id),
+          value,
+        }));
+      }
     } else if (currentAction === 'uscita') {
-      updates.outputs = Object.entries(tempOutputs).map(([id, value]) => ({
-        property_id: Number(id),
-        value,
-      }));
+      const changedOutputs = Object.entries(tempOutputs).filter(([id, value]) => {
+        const originalOutput = currentFunction.outputs.find((o) => o.property_id === Number(id));
+        return originalOutput?.value !== value;
+      });
+
+      if (changedOutputs.length > 0) {
+        hasChanges = true;
+        updates.outputs = changedOutputs.map(([id, value]) => ({
+          property_id: Number(id),
+          value,
+        }));
+      }
     } else if (currentAction === 'notifica') {
-      updates.notifications = Object.entries(tempNotifications).map(([id, value]) => ({
-        property_id: Number(id),
-        value,
-      }));
+      const changedNotifications = Object.entries(tempNotifications).filter(([id, value]) => {
+        const originalNotification = currentFunction.notifications.find((n) => n.property_id === Number(id));
+        return originalNotification?.value !== value;
+      });
+
+      if (changedNotifications.length > 0) {
+        hasChanges = true;
+        updates.notifications = changedNotifications.map(([id, value]) => ({
+          property_id: Number(id),
+          value,
+        }));
+      }
+    }
+
+    if (!hasChanges) {
+      setIsModalVisible(false);
+      return;
     }
 
     await onUpdateFunction(currentFunction.id, updates);
@@ -537,7 +606,12 @@ export default function ParametersTab({
               </Button>
             </Col>
             <Col>
-              <Button type="primary" icon={<CloudUploadOutlined style={{ fontSize: '1.2rem' }} />}>
+              <Button
+                type="primary"
+                icon={<CloudUploadOutlined style={{ fontSize: '1.2rem' }} />}
+                onClick={handleProgram}
+                loading={isLoading}
+              >
                 {t('schedule')}
               </Button>
             </Col>

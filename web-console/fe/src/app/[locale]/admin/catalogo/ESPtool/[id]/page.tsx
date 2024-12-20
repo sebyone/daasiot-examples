@@ -125,6 +125,7 @@ const DaaSUpdater = () => {
       const detectedChip = await esploader.main();
       setChip(detectedChip);
       setIsConnected(true);
+      setUpdateFailed(false);
     } catch (e: any) {
       console.error(e);
       message.error(`Error: ${e.message}`);

@@ -98,6 +98,7 @@ export interface DataPanelProps {
   showSemaphore?: boolean;
   showLinkStatus?: boolean;
   showAlignmentStatus?: boolean;
+  alignment?: string;
 }
 
 export interface PanelProps {

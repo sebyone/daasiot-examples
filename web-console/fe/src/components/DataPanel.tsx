@@ -12,6 +12,7 @@
  *
  */
 import { DataPanelProps } from '@/types';
+import { CheckCircleFilled, QuestionCircleFilled, WarningOutlined } from '@ant-design/icons';
 import { Card } from 'antd';
 import FormSemaphore from './FormSemaphore';
 
@@ -22,8 +23,14 @@ const DataPanel = ({
   showSemaphore,
   showLinkStatus,
   showAlignmentStatus,
+  alignment,
 }: DataPanelProps) => {
-  const style_div = { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0' };
+  const style_div = {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: '0',
+  };
   const style_status = {
     display: 'flex',
     gap: '20px',
@@ -42,7 +49,22 @@ const DataPanel = ({
             )}
             {showAlignmentStatus && (
               <span>
-                Allineato: <b>Unknown</b>
+                Allineamento:{' '}
+                <p>
+                  {alignment === 'Disallineato' ? (
+                    <>
+                      {alignment} <WarningOutlined style={{ color: '#faad14' }} />
+                    </>
+                  ) : alignment === 'Allineato' ? (
+                    <>
+                      {alignment} <CheckCircleFilled style={{ color: '#52c41a' }} />
+                    </>
+                  ) : (
+                    <>
+                      {alignment} <QuestionCircleFilled style={{ color: '#8c8c8c', fontSize: '1rem' }} />
+                    </>
+                  )}
+                </p>
               </span>
             )}
             {showSemaphore && <FormSemaphore isDataSaved={isEditing} />}

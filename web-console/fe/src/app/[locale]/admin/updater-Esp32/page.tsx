@@ -21,7 +21,7 @@ import axios from 'axios';
 import CryptoJS from 'crypto-js';
 import { ESPLoader, Transport } from 'esptool-js';
 import { useLocale, useTranslations } from 'next-intl';
-import { useParams, useRouter } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
 import { SerialPort } from 'web-serial-polyfill';
 import styles from './Updater.module.css';
@@ -48,7 +48,6 @@ const DaaSUpdater = () => {
   const t = useTranslations('DaaSUpdater');
   const router = useRouter();
   const locale = useLocale();
-
   const [device, setDevice] = useState<SerialPort | null>(null);
   const [transport, setTransport] = useState<Transport | null>(null);
   const [chip, setChip] = useState<string | null>(null);
@@ -61,17 +60,21 @@ const DaaSUpdater = () => {
   const [firmwareName, setFirmwareName] = useState<string | undefined>('');
   const [image, setImage] = useState<string | undefined>('');
   const [flashStatus, setFlashStatus] = useState<FlashStatus>('');
-  //const params = useParams();
-  const id = 5;
+  const [deviceNotFound, setDeviceNotFound] = useState<boolean>(false);
+  const [availableFirmware, setAvailableFirmware] = useState<string | null>(null);
   let esploader: ESPLoader;
 
-  const [availableFirmware, setAvailableFirmware] = useState<string | null>(null);
-
-  const fetchFirmwareData = async () => {
+  const fetchFirmwareData = async (deviceName: string) => {
     try {
-      const response = await ConfigService.getDeviceModelById(id);
-      const imageResource = response.resources?.find((resource) => resource.resource_type === 4)?.link;
-      const firmwareResources = response.resources?.find(
+      const response = await ConfigService.getDeviceModelByName(deviceName);
+      if (!Array.isArray(response) || response.length === 0) {
+        throw new Error('No devices found');
+      }
+
+      const deviceModel = response[0];
+
+      const imageResource = deviceModel.resources?.find((resource) => resource.resource_type === 4)?.link;
+      const firmwareResources = deviceModel.resources?.find(
         (resource) => resource.resource_type === 5 && resource.name === 'firmware'
       )?.link;
       if (firmwareResources) {
@@ -81,17 +84,17 @@ const DaaSUpdater = () => {
       if (imageResource) {
         setImage(imageResource);
       }
-    } catch (error) {
-      console.error('Error fetching firmware:', error);
-      message.error('Errore nel caricamento del firmware');
+    } catch (error: any) {
+      if (error.response?.status === 404) {
+        setDeviceNotFound(true);
+        setTimeout(() => {
+          router.push(`/${locale}/admin/catalogo`);
+        }, 4000);
+      } else {
+        message.error(t('errorLoadingFirmware'));
+      }
     }
   };
-
-  useEffect(() => {
-    if (id) {
-      fetchFirmwareData();
-    }
-  }, [id]);
 
   useEffect(() => {
     const loadPolyfill = async (): Promise<void> => {
@@ -124,6 +127,11 @@ const DaaSUpdater = () => {
       const detectedChip = await esploader.main();
       setChip(detectedChip);
       setIsConnected(true);
+
+      if (detectedChip) {
+        await fetchFirmwareData(detectedChip);
+        setUpdateFailed(false);
+      }
     } catch (e: any) {
       console.error(e);
       message.error(`Error: ${e.message}`);
@@ -355,6 +363,16 @@ const DaaSUpdater = () => {
                 </Button>
               </div>
             </>
+          )}
+
+          {deviceNotFound && (
+            <Alert
+              message={t('alertDeviceNotFound.message')}
+              description={t('alertDeviceNotFound.description')}
+              type="error"
+              showIcon
+              style={{ marginTop: '1rem' }}
+            />
           )}
 
           {isConnected && !updateComplete && (

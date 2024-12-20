@@ -163,6 +163,10 @@
     "availableFirmware": "Seleziona firmware",
     "noFirmwareAvailable": "Nessun firmware disponibile",
     "startUpdate": "Avvia aggiornamento",
+    "errorLoadingFirmware": "Errore nel caricamento del firmware",
+    "deviceDisconnectedDuringFlash": "Il dispositivo è stato scollegato durante l'aggiornamento del firmware!",
+    "flashingAborted": "Aggiornamento firmware interrotto",
+    "leavingDuringFlash": "L'aggiornamento del firmware è in corso. Sei sicuro di voler abbandonare la pagina?",
     "flashStatus": {
       "downloading": "Download firmware in corso...",
       "validating": "Validazione firmware...",
@@ -171,6 +175,10 @@
     "alertUpdateComplete": {
       "message": "Programmazione conclusa con successo!",
       "description": "Riavvia il dispositivo e segui la procedura di configurazione prevista per il modello."
+    },
+    "alertDeviceNotFound": {
+      "message": "Dispositivo non riconosciuto!",
+      "description": "Verrai reindirizzato al catalogo..."
     },
     "alertUpdateFailed": {
       "message": "Programmazione non riuscita!",

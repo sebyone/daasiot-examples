@@ -99,6 +99,7 @@ export default function Dispositivi() {
   const [selectedDin, setSelectedDin] = useState<number | null>(null);
   const [dinOptions, setDinOptions] = useState<number[]>([]);
   const [ws, setSocket] = useState<WebSocket | null>(null);
+  const [alignment, setAlignment] = useState<string>('Sconosciuto');
   const { width } = useWindowSize();
   const wh = width <= 1920;
 
@@ -394,7 +395,10 @@ export default function Dispositivi() {
 
         const updatedFunction = { ...functionToUpdate };
 
+        let hasUpdates = false;
+
         if (updates.parameters) {
+          hasUpdates = true;
           updatedFunction.parameters = updatedFunction.parameters.map((param) => {
             const update = updates.parameters?.find((u) => u.property_id === param.property_id);
             return update ? { ...param, value: update.value } : param;
@@ -402,6 +406,7 @@ export default function Dispositivi() {
         }
 
         if (updates.inputs) {
+          hasUpdates = true;
           updatedFunction.inputs = updatedFunction.inputs.map((input) => {
             const update = updates.inputs?.find((u) => u.property_id === input.property_id);
             return update ? { ...input, value: update.value } : input;
@@ -409,6 +414,7 @@ export default function Dispositivi() {
         }
 
         if (updates.outputs) {
+          hasUpdates = true;
           updatedFunction.outputs = updatedFunction.outputs.map((output) => {
             const update = updates.outputs?.find((u) => u.property_id === output.property_id);
             return update ? { ...output, value: update.value } : output;
@@ -416,15 +422,18 @@ export default function Dispositivi() {
         }
 
         if (updates.notifications) {
+          hasUpdates = true;
           updatedFunction.notifications = updatedFunction.notifications.map((notification) => {
             const update = updates.notifications?.find((u) => u.property_id === notification.property_id);
             return update ? { ...notification, value: update.value } : notification;
           });
         }
 
+        if (!hasUpdates) return;
+
         await ConfigService.updateFunction(selectedDevice.id, functionId, updatedFunction);
         setSelectedFunctions((prev) => prev.map((func) => (func.id === functionId ? updatedFunction : func)));
-
+        setAlignment('Disallineato');
         message.success('Funzione aggiornata con successo');
       } catch (error) {
         console.error('Error updating function:', error);
@@ -781,7 +790,13 @@ export default function Dispositivi() {
           <Layout>
             <Content style={{ padding: 0, background: '#fff', maxHeight: '100%' }}>
               {isDeviceSelected ? (
-                <DataPanel title={selectedDevice?.name} showSemaphore={false} showLinkStatus showAlignmentStatus>
+                <DataPanel
+                  title={selectedDevice?.name}
+                  showSemaphore={false}
+                  showLinkStatus
+                  showAlignmentStatus
+                  alignment={alignment}
+                >
                   <Panel showSaveButtons={false} layoutStyle="devices">
                     <PanelView layoutStyle="devices">
                       <NodoFormHeader form={formHeader} />

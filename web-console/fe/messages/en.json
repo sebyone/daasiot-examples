@@ -164,6 +164,8 @@
     "availableFirmware": "Select firmware",
     "noFirmwareAvailable": "No firmware available",
     "startUpdate": "Start update",
+    "deviceNotFound": "Device not recognized. Redirect to catalogue...",
+    "errorLoadingFirmware": "Error loading firmware",
     "flashStatus": {
       "downloading": "Firmware download in progress...",
       "validating": "Firmware validation...",
@@ -172,6 +174,10 @@
     "alertUpdateComplete": {
       "message": "Programming completed successfully!",
       "description": "Restart your device and follow the setup procedures for your model."
+    },
+    "alertDeviceNotFound": {
+      "message": "Device not recognized!",
+      "description": "You will be redirected to the catalog..."
     },
     "alertUpdateFailed": {
       "message": "Programming failed!",
